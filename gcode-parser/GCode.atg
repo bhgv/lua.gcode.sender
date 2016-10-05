@@ -1,0 +1,252 @@
+
+
+#include <stdio.h>
+
+#include <math.h>
+
+
+$C
+COMPILER GCode
+
+
+   typedef enum 
+   {
+    CMD   = 1,
+    EOL,
+    INIT,
+    FINI,
+    PRAGMA,
+    AUX_CMD,
+    DEFAULT,
+    NO_CMD_CB,
+    CB_LAST
+   } Cb_Type;
+   
+   
+   typedef wchar_t* pwchar;
+   
+   
+   void call(Cb_Type key, pwchar param1 = NULL, pwchar param2 = NULL);
+   
+   void     set_param(pwchar key, pwchar param);
+   pwchar get_param(pwchar key);
+   
+   
+
+IGNORECASE
+
+CHARACTERS
+  letter = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  digit  = "0123456789".
+  eol    = "\n" .
+  lf     = '\r' .
+  tab    = '\t' .
+  nonGcodeCmdBodySym = ANY - eol - lf .
+  pragmaChar = ANY - eol - lf 
+                   - "(" - ")" - "="
+                   - "%" - letter - digit - "."
+                   - "+" - "-" - "/" - "*" - "^"
+                   - "[" - "]" 
+                   .
+
+TOKENS
+  ident  = letter {letter} .
+//  number = [ "+" | "-" ] ( digit {digit} [ "." {digit} ] | "." {digit} ) .
+  number = ( digit {digit} [ "." {digit} ] | "." {digit} ) .
+  param  = "#" digit {digit} .
+  eolTok = ( eol [ lf ] | lf [ eol ] ) . //{ { tab } ( eol | lf ) } .
+  pragmaBody = pragmaChar { pragmaChar } .
+
+/*
+//PRAGMAS
+//  option =
+//        "("
+//               { pragmaChar }
+//        ")"
+//        .                                    (. 
+//                                                call(PRAGMA, _tptr(la->val));
+//                                             .)
+*/
+
+//COMMENTS FROM '(' TO ')'
+COMMENTS FROM ';' TO lf
+COMMENTS FROM ';' TO eol
+
+IGNORE tab 
+
+
+
+PRODUCTIONS
+  GCode =                                    (. call(INIT); .)
+        SYNC
+        {                                    
+         (
+            { 
+                GcodeCmd 
+              |
+                PragCmnt
+            }
+            eolTok                           (. call(EOL); .)
+          |
+            ParamDecl
+          |
+            NonGcodeCmd
+         )
+         { eolTok }
+        }
+        EOF                                  (. 
+                                                call(FINI);
+                                             .)
+        .
+        
+        
+  PragCmnt =
+                "("                          (. /*printf("reg (\n");*/ .)
+                    { (   ident | number | param | pragmaBody 
+                        | "%" | "=" 
+                        | "+" | "-" | "/" | "*" | "^"
+                        | "[" | "]" 
+                        | "G" | "M" | "T"
+                        | "S" | "F" | "P" | "D" | "E" | "H" | "L" | "N" | "O"
+                        | "X" | "Y" | "Z"
+                        | "A" | "B" | "C"
+                        | "U" | "V" | "W"
+                        | "I" | "J" | "K" | "R"
+                      )                      (. /*printf("reg val = %ls\n", t->val);*/ .)
+                    }
+                ")"                          (. /*printf("reg )\n");*/ .)
+        .
+        
+        
+  ParamDecl =                                (. pwchar key, num; .)
+        param                                (. key = coco_string_create(t->val); .)
+        "="
+        NumberSign<num>                          (. set_param(key, num); .)
+        { PragCmnt }
+        eolTok
+        .
+        
+  NonGcodeCmd =                              (.
+                                                wchar_t *var, *val;
+                                             .)
+        "%"                                  (. /*printf("%%\n");*/ .)
+        ident                                (. var = coco_string_create(t->val); 
+                                                //printf("%% var = %ls\n", var);
+                                             .)
+        "="
+        Expr<val>                            (. set_param(var, val); .)
+        eolTok    
+        .
+
+  GcodeCmd =                                 (. pwchar cmd, num; .)
+        (
+            CmdNoMoveAloneLetter<cmd>  
+            [
+              NumberSign<num>                    (. /*cmd += num;*/ .)
+            ]                                (. call(CMD, cmd, num); .)
+          |
+            CmdNoMoveParamLetter<cmd>  
+              NumberSign<num>                    (. call(CMD, cmd, num); .)
+          |
+            CmdMoveLetter<cmd>         
+            NumberSign<num>                      (. call(CMD, cmd, num); .)
+        )                                    
+        .
+    
+  CmdNoMoveAloneLetter<pwchar &cmd> =        (. cmd = 0; .)
+        (
+            "G" | "M" | "T"
+        )                                    (. cmd =  coco_string_create_upper(t->val); .)
+        .
+        
+  CmdNoMoveParamLetter<pwchar &cmd> =        (. cmd = 0; .)
+        (
+            "S" | "F"
+          | "P" | "D"
+          | "E" | "H"
+          | "L" | "N"
+          | "O"
+        )                                    (. cmd =  coco_string_create_upper(t->val); .)
+        .
+        
+  CmdMoveLetter<pwchar &cmd> =               (. cmd = 0; .)
+        (
+            "X" | "Y" | "Z"
+          | "A" | "B" | "C"
+          | "U" | "V" | "W"
+          | "I" | "J" | "K" | "R"
+        )                                    (. cmd =  coco_string_create_upper(t->val); .)
+        .
+        
+  NumberSign<pwchar &num> =                  (. int sign = 1; .)
+        {  "-"                               (. sign *= -1; .)
+         | "+"                              
+        }
+        Number<num, sign>
+        .
+        
+  Number<pwchar &num, int sign> =            
+          number                             (. if(sign == 1)
+                                                    num =  coco_string_create(t->val); 
+                                                else
+                                                    num = coco_string_create_append(L"-", t->val);
+                                             .)
+        | param                              (. num = get_param(t->val); .)
+        | "[" (ident | param)                (. num = get_param(t->val); .)
+          "]"
+        .
+        
+        
+  Expr<pwchar &rslt> =                       (. 
+                                                double value; 
+                                                wchar_t buf[25];
+                                                //printf("exp begin\n");
+                                             .)
+       Expression<&value>                    (. 
+                                                swprintf(buf, 24, L"%lf", value);
+                                                rslt = coco_string_create(buf);
+                                                
+                                                //printf("tst --> %ls\n", buf); 
+                                             .)
+       .
+
+  Expression<double *result> =               
+       Add<result>                           (. /*printf("expr rslt = %f\n", *result);*/ .)
+       .
+  
+  Add<double *result> =                      (. double result1, result2; .)
+       Mult<&result1>
+        {   "+" Mult<&result2>               (. result1 += result2; .)
+          | "-" Mult<&result2>               (. result1 -= result2; .)
+        }                                    (. *result = result1; .)
+        .
+
+  Mult<double *result> =                     (. double result1, result2; .)
+        Power<&result1>
+        {   '*' Power<&result2>              (. result1 *= result2; .)
+          | '/' Power<&result2>              (. result1 /= result2; .)
+        }                                    (. *result = result1; .)
+       .
+       
+  Power<double *result> =                    (. double result1, result2; .)
+       Single<&result1>
+       [ "^" Single<&result2>                (. result1 = pow(result1, result2); .)
+       ]                                     (. *result = result1; .)
+       .
+
+  Single<double *result> =                   (. 
+                                                int sign = 1;
+                                                pwchar num_s;
+                                                *result = 0.0;
+                                             .)
+        {   "-"                              (. sign *= -1; .)
+          | "+"                              
+        }
+        (  "("
+               Expression<result>            
+           ")"
+         | Number<num_s, 1>                  (. *result = wcstod(num_s, NULL); .)
+        )                                    (. *result *= sign; .)
+        .
+        
+END GCode.
