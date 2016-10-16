@@ -1,7 +1,7 @@
 #!/bin/sh
 
-LUA="../bld"
-INC="-I$LUA/include -I. -I$HOME/grbl/lua-5.3.3/src"
+LUA="$DIR/bld"
+INC="-I$LUA/include -I. -I$DIR/lua-5.3.3/src"
 LIB="-L$LUA/lib -llua -lm -ldl -Wl,-E -lreadline"
 
 #echo gcc -c -g -O2 -fPIC $INC *.c 
