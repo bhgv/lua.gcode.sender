@@ -65,9 +65,9 @@ return ui.Group:new
                 f:close()
                 local o = gparser:do_parse(txt)
                 --print (#o, o)
-                for i = 1,#o do
-                  print(i .. ") ", o[i])
-                end
+--                for i = 1,#o do
+--                  print(i .. ") ", o[i])
+--                end
               end
               app:getById("status main"):setValue("Text", GFNAME)
 				--	pathfield:setValue("Text", path)

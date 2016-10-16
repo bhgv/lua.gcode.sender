@@ -21,6 +21,7 @@ return ui.Group:new
       Style = "padding: 2",
       onPress = function(self)
     --		ui.ImageWidget.onPress(self)
+          Sender:newcmd('$H')
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
@@ -46,6 +47,7 @@ return ui.Group:new
       Style = "padding: 2",
       onPress = function(self)
         ui.ImageWidget.onPress(self)
+        Sender:newcmd('')
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
@@ -58,6 +60,7 @@ return ui.Group:new
       Style = "padding: 2",
       onPress = function(self)
     --		ui.ImageWidget.onPress(self)
+        Sender:newcmd('')
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },

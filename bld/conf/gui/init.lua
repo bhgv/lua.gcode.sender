@@ -58,9 +58,9 @@ Display = require "conf.gui.display"
 
 StatPort =     ui.Text:new
     {
-	Class = "caption",
-	Width = 150,
-	Text = "Not Connected",
+      Class = "caption",
+      Width = 150,
+      Text = "Not Connected",
     }
 
 
@@ -70,12 +70,13 @@ StatPort =     ui.Text:new
 require "conf.gparser"
 
 
+MKs = require "conf.controllers"
 
 
 
 App = ui.Application:new {
       AuthorStyleSheets = "gradient", --"klinik", --"desktop" --
-    }
+}
 
 
 local window = ui.Window:new
@@ -86,46 +87,46 @@ local window = ui.Window:new
     MinHeight = 400,
     MaxWidth = "none", 
     MaxHeight = "none",
-    Id = "anims-window",
-    Title = "gSend",
+--    Id = "anims-window",
+    Title = "g-code lSend",
     Status = "hide",
     HideOnEscape = true,
     SizeButton = true,
     Children =
     {
-	ui.PageGroup:new
-	{
-	    PageCaptions = { "_File", "_Control", 
+      ui.PageGroup:new
+      {
+        PageCaptions = { "_File", "_Control", 
                       --"_Plugins", 
                       "_Edit", "_Terminal" },
-	    Children =
-	    {
-		require("conf.gui.file"),
-		require("conf.gui.control"),
-		require("conf.gui.edit"),
-		require("conf.gui.terminal"),
-	    },
-	},
+        Children =
+        {
+          require("conf.gui.file"),
+          require("conf.gui.control"),
+          require("conf.gui.edit"),
+          require("conf.gui.terminal"),
+        },
+      },
   
-	ui.Gauge:new
-	{
-	    Min = 0,
-	    Max = 1,
-      Value = 0,
---	    Id = "gauge-thresh",
---	    Orientation = "horisontal",
-	    Width = "free",
-	    Height = 5, --"auto",
+      ui.Gauge:new
+      {
+        Min = 0,
+        Max = 1,
+        Value = 0,
+--	      Id = "gauge-thresh",
+--	      Orientation = "horisontal",
+        Width = "free",
+        Height = 5, --"auto",
       
-      show = function(self)
+        show = function(self)
 											ui.Gauge.show(self)
 											self.Application:addInputHandler(ui.MSG_USER, self, self.msgUser)
 										end,
-      hide = function(self)
+        hide = function(self)
 											ui.Gauge.hide(self)
 											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
 										end,
-      msgUser = function(self, msg)
+        msgUser = function(self, msg)
 											local ud = msg[-1]
                       --print(ud)
                       local max = ud:match("<CMD GAUGE SETUP>(%d+)")
@@ -143,44 +144,23 @@ local window = ui.Window:new
 											--self:setValue("Text", userdata)
 											return msg
 										end
+      },
 
-	},
-
-	ui.Text:new
-	{
-	    Id = "status main",
---	    Orientation = "horisontal",
---	    Width = "free",
---	    Height = 5, --"auto",
-	},
+      ui.Text:new
+      {
+        Id = "status main",
+--	      Orientation = "horisontal",
+--	      Width = "free",
+--	       Height = 5, --"auto",
+      },
 
     }
 }
 
--------------------------------------------------------------------------------
---	Started stand-alone or as part of the demo?
--------------------------------------------------------------------------------
 
---if ui.ProgName:match("^demo_") then
---    App = ui.Application:new {
---      AuthorStyleSheets = "gradient", --"klinik", --"desktop" --
---    }
-    ui.Application.connect(window)
-    App:addMember(window)
-    window:setValue("Status", "show")
-    App:run()
---else
---    return
---    {
---	Window = window,
---	Name = L.ANIMATIONS_BUTTON,
---	Description = L.ANIMATIONS_DESCRIPTION
---    }
---end
-
-
---end
---}
---)
+ui.Application.connect(window)
+App:addMember(window)
+window:setValue("Status", "show")
+App:run()
 
 return 0
