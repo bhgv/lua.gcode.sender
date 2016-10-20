@@ -34,6 +34,12 @@ return {
           exec.sendport("*p", "ui", "<PORT RX>" .. s) 
         end
         
+        local display_rx_msg = function(s) 
+          local t = "<PORT RX MSG>" .. s
+          --print (t)
+          exec.sendport("*p", "ui", t) 
+        end
+        
         local display_tx = function(s) 
           exec.sendport("*p", "ui", "<PORT TX>" .. s) 
         end
@@ -51,7 +57,7 @@ return {
 --        local rs232 = require('periphery').Serial
 --        local PORT = nil
       
-        while cmd ~= "STOP" do
+        while cmd ~= "SENDER_STOP" do
 --          print("icmd, #trd = ", icmd, #gthread, PORT)
           if icmd < #gthread and MK ~= nil and state == 1 then
             icmd = icmd + 1
@@ -71,7 +77,7 @@ return {
           end
           
           if msg ~= nil then
-            --print("msg = ", msg)
+            print("msg = ", msg)
             if msg == "PORT" then
               local mk = exec.waitmsg(2000)
               local prt = exec.waitmsg(2000)
@@ -81,7 +87,7 @@ return {
                 if MK then
                   MK:open(prt, 0+bod)
                   local out = MK:init()
-                  split(out, "[^\n]+", display_rx)
+                  split(out, "[^\n]+", display_rx_msg)
                 end
               end
             elseif msg == "NEW" then
@@ -90,7 +96,14 @@ return {
               state = 0
             elseif msg == "CALCULATE" then
               exec.sendport("*p", "ui", "<CMD GAUGE SETUP>" .. #gthread)
+              --state = 1
+            elseif msg == "PAUSE" then
+              state = 0
+            elseif msg == "RESUME" then
               state = 1
+            elseif msg == "STOP" then
+              icmd = 0
+              state = 0
             else
               gthread[#gthread + 1] = msg
               --exec.sendport("main", "ui", "<CMD GAUGE SETUP 2>" .. #gthread)

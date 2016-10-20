@@ -28,7 +28,7 @@ return ui.Group:new
       {
         VSliderMode = "auto",
         HSliderMode = "auto",
-				Headers = { "N", "command" },
+				Headers = { "dir", "command", "resp"},
         Child = ui.Lister:new
 					{
 						--Id = "the-list",
@@ -39,7 +39,7 @@ return ui.Group:new
 							ui.Lister.onSelectLine(self)
 							local line = self:getItem(self.SelectedLine)
 							if line then
-              --  App:getById("gedit"):setValue("Text", line[1][2])
+                App:getById("user cmd"):setValue("Text", line[1][2])
 								--self.Window:setRecord(line[1])
 							end
 						end,
@@ -60,17 +60,33 @@ return ui.Group:new
                       if cmd ~= nil then
 --                        cmd = cmd:match("([^\n]*)")
                         --print("cmd=" .. cmd)
-                        self:addItem {{"Tx", cmd}} --:match("[^\r\n]*")}}
+                        self:addItem {{"Tx", cmd, ""}} --:match("[^\r\n]*")}}
                         if self:getN() > 100 then self:remItem(1) end
                         self:setValue("CursorLine", self:getN())
                       else
                         cmd = ud:match("<PORT RX>(.+)")
                         if cmd ~= nil then
-                          --cmd, t = cmd:match("([^\n]*)\r?\n?")
-                          --print("rx=", cmd, t)
-                          self:addItem {{"Rx", cmd}} --:match("[^\r\n]*")}}
-                          if self:getN() > 100 then self:remItem(1) end
-                          self:setValue("CursorLine", self:getN())
+                          local i = self:getN()
+                          local line = self:getItem(i)
+                          if line ~= nil then
+                            line[1][3] = cmd
+                            --cmd, t = cmd:match("([^\n]*)\r?\n?")
+                            --print("rx=", cmd, t)
+                            
+                            --self:addItem {{"Rx", cmd}} --:match("[^\r\n]*")}}
+                            --if self:getN() > 100 then self:remItem(1) end
+                            self:remItem(i)
+                            self:addItem(line)
+                          end
+                        else
+                          cmd = ud:match("<PORT RX MSG>(.+)")
+                          if cmd ~= nil then
+                            --cmd, t = cmd:match("([^\n]*)\r?\n?")
+                            --print("rx=", cmd, t)
+                            self:addItem {{"", cmd}} --:match("[^\r\n]*")}}
+                            if self:getN() > 100 then self:remItem(1) end
+                            self:setValue("CursorLine", self:getN())
+                          end
                         end
                       end
 											--self:setValue("Text", userdata)
@@ -90,8 +106,8 @@ return ui.Group:new
           ui.Button:new
           {
             Text = "Send",
-            onPress = function(self)
-              --ui.ImageWidget.onPress(self)
+            onClick = function(self)
+              --ui.ImageWidget.onClick(self)
               local cmd = self:getById("user cmd"):getText()
               --print(cmd)
               Sender:newcmd(cmd)

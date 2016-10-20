@@ -71,7 +71,9 @@ require "conf.gparser"
 
 
 MKs = require "conf.controllers"
-
+MK = nil
+MKStep = 10
+MKstate = nil
 
 
 App = ui.Application:new {

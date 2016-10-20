@@ -22,8 +22,8 @@ return ui.Group:new
 	Height = 32,
 	Mode = "button",
 	Style = "padding: 2",
-	onPress = function(self)
-		ui.ImageWidget.onPress(self)
+	onClick = function(self)
+		ui.ImageWidget.onClick(self)
 --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
 	end
     },
@@ -34,8 +34,8 @@ return ui.Group:new
 	Height = 32,
 	Mode = "button",
 	Style = "padding: 2",
-	onPress = function(self)
-		ui.ImageWidget.onPress(self)
+	onClick = function(self)
+		ui.ImageWidget.onClick(self)
 --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
 
 		local app = self.Application
@@ -101,8 +101,8 @@ return ui.Group:new
 	Style = "padding: 2",
 --	ImageAspectX = 2,
 --	ImageAspectY = 3,
-	onPress = function(self)
---		ui.ImageWidget.onPress(self)
+	onClick = function(self)
+--		ui.ImageWidget.onClick(self)
 --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
 	end
     },

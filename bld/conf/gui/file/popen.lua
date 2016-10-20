@@ -157,14 +157,20 @@ return ui.Group:new
 		Style = "padding: 1",
 --		ImageAspectX = 2,
 --		ImageAspectY = 3,
-		onPress = function(self)
-			ui.ImageWidget.onPress(self)
+		onClick = function(self)
+			ui.ImageWidget.onClick(self)
       --print(port_nm, baud_nm)
 			Sender:newcmd("PORT")
 			Sender:newcmd(mk_nm)
 			Sender:newcmd(port_nm)
 			Sender:newcmd(baud_nm)
 			StatPort:setValue("Text", "Connected to: " .. port_nm)
+      
+      MK = MKs:get(mk_nm)
+      MKstate = "STOP"
+      
+      --print ("nm=", mk_nm, "MKs=", MKs, "MK=", MK)
+      
       --exec.sendmsg("sender", "PORT")
       --exec.sendmsg("sender", "/dev/ttyUSB0")
 --[[

@@ -19,8 +19,8 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-    --		ui.ImageWidget.onPress(self)
+      onClick = function(self)
+    --		ui.ImageWidget.onClick(self)
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
@@ -31,8 +31,8 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-        ui.ImageWidget.onPress(self)
+      onClick = function(self)
+        ui.ImageWidget.onClick(self)
         do_sparse()
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
@@ -44,8 +44,8 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-        ui.ImageWidget.onPress(self)
+      onClick = function(self)
+        ui.ImageWidget.onClick(self)
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
@@ -56,8 +56,8 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-    --		ui.ImageWidget.onPress(self)
+      onClick = function(self)
+    --		ui.ImageWidget.onClick(self)
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },

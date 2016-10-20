@@ -19,8 +19,8 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-    --		ui.ImageWidget.onPress(self)
+      onClick = function(self)
+    --		ui.ImageWidget.onClick(self)
           Sender:newcmd('$H')
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
@@ -32,9 +32,16 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-        ui.ImageWidget.onPress(self)
-        do_sparse()
+      onClick = function(self)
+        ui.ImageWidget.onClick(self)
+        if MKstate == "STOP" then
+          do_sparse()
+          Sender:newcmd("RESUME")
+          MKstate = "RUN"
+        elseif MKstate == "PAUSE" then
+          Sender:newcmd("RESUME")
+          MKstate = "RUN"
+        end
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
@@ -45,9 +52,20 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-        ui.ImageWidget.onPress(self)
-        Sender:newcmd('')
+      --IsPaused = false,
+      onClick = function(self)
+        ui.ImageWidget.onClick(self)
+        local cmd
+        if MKstate == "PAUSE" then
+          cmd = "RESUME"
+          MKstate = "RUN"
+          --self.IsPaused = false
+        elseif MKstate == "RUN" then
+          cmd = "PAUSE"
+          MKstate = "PAUSE"
+          --self.IsPaused = true
+        end
+        Sender:newcmd(cmd)
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
@@ -58,9 +76,13 @@ return ui.Group:new
       Height = 32,
       Mode = "button",
       Style = "padding: 2",
-      onPress = function(self)
-    --		ui.ImageWidget.onPress(self)
-        Sender:newcmd('')
+      onClick = function(self)
+    		ui.ImageWidget.onClick(self)
+        if MKstate == "RUN" or MKstate == "PAUSE" then
+          Sender:newcmd("STOP")
+          Sender:newcmd("CALCULATE")
+          MKstate = "STOP"
+        end
     --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
     },
