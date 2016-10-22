@@ -147,19 +147,10 @@ return ui.Group:new
       wjt_baudslist,
     }
   },
-  
-  ui.ImageWidget:new 
-  {
-    Image = ico_popen,
-		Width = 32,
-		Height = 32,
-		Mode = "button",
-		Style = "padding: 1",
---		ImageAspectX = 2,
---		ImageAspectY = 3,
-		onClick = function(self)
-			ui.ImageWidget.onClick(self)
-      --print(port_nm, baud_nm)
+
+  symBut(
+    "\u{E0df}",
+		function(self)
 			Sender:newcmd("PORT")
 			Sender:newcmd(mk_nm)
 			Sender:newcmd(port_nm)
@@ -168,32 +159,8 @@ return ui.Group:new
       
       MK = MKs:get(mk_nm)
       MKstate = "STOP"
-      
-      --print ("nm=", mk_nm, "MKs=", MKs, "MK=", MK)
-      
-      --exec.sendmsg("sender", "PORT")
-      --exec.sendmsg("sender", "/dev/ttyUSB0")
---[[
-			if PORT == nil then
-			    -- Open /dev/ttyUSB0 with baudrate 115200, and defaults of 8N1, no flow control
-			    PORT = rs232("/dev/ttyUSB0", 115200)
---			    PORT:write("Hello World!")
-			    PORT:write("$$\n")
-			    -- Read up to 128 bytes with 500ms timeout
-			    local buf
-          repeat
-            buf = PORT:read(128, 500)
-            print(string.format("read %d bytes: _%s_", #buf, buf))
-          until(buf == "")
-          
-          Sender:start()
-			else
-			    PORT:close()
-			    PORT = nil
-			end
-]]
 		end
-  },
+  ),
 	},
     },
   }

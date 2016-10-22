@@ -107,9 +107,10 @@ return ui.Group:new
           {
             Text = "Send",
             onClick = function(self)
-              --ui.ImageWidget.onClick(self)
+              ui.Button.onClick(self)
               local cmd = self:getById("user cmd"):getText()
               --print(cmd)
+              Sender:newcmd("SINGLE")
               Sender:newcmd(cmd)
           --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
             end

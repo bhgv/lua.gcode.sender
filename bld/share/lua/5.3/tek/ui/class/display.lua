@@ -186,15 +186,15 @@ local ColorDefaults =
 --	placed in the FontsDefaults cache here.
 -------------------------------------------------------------------------------
 
-local FN_FIXED = "DejaVuSansMono,monospace,fixed,courier new,courier,VeraMono"
-local FN_FIXEDBOLD = "DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier new/b,courier/b,VeraMono/b"
-local FN_FIXEDITALIC = "DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier new/i,courier/i,VeraMono/i"
-local FN_FIXEDBOLDITALIC = "DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier new/bi,courier/bi,VeraMono/bi"
+local FN_FIXED = "Fantasque Sans Mono,VeraMono,DejaVuSansMono,monospace,fixed,courier new,courier,VeraMono"
+local FN_FIXEDBOLD = "Fantasque Sans Mono/b,VeraMono/b,DejaVuSansMono-Bold,DejaVuSansMono/b,monospace/b,fixed/b,courier new/b,courier/b,VeraMono/b"
+local FN_FIXEDITALIC = "Fantasque Sans Mono/i,VeraMono/i,DejaVuSansMono-Oblique,DejaVuSansMono/i,monospace/i,fixed/i,courier new/i,courier/i,VeraMono/i"
+local FN_FIXEDBOLDITALIC = "Fantasque Sans Mono/bi,VeraMono/bi,DejaVuSansMono-BoldOblique,DejaVuSansMono/bi,monospace/bi,fixed/bi,courier new/bi,courier/bi,VeraMono/bi"
 
-local FN_NORMAL = "DejaVuSans,sans-serif,helvetica,arial,Vera,times"
-local FN_BOLD = "DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/b,arial/b,Vera/b,times/b"
-local FN_ITALIC = "DejaVuSans-Oblique,DejaVuSans/i,sans-serif/i,helvetica/i,arial/i,Vera/i,times/i"
-local FN_BOLDITALIC = "DejaVuSans-BoldOblique,DejaVuSans/bi,sans-serif/bi,helvetica/bi,arial/bi,Vera/bi,times/bi"
+local FN_NORMAL = "FantasqueSans,Vera,DejaVuSans,sans-serif,helvetica,arial,Vera,times"
+local FN_BOLD = "FantasqueSans/b,Vera/b,DejaVuSans-Bold,DejaVuSans/b,sans-serif/b,helvetica/b,arial/b,Vera/b,times/b"
+local FN_ITALIC = "FantasqueSans/i,Vera/i,DejaVuSans-Oblique,DejaVuSans/i,sans-serif/i,helvetica/i,arial/i,Vera/i,times/i"
+local FN_BOLDITALIC = "FantasqueSans/bi,Vera/bi,DejaVuSans-BoldOblique,DejaVuSans/bi,sans-serif/bi,helvetica/bi,arial/bi,Vera/bi,times/bi"
 
 local fontsizes = 
 { 
@@ -223,6 +223,7 @@ local FontDefaults =
 	["ui-fixed/b"] = { false, FN_FIXEDBOLD .. ":" .. fontsizes["main"] },
 	["ui-fixed/i"] = { false, FN_FIXEDITALIC .. ":" .. fontsizes["main"] },
 	["ui-fixed/bi"] = { false, FN_FIXEDBOLDITALIC .. ":" .. fontsizes["main"] },
+	["ui-icons"] = { false, "Icons" .. ":" .. fontsizes["main"] },
 }
 
 for szname, size in pairs(fontsizes) do

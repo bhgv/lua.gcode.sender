@@ -44,7 +44,6 @@ return {
           exec.sendport("*p", "ui", "<PORT TX>" .. s) 
         end
         
-        
         --print(exec.getname())
         
         local icmd = 0
@@ -52,18 +51,36 @@ return {
         local cmd = ""
         local msg = nil
         
-        local state = 0
+        local sthread = {}
+        
+        local state = "stop"
         
 --        local rs232 = require('periphery').Serial
 --        local PORT = nil
       
         while cmd ~= "SENDER_STOP" do
 --          print("icmd, #trd = ", icmd, #gthread, PORT)
-          if icmd < #gthread and MK ~= nil and state == 1 then
-            icmd = icmd + 1
-            cmd = gthread[ icmd ]
+          if  
+              MK ~= nil and 
+              (
+                (#gthread > 0 and state == "run") or 
+                (#sthread > 0 and state == "single")
+              )
+          then
+            if state == "single" then
+              --cmd = sthread[#sthread]
+              cmd = table.remove(sthread, #sthread)
+              if #sthread == 0 then
+                state = "stop"
+              end
+            else
+              icmd = icmd + 1
+              --cmd = gthread[ icmd ]
+              cmd = table.remove(gthread, 1)
+              
+              exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd)
+            end
             
-            exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd)
             display_tx(cmd)
             MK:send(cmd .. '\n')
           
@@ -85,7 +102,7 @@ return {
               if mk ~= "" and prt ~= "" and bod ~= "" then
                 MK = MKs:get(mk)
                 if MK then
-                  MK:open(prt, 0+bod)
+                  MK:open(prt, 0 + bod)
                   local out = MK:init()
                   split(out, "[^\n]+", display_rx_msg)
                 end
@@ -93,17 +110,25 @@ return {
             elseif msg == "NEW" then
               gthread = {}
               icmd = 0
-              state = 0
+              state = "stop"
             elseif msg == "CALCULATE" then
               exec.sendport("*p", "ui", "<CMD GAUGE SETUP>" .. #gthread)
-              --state = 1
+              --state = "run"
             elseif msg == "PAUSE" then
-              state = 0
+              state = "stop"
             elseif msg == "RESUME" then
-              state = 1
+              if state == "stop" then
+                state = "run"
+              end
             elseif msg == "STOP" then
               icmd = 0
-              state = 0
+              state = "stop"
+            elseif msg == "SINGLE" then
+              msg = exec.waitmsg(200)
+              if state == "stop" then
+                sthread[#sthread + 1] = msg
+                state = "single"
+              end
             else
               gthread[#gthread + 1] = msg
               --exec.sendport("main", "ui", "<CMD GAUGE SETUP 2>" .. #gthread)
@@ -116,7 +141,7 @@ return {
   end,
 
   newcmd = function(self, cmd)
-    while not exec.sendmsg("sender", cmd) do
+    while cmd and not exec.sendmsg("sender", cmd) do
 --      print("resend:", cmd)
     end
 --    print("sent:", cmd)

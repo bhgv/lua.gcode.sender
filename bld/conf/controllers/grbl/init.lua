@@ -49,7 +49,7 @@ return {
       return ""
     end,
 
-    read = function(self, cmd)
+    read = function(self)
       local buf, out
       out = ""
       repeat
@@ -83,6 +83,7 @@ return {
 
       if x or y or z then
           --self:send(cmd)
+          Sender:newcmd("SINGLE")
           Sender:newcmd(cmd)
       end
     end,

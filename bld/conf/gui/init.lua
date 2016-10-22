@@ -76,6 +76,24 @@ MKStep = 10
 MKstate = nil
 
 
+symBut = function(txt, foo, color)
+  local style = "font:ui-icons:26; width:36;"
+  local par = {}
+--  if par.Style then
+--    style = style .. par.Style
+--  end
+  par.Style = style
+  par.Text = txt
+  par.onClick = function(self)
+    ui.Button.onClick(self)
+    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
+    foo(self)
+  end
+  
+  return ui.Button:new(par)
+end
+
+
 App = ui.Application:new {
       AuthorStyleSheets = "gradient", --"klinik", --"desktop" --
 }
@@ -90,7 +108,7 @@ local window = ui.Window:new
     MaxWidth = "none", 
     MaxHeight = "none",
 --    Id = "anims-window",
-    Title = "g-code lSend",
+    Title = "lua.gcode.sender",
     Status = "hide",
     HideOnEscape = true,
     SizeButton = true,

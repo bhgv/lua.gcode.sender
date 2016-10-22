@@ -12,28 +12,15 @@ return ui.Group:new
 {
   Children = 
   {
-    ui.ImageWidget:new 
-    {
-      Image = ico_home,
-      Width = 32,
-      Height = 32,
-      Mode = "button",
-      Style = "padding: 2",
-      onClick = function(self)
-    --		ui.ImageWidget.onClick(self)
+    symBut(
+      "\u{e078}",
+      function(self)
           Sender:newcmd('$H')
-    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
-    },
-    ui.ImageWidget:new 
-    {
-      Image = ico_start,
-      Width = 32,
-      Height = 32,
-      Mode = "button",
-      Style = "padding: 2",
-      onClick = function(self)
-        ui.ImageWidget.onClick(self)
+    ),
+    symBut(
+      "\u{e093}",
+      function(self)
         if MKstate == "STOP" then
           do_sparse()
           Sender:newcmd("RESUME")
@@ -42,50 +29,32 @@ return ui.Group:new
           Sender:newcmd("RESUME")
           MKstate = "RUN"
         end
-    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
-    },
-    ui.ImageWidget:new 
-    {
-      Image = ico_pause,
-      Width = 32,
-      Height = 32,
-      Mode = "button",
-      Style = "padding: 2",
-      --IsPaused = false,
-      onClick = function(self)
-        ui.ImageWidget.onClick(self)
+    ),
+    symBut(
+      "\u{e092}",
+      function(self)
         local cmd
         if MKstate == "PAUSE" then
           cmd = "RESUME"
           MKstate = "RUN"
-          --self.IsPaused = false
         elseif MKstate == "RUN" then
           cmd = "PAUSE"
           MKstate = "PAUSE"
-          --self.IsPaused = true
         end
         Sender:newcmd(cmd)
-    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
-    },
-    ui.ImageWidget:new 
-    {
-      Image = ico_stop,
-      Width = 32,
-      Height = 32,
-      Mode = "button",
-      Style = "padding: 2",
-      onClick = function(self)
-    		ui.ImageWidget.onClick(self)
+    ),
+    symBut(
+      "\u{e099}",
+      function(self)
         if MKstate == "RUN" or MKstate == "PAUSE" then
           Sender:newcmd("STOP")
           Sender:newcmd("CALCULATE")
           MKstate = "STOP"
         end
-    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
       end
-    },
+    ),
   }
 }
 

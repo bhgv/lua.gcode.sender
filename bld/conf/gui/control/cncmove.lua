@@ -9,7 +9,9 @@ local Txt = function(txt) return ui.Text:new{Class = "caption",Text=txt} end
 local But = function(txt, atr) 
     local class = nil
     if txt == "" then class = "caption" end
-    return ui.Button:new{Class = class, Text=txt, _atr = atr,
+    return ui.Button:new
+    {Class = class, Text=txt, _atr = atr,
+      Style="font:ui-icons:26; width:36;",
       onClick = function(self)
         local x, y, z
         local d = self._atr
@@ -78,11 +80,11 @@ return ui.Group:new
       Columns = 6,
       Children = 
       {
-        Txt("+Z"),     Txt(""),   Txt(""),       Txt("+Y"),     Txt(""),       Txt(""),
-        But("A", "Z"), Txt(""),   But("", "xY"), But("A", "Y"), But("", "XY"), Txt(""),
-        Txt("|"),      Txt("-X"), But("<", "x"), But("O", "0"), But(">", "X"), Txt("+X"),
-        But("V", "z"), Txt(""),   But("", "xy"), But("V", "y"), But("", "Xy"), Txt(""),
-        Txt("-Z"),     Txt(""),   Txt(""),       Txt("-Y"),     Txt(""),       Txt(""),
+        Txt("+Z"),          Txt(""),  Txt(""),            Txt("+Y"),          Txt(""),            Txt(""),
+        But("\u{E037}","Z"),Txt(""),  But("", "xY"),      But("\u{E037}","Y"),But("", "XY"),      Txt(""),
+        Txt("|"),           Txt("-X"),But("\u{E035}","x"),But("\u{e041}","0"),But("\u{E036}","X"),Txt("+X"),
+        But("\u{E034}","z"),Txt(""),  But("", "xy"),      But("\u{E034}","y"),But("", "Xy"),      Txt(""),
+        Txt("-Z"),          Txt(""),  Txt(""),            Txt("-Y"),          Txt(""),            Txt(""),
       },
     },
     ui.Group:new
@@ -90,14 +92,14 @@ return ui.Group:new
       Children = 
       {
         Txt("Step: "),
-        But("/10", "step"), 
+        But("\u{E0de}", "step"), 
         ui.Input:new
         {
           Id = "step",
           Text = "10.0",
           Width = 80,
         },
-        But("*10", "Step"), 
+        But("\u{E0dd}", "Step"), 
       },
     },
   }
