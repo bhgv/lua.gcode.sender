@@ -87,5 +87,27 @@ return {
           Sender:newcmd(cmd)
       end
     end,
+    
+    get_status = function(self)
+      self:send("?\n")
+      local s = self:read()
+      local fr, to, stat, mx, my, mz, wx, wy, wz = 
+            string.find(s,
+              "<([^>,]*)," .. 
+              "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
+              "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),?" ..
+              "([^>]*)>"
+            )
+      print (s)
+      print (fr, to, "\nm = ",mx, my, mz, "\nw = ", wx, wy, wz)
+      
+      local out
+      out = {
+        state = stat,
+        wrk = {x=wx, y=wy, z=wz,},
+        mcn = {x=mx, y=my, z=mz,},
+      }
+      return out
+    end,
 
 }

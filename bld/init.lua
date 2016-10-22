@@ -16,11 +16,17 @@ for i = 1,#o do
 end
 ]]
 
+db = require "tek.lib.debug"
+--db.level = db.INFO
+
 --ui = require "tek.ui"
 rs232 = require('periphery').Serial
 
 PORT = nil
 
+ui = require "tek.ui"
+Visual = require "tek.lib.visual" --ui.loadLibrary("visual", 4)
+print ("Visual", Visual)
 
 --GUI = require "conf.gui"
 
@@ -28,7 +34,8 @@ PORT = nil
 Sender = require("conf.sender")
 Sender:start()
 
-
+Flags = {
+}
 
 --[[
 ports = {}

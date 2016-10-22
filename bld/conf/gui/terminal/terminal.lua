@@ -24,6 +24,8 @@ return ui.Group:new
 	Width = "free",
 	Children = 
 	{
+      StatPort,
+      
       ui.ListView:new
       {
         VSliderMode = "auto",
@@ -95,10 +97,12 @@ return ui.Group:new
 
 					}
       },
+      
       ui.Input:new
       {
         Id = "user cmd",
       },
+      
       ui.Group:new
       {
         Children = 

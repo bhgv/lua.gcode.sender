@@ -88,6 +88,8 @@ return {
             split(out, "[^\n]+", display_rx)
             --print(out)
             
+            MK:get_status()
+            
             msg = exec.waitmsg(20)
           else
             msg = exec.waitmsg(2000)

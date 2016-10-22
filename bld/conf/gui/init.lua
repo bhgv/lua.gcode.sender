@@ -54,20 +54,13 @@ local Text = ui.Text
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
 
-Display = require "conf.gui.display"
-
-StatPort =     ui.Text:new
-    {
-      Class = "caption",
-      Width = 150,
-      Text = "Not Connected",
-    }
-
 
 
 --gparser = require "gcodeparser"
 
 require "conf.gparser"
+
+require "conf.gui.common"
 
 
 MKs = require "conf.controllers"
@@ -76,26 +69,9 @@ MKStep = 10
 MKstate = nil
 
 
-symBut = function(txt, foo, color)
-  local style = "font:ui-icons:26; width:36;"
-  local par = {}
---  if par.Style then
---    style = style .. par.Style
---  end
-  par.Style = style
-  par.Text = txt
-  par.onClick = function(self)
-    ui.Button.onClick(self)
-    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
-    foo(self)
-  end
-  
-  return ui.Button:new(par)
-end
-
-
 App = ui.Application:new {
-      AuthorStyleSheets = "gradient", --"klinik", --"desktop" --
+--      AuthorStyleSheets = "gradient", --"klinik", --"desktop" --
+      AuthorStyleSheets = "klinik", --"desktop" --
 }
 
 
@@ -107,7 +83,6 @@ local window = ui.Window:new
     MinHeight = 400,
     MaxWidth = "none", 
     MaxHeight = "none",
---    Id = "anims-window",
     Title = "lua.gcode.sender",
     Status = "hide",
     HideOnEscape = true,
@@ -119,6 +94,7 @@ local window = ui.Window:new
         PageCaptions = { "_File", "_Control", 
                       --"_Plugins", 
                       "_Edit", "_Terminal" },
+        Style = "font:Vera/b:18;",
         Children =
         {
           require("conf.gui.file"),
