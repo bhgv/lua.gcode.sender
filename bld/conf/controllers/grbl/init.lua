@@ -14,6 +14,8 @@ local bauds = {
     115200,
 }
 
+local msg_buffer = ""
+
 return {
     info = function(self)
       return {
@@ -32,6 +34,8 @@ return {
       local out = self:help()
       exec.sendmsg("sender","NEW")
       exec.sendmsg("sender","CALCULATE")
+      exec.sendmsg("sender","SINGLE")
+      exec.sendmsg("sender","G21 G90")
       return out
     end,
 
@@ -50,23 +54,58 @@ return {
     end,
 
     read = function(self)
-      local buf, out
-      out = ""
-      repeat
-        buf = PORT:read(256, 500)
-        out = out .. buf
-      until(buf == "" and out ~= "")
+      local buf, out, ln
+      local lst = {}
+      local ok, er, stat = false, false, false
+      buf = msg_buffer .. PORT:read(256, 50)
+      if buf ~= "" then
+        out = ""
+        repeat
+          out = out .. buf
+          buf = PORT:read(256, 100)
+        until(buf == "")
+        for ln in string.gmatch(out, "^([^\n]*)") do table.insert(lst, ln) end
       --print(out)
-      return out
+        if out:match("^ok") then
+          msg_buffer = table.concat(lst, "\n", 2)
+          ok = true
+        elseif out:match("^error") then
+          msg_buffer = table.concat(lst, "\n", 2)
+          er = true
+        elseif out:match("^<") then
+          msg_buffer = table.concat(lst, "\n", 3)
+          --self:status_parse(out)
+          stat = true
+        end
+        
+        if msg_buffer ~= "" then print("--------------\nmsg_buffer =", msg_buffer) end
+        
+        return {
+          msg = out,
+          ok = ok,
+          err = er,
+          stat = stat,
+        }
+      end
+      return {
+          ok = ok,
+          err = er,
+          stat = stat,
+      }
     end,
 
     help = function(self)
       self:send("$$\n")
-      return self:read()
+      local out
+      repeat
+        out = self:read()
+      until(out.msg)
+      
+      return out
     end,
 
     go_xyz = function(self, dir)
-      local cmd = "G90G0"
+      local cmd = "G91G0"
       local x = dir.x
       local y = dir.y
       local z = dir.z
@@ -88,24 +127,26 @@ return {
       end
     end,
     
-    get_status = function(self)
+    status_query = function(self)
       self:send("?\n")
-      local s = self:read()
-      local fr, to, stat, mx, my, mz, wx, wy, wz = 
+    end,
+    
+    status_parse = function(self, status)
+      local s = status
+      local fr, to, state, mx, my, mz, wx, wy, wz = 
             string.find(s,
               "<([^>,]*)," .. 
               "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
               "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),?" ..
               "([^>]*)>"
             )
-      print (s)
-      print (fr, to, "\nm = ",mx, my, mz, "\nw = ", wx, wy, wz)
-      
+      --print (s)
+      --print (fr, to, "\nm = ",mx, my, mz, "\nw = ", wx, wy, wz)
       local out
       out = {
-        state = stat,
-        wrk = {x=wx, y=wy, z=wz,},
-        mcn = {x=mx, y=my, z=mz,},
+        state = state,
+        w = {x=wx, y=wy, z=wz,},
+        m = {x=mx, y=my, z=mz,},
       }
       return out
     end,

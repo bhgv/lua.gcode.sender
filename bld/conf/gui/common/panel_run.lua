@@ -1,11 +1,7 @@
 
---local ui = require "tek.ui"
+local ui = require "tek.ui"
 
---print(ui.ProgDir)
 
-return require "conf.gui.common.panel_run"
-
---[[
 return ui.Group:new
 {
   Children = 
@@ -56,4 +52,4 @@ return ui.Group:new
     ),
   }
 }
-]]
+

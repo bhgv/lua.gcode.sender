@@ -1,8 +1,11 @@
 
-local ui = require "tek.ui"
+--local ui = require "tek.ui"
 
 --print(ui.ProgDir)
 
+return require "conf.gui.common.panel_run"
+
+--[[
 local ico_home = ui.loadImage("conf/icons/home32.ppm")
 local ico_start = ui.loadImage("conf/icons/start32.ppm")
 local ico_pause = ui.loadImage("conf/icons/pause32.ppm")
@@ -63,4 +66,4 @@ return ui.Group:new
     },
   }
 }
-
+]]

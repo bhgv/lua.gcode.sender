@@ -25,7 +25,35 @@ Display = require "conf.gui.display"
 
 
 
-local w
+local posInd = function(typ)
+  local out = ui.Text:new {
+      Width=60,
+      setup = function(self, app, win)
+											ui.Text.setup(self, app, win)
+                      --print(app, win)
+											app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+										end,
+      cleanup = function(self)
+											ui.Text.cleanup(self)
+											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+										end,
+      msgUser = function(self, msg)
+											local ud = msg[-1]
+                      --print("ud", ud)
+                      if ud:match("<STATUS>") then
+                        local cmd = ud:match("<" .. typ .. ">([^<]*)")
+                        if cmd ~= nil then
+--                          cmd = cmd:match("([^\n]*)")
+                          --print("cmd=" .. cmd)
+                          self:setValue("Text", cmd)
+                        end
+                      end
+											return msg
+										end,
+  }
+  
+  return out
+end
 
 StatPort = ui.Group:new
 {
@@ -46,9 +74,9 @@ StatPort = ui.Group:new
       Children = 
       {
           ui.Text:new{Class = "caption",Width=60, Text="WPos:"},
-          ui.Text:new{Width=60}, ui.Text:new{Width=60}, ui.Text:new{Width=60}, 
+          posInd("wX"), posInd("wY"), posInd("wZ"), 
           ui.Text:new{Class = "caption",Width=60, Text="MPos:"},
-          ui.Text:new{Width=60}, ui.Text:new{Width=60}, ui.Text:new{Width=60}, 
+          posInd("mX"), posInd("mY"), posInd("mZ"), 
           ui.Text:new{Class = "caption",Width=60, },
           ui.Button:new{Width=60, Text="x = 0"}, ui.Button:new{Width=60, Text="y = 0"}, ui.Button:new{Width=60, Text="z = 0"}, 
       },

@@ -22,78 +22,129 @@ return {
         local MKs = require "conf.controllers"
         local MK = nil
         
+        local lib = require "conf.sender.lib"
         
-        local split = function(str, mask, cb_foo)
-          local s 
-          for s in str:gmatch(mask) do
-            cb_foo(s)
-          end
-        end
+        local state = "stop"
+        local int_state = "s"
         
-        local display_rx = function(s) 
-          exec.sendport("*p", "ui", "<PORT RX>" .. s) 
-        end
+        local is_resp_handled = true
+       
         
-        local display_rx_msg = function(s) 
-          local t = "<PORT RX MSG>" .. s
-          --print (t)
-          exec.sendport("*p", "ui", t) 
-        end
-        
-        local display_tx = function(s) 
-          exec.sendport("*p", "ui", "<PORT TX>" .. s) 
-        end
+        local stat_on = true
+--        local cnc_stat_ctr = 0
         
         --print(exec.getname())
         
-        local icmd = 0
+        local icmd = 1
         local gthread = {}
         local cmd = ""
         local msg = nil
         
         local sthread = {}
         
-        local state = "stop"
         
---        local rs232 = require('periphery').Serial
---        local PORT = nil
-      
         while cmd ~= "SENDER_STOP" do
 --          print("icmd, #trd = ", icmd, #gthread, PORT)
-          if  
-              MK ~= nil and 
-              (
-                (#gthread > 0 and state == "run") or 
-                (#sthread > 0 and state == "single")
-              )
-          then
-            if state == "single" then
-              --cmd = sthread[#sthread]
-              cmd = table.remove(sthread, #sthread)
-              if #sthread == 0 then
-                state = "stop"
+          if MK then
+            print("int_state_0 =", int_state)
+            
+            if int_state == "s" then
+              if stat_on then
+                MK:status_query()
+                int_state = "rs"
+              else
+                int_state = "m"
               end
-            else
-              icmd = icmd + 1
-              --cmd = gthread[ icmd ]
-              cmd = table.remove(gthread, 1)
+            --[[
+            elseif int_state == "rs" then
+              --print("cnc_status_read")
+              local msg = lib:cnc_status_read(MK)
+--              print("rs) is_resp_handled = msg.ok or msg.err", is_resp_handled, msg.ok, msg.err,
+--                      "\n", msg.msg)
+              --if is_resp_handled then
+                int_state = "m"
+              --else
+              --  int_state = "r"
+              --end
+            ]]
+            elseif int_state == "r" or int_state == "rs" then
+              local msg
+              repeat
+                msg = lib:cnc_data_read(MK, state)
+              until(msg.msg or int_state == "r")
               
-              exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd)
+              if not msg.stat then
+                is_resp_handled = msg.ok or msg.err
+                if is_resp_handled then icmd = icmd + 1 end
+              end
+              --print("r) is_resp_handled = msg.ok or msg.err", is_resp_handled, msg.ok, msg.err,
+              --        "\n", msg.msg)
+              
+            --  if stat_on then
+            --    MK:status_query()
+            --    int_state = "rs"
+            --  elseif is_resp_handled then
+            --    int_state = "m"
+            --  else
+            --    int_state = "r"
+            --  end
+              if msg.msg then
+                if is_resp_handled then
+                  int_state = "s"
+                else
+                  int_state = "m"
+                end
+              end
+            
+            elseif int_state == "m" then
+              if
+                (
+                  (#gthread > 0 and state == "run") or 
+                  (#sthread > 0 and state == "single")
+                )
+              then
+                if is_resp_handled then
+                  if state == "single" then
+                    --cmd = sthread[#sthread]
+                    cmd = table.remove(sthread, #sthread)
+                    if #sthread == 0 then
+                      state = "stop"
+                    end
+                  else
+                    --icmd = icmd + 1
+                    cmd = gthread[ icmd ]
+                    --cmd = table.remove(gthread, 1)
+                    
+                    exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd)
+                  end
+                  
+                  lib:display_tx(cmd)
+                end
+                
+                MK:send(cmd .. '\n')
+                print (icmd, is_resp_handled, "m cmd:", cmd)
+                
+                is_resp_handled = false
+                
+                int_state = "r"
+              --[[
+                local out = MK:read()
+                if state == "run" then
+                  split(out, "[^\n]+", display_rx)
+                else
+                  split(out, "[^\n]+", display_rx_msg)
+                end
+                --print(out)
+                ]]
+                --msg = exec.waitmsg(20)
+              else
+                int_state = "s"
+                --msg = exec.waitmsg(20)
+              end
             end
-            
-            display_tx(cmd)
-            MK:send(cmd .. '\n')
-          
-            local out = MK:read()
-            split(out, "[^\n]+", display_rx)
-            --print(out)
-            
-            MK:get_status()
-            
-            msg = exec.waitmsg(20)
-          else
-            msg = exec.waitmsg(2000)
           end
+          
+          msg = exec.waitmsg(20)
           
           if msg ~= nil then
             print("msg = ", msg)
@@ -106,24 +157,27 @@ return {
                 if MK then
                   MK:open(prt, 0 + bod)
                   local out = MK:init()
-                  split(out, "[^\n]+", display_rx_msg)
+                  lib:split(out.msg, "[^\n]+", lib.display_rx_msg)
                 end
               end
             elseif msg == "NEW" then
               gthread = {}
-              icmd = 0
+              icmd = 1
               state = "stop"
             elseif msg == "CALCULATE" then
               exec.sendport("*p", "ui", "<CMD GAUGE SETUP>" .. #gthread)
               --state = "run"
             elseif msg == "PAUSE" then
               state = "stop"
+            elseif msg == "FEEL" then
+              stat_on = false
             elseif msg == "RESUME" then
+              stat_on = true
               if state == "stop" then
                 state = "run"
               end
             elseif msg == "STOP" then
-              icmd = 0
+              icmd = 1
               state = "stop"
             elseif msg == "SINGLE" then
               msg = exec.waitmsg(200)

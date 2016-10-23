@@ -79,8 +79,9 @@ local window = ui.Window:new
 {
     Orientation = "vertical",
     Width = 1024,
-    MinWidth = 600,
-    MinHeight = 400,
+    Height = 600,
+    MinWidth = 800,
+    MinHeight = 600,
     MaxWidth = "none", 
     MaxHeight = "none",
     Title = "lua.gcode.sender",
