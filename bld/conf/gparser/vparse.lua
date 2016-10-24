@@ -1,16 +1,16 @@
 
 local ui = require "tek.ui"
 
-t_cb = function(k, p1, p2)
+t_cb = function(l, k, p1, p2)
   print(k, p1, p2)
 end
-vcb_init = function(k)
+vcb_init = function(l, k)
   tmp_vpts = { [0]={x=0, y=0, z=0} }
   tmp_vpt = {x=0, y=0, z=0, chng=false}
   tmp_vi = 1
   tmp_vbnd = {xmax = 000000, xmin = 000000, ymax = 000000, ymin = 000000}
 end
-vcb_eol = function(k)
+vcb_eol = function(l, k)
   if tmp_vpt.chng then
     tmp_vpts[tmp_vi] = tmp_vpt
     tmp_vi = tmp_vi + 1
@@ -18,7 +18,7 @@ vcb_eol = function(k)
     tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false}
   end
 end
-vcb_cmd = function(k, p1, p2)
+vcb_cmd = function(l, k, p1, p2)
   if p1 == "G" and (p2 == "0" or p2 == "1") then 
     vcb_eol(k)
     if p2 == "0" then
@@ -42,7 +42,7 @@ vcb_cmd = function(k, p1, p2)
     tmp_vpt.chng = true
   end
 end
-vcb_fini = function(k)
+vcb_fini = function(l, k)
   Display.Points = tmp_vpts
   Display.Bnd = tmp_vbnd
   Display:draw()

@@ -99,7 +99,7 @@ typedef enum
    typedef wchar_t* pwchar;
    
    
-   void call(Cb_Type key, pwchar param1 = NULL, pwchar param2 = NULL);
+   void call(int line, Cb_Type key, pwchar param1 = NULL, pwchar param2 = NULL);
    
    void     set_param(pwchar key, pwchar param);
    pwchar get_param(pwchar key);

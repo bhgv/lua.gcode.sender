@@ -89,7 +89,7 @@ bool Parser::WeakSeparator(int n, int syFol, int repFol) {
 }
 
 void Parser::GCode() {
-		call(INIT); 
+		call(1, INIT); 
 		while (!(StartOf(1))) {SynErr(43); Get();}
 		while (StartOf(2)) {
 			if (StartOf(3)) {
@@ -101,7 +101,7 @@ void Parser::GCode() {
 					}
 				}
 				Expect(_eolTok);
-				call(EOL); 
+				call(t->line, EOL); 
 			} else if (la->kind == _param) {
 				ParamDecl();
 			} else {
@@ -112,7 +112,7 @@ void Parser::GCode() {
 			}
 		}
 		Expect(_EOF);
-		call(FINI);
+		call(t->line, FINI);
 		
 }
 
@@ -124,15 +124,15 @@ void Parser::GcodeCmd() {
 				NumberSign(num);
 				
 			}
-			call(CMD, cmd, num); 
+			call(t->line, CMD, cmd, num); 
 		} else if (StartOf(7)) {
 			CmdNoMoveParamLetter(cmd);
 			NumberSign(num);
-			call(CMD, cmd, num); 
+			call(t->line, CMD, cmd, num); 
 		} else if (StartOf(8)) {
 			CmdMoveLetter(cmd);
 			NumberSign(num);
-			call(CMD, cmd, num); 
+			call(t->line, CMD, cmd, num); 
 		} else SynErr(44);
 }
 
