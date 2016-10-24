@@ -26,16 +26,6 @@ return {
   end,
 
   cnc_stat = function(self, stat)
---          cnc_stat_ctr = cnc_stat_ctr + 1
---          local top
---          if state == "stop" then
---            top = 20
---          else
---            top = 0
---          end
---          if MK and cnc_stat_ctr > top then
---            cnc_stat_ctr = 0
---            local stat = MK:status_query()
             exec.sendport("*p", "ui", "<STATUS><wX>" .. stat.w.x
                                         .. "<wY>" .. stat.w.y
                                         .. "<wZ>" .. stat.w.z
@@ -45,7 +35,7 @@ return {
             )
 --          end
   end,
-
+--[[
   cnc_status_read = function(self, MK)
               local out
               repeat
@@ -60,8 +50,8 @@ return {
               end
               return out
   end,
-  
-  cnc_data_read = function(self, MK, state)
+]]
+  cnc_read_parse = function(self, MK, state)
               local out = MK:read()
               if out.msg then
                 if out.stat then

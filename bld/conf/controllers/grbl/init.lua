@@ -57,7 +57,7 @@ return {
       local buf, out, ln
       local lst = {}
       local ok, er, stat = false, false, false
-      buf = msg_buffer .. PORT:read(256, 50)
+      buf = msg_buffer .. PORT:read(256, 200)
       if buf ~= "" then
         out = ""
         repeat
@@ -78,7 +78,7 @@ return {
           stat = true
         end
         
-        if msg_buffer ~= "" then print("--------------\nmsg_buffer =", msg_buffer) end
+        --if msg_buffer ~= "" then print("--------------\nmsg_buffer =", msg_buffer) end
         
         return {
           msg = out,

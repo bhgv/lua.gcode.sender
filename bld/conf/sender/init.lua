@@ -44,9 +44,8 @@ return {
         
         
         while cmd ~= "SENDER_STOP" do
---          print("icmd, #trd = ", icmd, #gthread, PORT)
           if MK then
-            print("int_state_0 =", int_state)
+            --print("int_state =", int_state)
             
             if int_state == "s" then
               if stat_on then
@@ -55,44 +54,28 @@ return {
               else
                 int_state = "m"
               end
-            --[[
-            elseif int_state == "rs" then
-              --print("cnc_status_read")
-              local msg = lib:cnc_status_read(MK)
---              print("rs) is_resp_handled = msg.ok or msg.err", is_resp_handled, msg.ok, msg.err,
---                      "\n", msg.msg)
-              --if is_resp_handled then
-                int_state = "m"
-              --else
-              --  int_state = "r"
-              --end
-            ]]
             elseif int_state == "r" or int_state == "rs" then
               local msg
               repeat
-                msg = lib:cnc_data_read(MK, state)
+                msg = lib:cnc_read_parse(MK, state)
               until(msg.msg or int_state == "r")
               
               if not msg.stat then
                 is_resp_handled = msg.ok or msg.err
-                if is_resp_handled then icmd = icmd + 1 end
+                if msg.ok and state == "run" then icmd = icmd + 1 end
               end
-              --print("r) is_resp_handled = msg.ok or msg.err", is_resp_handled, msg.ok, msg.err,
-              --        "\n", msg.msg)
               
-            --  if stat_on then
-            --    MK:status_query()
-            --    int_state = "rs"
-            --  elseif is_resp_handled then
-            --    int_state = "m"
-            --  else
-            --    int_state = "r"
-            --  end
-              if msg.msg then
-                if is_resp_handled then
-                  int_state = "s"
-                else
+              if msg.err then
+                exec.sendport("*p", "ui", "<MESSAGE>" .. msg.msg .. " (ln: " .. icmd .. ")")
+                state = "stop"
+              end
+              --print("msg.ok, msg.err msg.stat", msg.ok, msg.err, msg.stat,
+              --        "\n", msg.msg)
+              if msg.msg or int_state ~= "rs" then
+                if msg.stat then
                   int_state = "m"
+                else
+                  int_state = "s"
                 end
               end
             
@@ -127,19 +110,8 @@ return {
                 is_resp_handled = false
                 
                 int_state = "r"
-              --[[
-                local out = MK:read()
-                if state == "run" then
-                  split(out, "[^\n]+", display_rx)
-                else
-                  split(out, "[^\n]+", display_rx_msg)
-                end
-                --print(out)
-                ]]
-                --msg = exec.waitmsg(20)
               else
                 int_state = "s"
-                --msg = exec.waitmsg(20)
               end
             end
           end
@@ -158,6 +130,7 @@ return {
                   MK:open(prt, 0 + bod)
                   local out = MK:init()
                   lib:split(out.msg, "[^\n]+", lib.display_rx_msg)
+                  exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
                 end
               end
             elseif msg == "NEW" then

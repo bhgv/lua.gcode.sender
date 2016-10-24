@@ -5,13 +5,13 @@ print(ui.ProgDir)
 
 local ico_popen = ui.loadImage("conf/icons/serial32.ppm")
 
-local Txt = function(txt) return ui.Text:new{Class = "caption",Text=txt} end
+local Txt = function(txt) return ui.Text:new{Class = "caption",Style="color:gray;",Text=txt} end
 local But = function(txt, atr) 
     local class = nil
     if txt == "" then class = "caption" end
     return ui.Button:new
     {Class = class, Text=txt, _atr = atr,
-      Style="font:ui-icons:26; width:36;",
+      Style="font:ui-icons:26; width:36; color:olive;",
       onClick = function(self)
         local x, y, z
         local d = self._atr

@@ -3,7 +3,7 @@ ui = require "tek.ui"
 
 
 symBut = function(txt, foo, color)
-  local style = "font:ui-icons:20; width:24;"
+  local style = "font:ui-icons:20; width:24; color:olive;" --olive;" --navy;"
   local par = {}
 --  if par.Style then
 --    style = style .. par.Style
@@ -55,6 +55,10 @@ local posInd = function(typ)
   return out
 end
 
+
+
+
+
 StatPort = ui.Group:new
 {
   Orientation = "vertical",
@@ -64,7 +68,27 @@ StatPort = ui.Group:new
     {
       Class = "caption",
       Width = 150,
+      Style = "font:/b:14; color:navy;", --olive;", --navy;",
       Text = "Not Connected",
+      setup = function(self, app, win)
+											ui.Text.setup(self, app, win)
+											app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+										end,
+      cleanup = function(self)
+											ui.Text.cleanup(self)
+											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+										end,
+      msgUser = function(self, msg)
+											local ud = msg[-1]
+                      --print("ud", ud)
+                      local cmd = ud:match("<MESSAGE>(.*)")
+                      if cmd then
+                        --print("cmd=" .. cmd)
+                        self:setValue("Text", cmd)
+                      end
+											return msg
+										end,
+
     },
     
     ui.Group:new
