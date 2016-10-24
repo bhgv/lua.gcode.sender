@@ -29,5 +29,9 @@ echo "  --> main src"
 cd $DIR/src
 ./bs.sh
 
+echo "  --> fonts"
+mkdir ~/.fonts
+ln -s $DIR/bld/share/lua/5.3/tek/ui/font ~/.fonts
+
 cd $DIR/bld
 
