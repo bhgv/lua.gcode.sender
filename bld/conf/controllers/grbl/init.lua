@@ -57,15 +57,23 @@ return {
       local buf, out, ln
       local lst = {}
       local ok, er, stat = false, false, false
-      buf = msg_buffer .. PORT:read(256, 200)
+      buf = PORT:read(256, 200)
+      if msg_buffer and msg_buffer ~= "" then
+        buf = msg_buffer .. "\n" .. buf
+      end
       if buf ~= "" then
         out = ""
         repeat
           out = out .. buf
           buf = PORT:read(256, 100)
         until(buf == "")
-        for ln in string.gmatch(out, "^([^\n]*)") do table.insert(lst, ln) end
-      --print(out)
+        for ln in string.gmatch(out, "([^\u{a}\u{d}]+)") do 
+          --print(ln)
+          --if ln ~= "" then
+            table.insert(lst, ln) 
+          --end
+        end
+      --print(#lst, lst[1])
         if out:match("^ok") then
           msg_buffer = table.concat(lst, "\n", 2)
           ok = true

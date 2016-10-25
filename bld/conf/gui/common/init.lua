@@ -62,6 +62,7 @@ end
 StatPort = ui.Group:new
 {
   Orientation = "vertical",
+  Legend = "Status",
   Children = 
   {
     ui.Text:new

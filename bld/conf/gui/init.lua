@@ -30,19 +30,21 @@ repeat
 until(p == nil)
 
 
-
 gLstWdgtM = ui.Lister:new
 					{
 						--Id = "the-list",
-						SelectMode = "multi",
+            Id = "editor cmd list",
+						SelectMode = "single", --"multi",
 --						ListObject = gcmdLst,
             
 						onSelectLine = function(self)
 							ui.Lister.onSelectLine(self)
-							local line = self:getItem(self.SelectedLine)
+              local lineno = self.SelectedLine
+							local line = self:getItem(lineno)
 							if line then
                 App:getById("gedit"):setValue("Text", line[1][2])
 								--self.Window:setRecord(line[1])
+                --self.sel_line_no
 							end
 						end,
 					}

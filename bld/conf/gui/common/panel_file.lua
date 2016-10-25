@@ -41,18 +41,18 @@ return ui.Group:new
       function(self)
         local app = self.Application
         app:addCoroutine(function()
-            List = require "tek.class.list"
+                --List = require "tek.class.list"
+                local NumberedList = require "conf.gui.classes.numberedlist"
                 local status, path, select = app:requestFile
                 {
-            --	BasePath = app:getById("basefield"):getText(),
-              Path = "/home/orangepi/el", --pathfield:getText(),
-              SelectMode = --app:getById("multiselect").Selected and
-            --		    "multi",
-            --		    or 
-                    "single",
-              DisplayMode = --app:getById("selectmode-all").Selected and
-                    "all" 
-            --		    or "onlydirs"
+                  Path = "/home/orangepi/el", --pathfield:getText(),
+                  SelectMode = --app:getById("multiselect").Selected and
+                --		    "multi",
+                --		    or 
+                        "single",
+                  DisplayMode = 
+                        "all" 
+                --		    or "onlydirs"
                 }
                 if status == "selected" then
                   GFNAME = path .. "/" .. select[1]
@@ -66,16 +66,19 @@ return ui.Group:new
                     local l, i = "", 1
                     GTXT = {}
                     local lst = {} --= gcmdLst.Items
-                    for l in txt:gmatch("[^\n]*") do
+                    for l in txt:gmatch("[^\u{a}\u{d}]+") do
                     --GTXT = {txt:match((txt:gsub("[^\n]*\n", "([^\n]*)\n")))}
                       GTXT[i] = l
-                      lst[i] = {{ "" .. i, l }}
+                      lst[i] = {{ "", l }}
                       i = i + 1
                     end
                     
-                    gLstWdgtM:setList(List:new { Items = lst })
+                    gLstWdgtM:setList(NumberedList:new { Items = lst })
                     do_vparse()
     --                gLstWdgtM:setList(List:new { Items = lst })
+                  
+                    self:getById("send to"):setValue("Text", tostring(i-1))
+                    self:getById("send from"):setValue("Text", "1")
                   end
                   app:getById("status main"):setValue("Text", GFNAME)
                 end

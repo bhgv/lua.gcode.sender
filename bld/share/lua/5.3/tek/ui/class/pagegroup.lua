@@ -271,7 +271,7 @@ function PageGroup.new(class, self)
 		pagebuttons = { 
 			ui.Frame:new {
 				Class = "page-button-fill",
-				Style = "border-left-width: 0",
+				Style = "border-left-width: 0;",
 				MinWidth = 3,
 				MaxWidth = 3,
 				Width = 3,

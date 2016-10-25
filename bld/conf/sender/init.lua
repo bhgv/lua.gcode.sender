@@ -66,7 +66,10 @@ return {
               end
               
               if msg.err then
-                exec.sendport("*p", "ui", "<MESSAGE>" .. msg.msg .. " (ln: " .. icmd .. ")")
+                exec.sendport("*p", "ui", "<MESSAGE>" 
+                              .. msg.msg:match("([^\u{a}\u{d}]+)") 
+                              .. " (ln: " .. icmd .. ")"
+                              )
                 state = "stop"
               end
               --print("msg.ok, msg.err msg.stat", msg.ok, msg.err, msg.stat,
@@ -105,7 +108,7 @@ return {
                 end
                 
                 MK:send(cmd .. '\n')
-                print (icmd, is_resp_handled, "m cmd:", cmd)
+                --print (icmd, is_resp_handled, "m cmd:", cmd)
                 
                 is_resp_handled = false
                 
@@ -129,7 +132,7 @@ return {
                 if MK then
                   MK:open(prt, 0 + bod)
                   local out = MK:init()
-                  lib:split(out.msg, "[^\n]+", lib.display_rx_msg)
+                  lib:split(out.msg, "[^\u{a}\u{d}]+", lib.display_rx_msg)
                   exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
                 end
               end

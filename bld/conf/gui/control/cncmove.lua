@@ -1,9 +1,9 @@
 local ui = require "tek.ui"
-local List = require "tek.class.list"
+--local List = require "tek.class.list"
 
-print(ui.ProgDir)
+--print(ui.ProgDir)
 
-local ico_popen = ui.loadImage("conf/icons/serial32.ppm")
+--local ico_popen = ui.loadImage("conf/icons/serial32.ppm")
 
 local Txt = function(txt) return ui.Text:new{Class = "caption",Style="color:gray;",Text=txt} end
 local But = function(txt, atr) 
@@ -62,6 +62,7 @@ return ui.Group:new
     StatPort,
     ui.Group:new
     {
+      Legend = "Moving by axis",
       Rows = 5,
       Columns = 6,
       Children = 
@@ -75,6 +76,7 @@ return ui.Group:new
     },
     ui.Group:new
     {
+      Legend = "Move step size",
       Children = 
       {
         Txt("Step: "),

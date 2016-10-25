@@ -360,7 +360,7 @@ _int_create_parser(lua_State *L){
     
     res_len = 0;
     res_len_max = RES_STR_MEM_STEP; 
-    result = new wchar*[80000]; //res_len_max + 1];
+    result = new wchar*[800000]; //res_len_max + 1];
     result[0] = 0;
     res_p = result;
 

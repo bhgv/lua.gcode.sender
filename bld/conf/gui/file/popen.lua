@@ -96,72 +96,73 @@ return ui.Group:new
     StatPort,
     ui.Group:new
     {
-	Children = 
-	{
-	    ui.Group:new
-	    {
-		--Orientation = "vertical",
-		Columns = 2,
-		Rows = 3,
-		Children = 
-		{
-      ui.Text:new
+      Legend = "Port control",
+      Children = 
       {
-        Class = "caption",
-        Width = 75,
-        Text = "Device:",
-      },
-      ui.PopList:new
-      {
-        Id = "Dev:",
-        Width = 140,
-        SelectedLine = 1,
-        ListObject = List:new
+        ui.Group:new
         {
-          Items = get_mks()
+          --Orientation = "vertical",
+          Columns = 2,
+          Rows = 3,
+          Children = 
+          {
+            ui.Text:new
+            {
+              Class = "caption",
+              Width = 75,
+              Text = "Device:",
+            },
+            ui.PopList:new
+            {
+              Id = "Dev:",
+              Width = 140,
+              SelectedLine = 1,
+              ListObject = List:new
+              {
+                Items = get_mks()
+              },
+              onSelect = function(self)
+                ui.PopList.onSelect(self)
+                local item = self.ListObject:getItem(self.SelectedLine)
+                if item then
+                  set_ports_bauds(item[1][1])
+                end
+              end,
+
+            },
+              
+            ui.Text:new
+            {
+              Class = "caption",
+              Width = 75,
+              Text = "Port:",
+            },
+            wjt_portslist,
+            
+            ui.Text:new
+            {
+              Class = "caption",
+              Width = 75,
+              Text = "Baud:",
+            },
+            wjt_baudslist,
+          }
         },
-        onSelect = function(self)
-          ui.PopList.onSelect(self)
-          local item = self.ListObject:getItem(self.SelectedLine)
-          if item then
-            set_ports_bauds(item[1][1])
+
+        symBut(
+          "\u{E0df}",
+          function(self)
+            Sender:newcmd("PORT")
+            Sender:newcmd(mk_nm)
+            Sender:newcmd(port_nm)
+            Sender:newcmd(baud_nm)
+            StatPort:setValue("Text", "Connected to: " .. port_nm)
+            
+            MK = MKs:get(mk_nm)
+            MKstate = "STOP"
           end
-        end,
-
+        ),
       },
-      
-      ui.Text:new
-      {
-        Class = "caption",
-        Width = 75,
-        Text = "Port:",
-      },
-      wjt_portslist,
-          
-      ui.Text:new
-      {
-        Class = "caption",
-        Width = 75,
-        Text = "Baud:",
-      },
-      wjt_baudslist,
-    }
-  },
-
-  symBut(
-    "\u{E0df}",
-		function(self)
-			Sender:newcmd("PORT")
-			Sender:newcmd(mk_nm)
-			Sender:newcmd(port_nm)
-			Sender:newcmd(baud_nm)
-			StatPort:setValue("Text", "Connected to: " .. port_nm)
-      
-      MK = MKs:get(mk_nm)
-      MKstate = "STOP"
-		end
-  ),
-	},
     },
   }
 }
