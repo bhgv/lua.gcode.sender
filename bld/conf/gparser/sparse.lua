@@ -10,9 +10,16 @@ end
 scb_fini = function(k)
 end
 
-function do_sparse()
+function do_sparse(from, to)
   --App:addCoroutine(function()
-  local txt = table.concat(GTXT, "\n")
+  if from == nil then
+    from = 1
+  end
+  if to == nil then
+    to = #GTXT
+  end
+  --print (from, to)
+  local txt = table.concat(GTXT, "\u{d}", from, to)
   
   --[[
   gparser.set_callback_dict {

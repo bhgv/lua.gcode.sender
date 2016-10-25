@@ -5,35 +5,42 @@ local exec = require "tek.lib.exec"
 
 return {
   split = function(self, str, mask, cb_foo)
-          local s 
-          for s in string.gmatch(str, mask) do
-            cb_foo(self, s)
-          end
-        end,
+      local s 
+      for s in string.gmatch(str, mask) do
+        cb_foo(self, s)
+      end
+  end,
         
-  display_rx = function(self, s) 
-          exec.sendport("*p", "ui", "<PORT RX>" .. s) 
-        end,
+  display_rx = function(self, s)
+      if s then
+        exec.sendport("*p", "ui", "<PORT RX>" .. s) 
+      end
+  end,
         
   display_rx_msg = function(self, s) 
-          local t = "<PORT RX MSG>" .. s
-          --print (t)
-          exec.sendport("*p", "ui", t) 
+      if s then
+        local t = "<PORT RX MSG>" .. s
+        --print (t)
+        exec.sendport("*p", "ui", t) 
+      end
   end,
         
   display_tx = function(self, s) 
-          exec.sendport("*p", "ui", "<PORT TX>" .. s) 
+      if s then
+        exec.sendport("*p", "ui", "<PORT TX>" .. s) 
+      end
   end,
 
   cnc_stat = function(self, stat)
-            exec.sendport("*p", "ui", "<STATUS><wX>" .. stat.w.x
-                                        .. "<wY>" .. stat.w.y
-                                        .. "<wZ>" .. stat.w.z
-                                        .. "<mX>" .. stat.m.x
-                                        .. "<mY>" .. stat.m.y
-                                        .. "<mZ>" .. stat.m.z
+      if stat then
+        exec.sendport("*p", "ui", "<STATUS><wX>" .. stat.w.x
+                                      .. "<wY>" .. stat.w.y
+                                      .. "<wZ>" .. stat.w.z
+                                      .. "<mX>" .. stat.m.x
+                                      .. "<mY>" .. stat.m.y
+                                      .. "<mZ>" .. stat.m.z
             )
---          end
+        end
   end,
 --[[
   cnc_status_read = function(self, MK)

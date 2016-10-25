@@ -17,7 +17,9 @@ return ui.Group:new
       function(self)
         if MKstate == "STOP" then
           Sender:newcmd("FEEL")
-          do_sparse()
+          local from = _G.Flags.SendFrom --tonumber( App:getById("send from"):getValue("Text") )
+          local to = _G.Flags.SendTo --tonumber( App:getById("send to"):getValue("Text") )
+          do_sparse(from, to)
           Sender:newcmd("RESUME")
           MKstate = "RUN"
         elseif MKstate == "PAUSE" then

@@ -62,7 +62,14 @@ return {
               
               if not msg.stat then
                 is_resp_handled = msg.ok or msg.err
-                if msg.ok and state == "run" then icmd = icmd + 1 end
+                if msg.ok and state == "run" then 
+                  if icmd < #gthread then
+                    icmd = icmd + 1 
+                  else
+                    state = "stop"
+                    icmd = 1
+                  end
+                end
               end
               
               if msg.err then
@@ -105,6 +112,10 @@ return {
                   end
                   
                   lib:display_tx(cmd)
+                end
+                
+                if cmd == nil then
+                  cmd = ""
                 end
                 
                 MK:send(cmd .. '\n')

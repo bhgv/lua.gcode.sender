@@ -129,6 +129,7 @@ return ui.Group:new
                     ui.Button.onClick(self)
                     local lst_wgt = self:getById("editor cmd list")
                     local n = lst_wgt.SelectedLine
+                    _G.Flags.SendFrom = n
                     self:getById("send from"):setValue("Text", tostring(n))
                   end,
                 },
@@ -140,6 +141,7 @@ return ui.Group:new
                     ui.Button.onClick(self)
                     local lst_wgt = self:getById("editor cmd list")
                     local n = lst_wgt.SelectedLine
+                    _G.Flags.SendTo = n+1
                     self:getById("send to"):setValue("Text", tostring(n))
                   end,
                 },
