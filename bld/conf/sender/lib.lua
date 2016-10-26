@@ -67,7 +67,7 @@ return {
                   if state == "run" then
                     self:split(out.msg, "[^\u{a}\u{d}]+", self.display_rx)
                   else
-                    self:split(out.msg, "[^\u{a}\u{d}]+", self.display_rx_msg)
+                    self:split(out.raw, "[^\u{a}\u{d}]+", self.display_rx_msg)
                   end
                 end
                 --print(out.msg)

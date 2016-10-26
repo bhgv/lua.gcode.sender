@@ -67,6 +67,7 @@ return {
           out = out .. buf
           buf = PORT:read(256, 100)
         until(buf == "")
+        Log:msg("---------------------\n" .. out .. "\n=======================")
         for ln in string.gmatch(out, "([^\u{a}\u{d}]+)") do 
           --print(ln)
           --if ln ~= "" then
@@ -74,25 +75,29 @@ return {
           --end
         end
       --print(#lst, lst[1])
-        if out:match("^ok") then
-          msg_buffer = table.concat(lst, "\n", 2)
-          ok = true
-        elseif out:match("^error") then
-          msg_buffer = table.concat(lst, "\n", 2)
-          er = true
-        elseif out:match("^<") then
-          msg_buffer = table.concat(lst, "\n", 3)
+        if lst[1]:match("<") then
           --self:status_parse(out)
           stat = true
+          if lst[2] and lst[2]:match("ok") then
+            ok = true
+          end
+          msg_buffer = table.concat(lst, "\n", 3)
+        elseif lst[1]:match("error") then
+          msg_buffer = table.concat(lst, "\n", 2)
+          er = true
+        elseif lst[1]:match("ok") then
+          msg_buffer = table.concat(lst, "\n", 2)
+          ok = true
         end
         
         --if msg_buffer ~= "" then print("--------------\nmsg_buffer =", msg_buffer) end
         
         return {
-          msg = out,
+          msg = lst[1], --out,
           ok = ok,
           err = er,
           stat = stat,
+          raw = out,
         }
       end
       return {
@@ -148,8 +153,6 @@ return {
               "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),?" ..
               "([^>]*)>"
             )
-      --print (s)
-      --print (fr, to, "\nm = ",mx, my, mz, "\nw = ", wx, wy, wz)
       local out
       out = {
         state = state,

@@ -13,7 +13,7 @@ export LD_FLAGS="-fPIC -shared \
 -Wl,-O3 -Wl,-Bsymbolic-functions \
 "
 
-tools/coco_cpp/Coco -frames $PWD/tools/coco_cpp GCode.atg
+#tools/coco_cpp/Coco -frames $PWD/tools/coco_cpp GCode.atg
 
 g++ $C_FLAGS $DBG \
 -o gcodeparser.o gcodeparser.cpp 

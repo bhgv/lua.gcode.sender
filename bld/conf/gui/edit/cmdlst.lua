@@ -3,12 +3,6 @@ local List = require "tek.class.list"
 
 --print(ui.ProgDir)
 
---[[
-local ico_new = ui.loadImage("conf/icons/new32.ppm")
-local ico_popen = ui.loadImage("conf/icons/serial32.ppm")
-local ico_save = ui.loadImage("conf/icons/save32.ppm")
-]]
-
 
 return ui.Group:new
 {

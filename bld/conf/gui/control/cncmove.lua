@@ -1,7 +1,4 @@
 local ui = require "tek.ui"
---local List = require "tek.class.list"
-
---print(ui.ProgDir)
 
 --local ico_popen = ui.loadImage("conf/icons/serial32.ppm")
 

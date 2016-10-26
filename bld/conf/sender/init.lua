@@ -22,6 +22,8 @@ return {
         local MKs = require "conf.controllers"
         local MK = nil
         
+        Log = require "conf.log"
+        
         local lib = require "conf.sender.lib"
         
         local state = "stop"
@@ -42,6 +44,8 @@ return {
         
         local sthread = {}
         
+        oks = 0
+        
         
         while cmd ~= "SENDER_STOP" do
           if MK then
@@ -50,6 +54,7 @@ return {
             if int_state == "s" then
               if stat_on then
                 MK:status_query()
+                oks = oks + 1
                 int_state = "rs"
               else
                 int_state = "m"
@@ -60,9 +65,12 @@ return {
                 msg = lib:cnc_read_parse(MK, state)
               until(msg.msg or int_state == "r")
               
+              if msg and msg.ok then oks = oks - 1 end
+              
               if not msg.stat then
-                is_resp_handled = msg.ok or msg.err
-                if msg.ok and state == "run" then 
+                is_resp_handled = (msg.ok or msg.err) --and oks < 1
+                if msg.ok and state == "run" and oks < 1 then 
+                  is_resp_handled = (msg.ok or msg.err) --and oks < 1
                   if icmd < #gthread then
                     icmd = icmd + 1 
                   else
@@ -105,24 +113,36 @@ return {
                     end
                   else
                     --icmd = icmd + 1
-                    cmd = gthread[ icmd ]
+                    cmd = '(' .. icmd .. ') ' .. gthread[ icmd ]
                     --cmd = table.remove(gthread, 1)
                     
                     exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd)
                   end
                   
                   lib:display_tx(cmd)
-                end
+                  
                 
+                  if cmd == nil then
+                    cmd = ""
+                  end
+                  
+                  MK:send(cmd .. '\n')
+                  Log:msg(icmd .. ", " .. tostring(is_resp_handled) .. ", m cmd: " .. cmd)
+                  
+                  oks = oks + 1
+                  
+                  is_resp_handled = false
+                end
+                --[[
                 if cmd == nil then
                   cmd = ""
                 end
                 
                 MK:send(cmd .. '\n')
-                --print (icmd, is_resp_handled, "m cmd:", cmd)
+                print (icmd, is_resp_handled, "m cmd:", cmd)
                 
                 is_resp_handled = false
-                
+                ]]
                 int_state = "r"
               else
                 int_state = "s"
@@ -133,7 +153,7 @@ return {
           msg = exec.waitmsg(20)
           
           if msg ~= nil then
-            print("msg = ", msg)
+            Log:msg("msg = " .. msg)
             if msg == "PORT" then
               local mk = exec.waitmsg(2000)
               local prt = exec.waitmsg(2000)
@@ -143,7 +163,7 @@ return {
                 if MK then
                   MK:open(prt, 0 + bod)
                   local out = MK:init()
-                  lib:split(out.msg, "[^\u{a}\u{d}]+", lib.display_rx_msg)
+                  lib:split(out.raw, "[^\u{a}\u{d}]+", lib.display_rx_msg)
                   exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
                 end
               end

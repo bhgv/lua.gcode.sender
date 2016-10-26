@@ -1,6 +1,4 @@
 
-local ui = require "tek.ui"
-
 --print(ui.ProgDir)
 --[[
 local ico_new = ui.loadImage("conf/icons/new32.ppm")
