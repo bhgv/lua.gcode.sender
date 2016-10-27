@@ -123,7 +123,7 @@ return ui.Group:new
                     Sender:newcmd(cmd)
                   end,
                 },
-                ui.Text:new{Class = "caption",Style="color:gray;", Text="  Send: ", Width=70,},
+                ui.Text:new{Class = "caption",Style="color:gray;", Text=" Send: ", Width=40,},
                 ui.Button:new
                 {
                   Text = "from sel",
@@ -135,7 +135,7 @@ return ui.Group:new
                     self:getById("send from"):setValue("Text", tostring(n))
                   end,
                 },
-                ui.Text:new{Text="", Width=60, Id="send from"},
+                ui.Text:new{Text="", Width=40, Id="send from"},
                 ui.Button:new
                 {
                   Text = "to sel",
@@ -147,7 +147,7 @@ return ui.Group:new
                     self:getById("send to"):setValue("Text", tostring(n))
                   end,
                 },
-                ui.Text:new{Text="", Width=60, Id="send to"},
+                ui.Text:new{Text="", Width=40, Id="send to"},
             }
           },
 

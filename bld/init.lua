@@ -21,6 +21,8 @@ Sender:start()
 Flags = {
   DispScale = 100,
   AutoRedraw = true,
+  DisplayMode = "select",
+  screenShift = {x=0, y=0,}
 }
 
 
