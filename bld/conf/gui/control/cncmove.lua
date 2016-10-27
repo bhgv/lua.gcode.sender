@@ -66,7 +66,7 @@ return ui.Group:new
       {
         Txt("+Z"),          Txt(""),  Txt(""),            Txt("+Y"),          Txt(""),            Txt(""),
         But("\u{E037}","Z"),Txt(""),  But("", "xY"),      But("\u{E037}","Y"),But("", "XY"),      Txt(""),
-        Txt("|"),           Txt("-X"),But("\u{E035}","x"),But("\u{e041}","0"),But("\u{E036}","X"),Txt("+X"),
+        Txt("|"),           Txt("-X"),But("\u{E035}","x"),But("\u{e0c7}","0"),But("\u{E036}","X"),Txt("+X"),
         But("\u{E034}","z"),Txt(""),  But("", "xy"),      But("\u{E034}","y"),But("", "Xy"),      Txt(""),
         Txt("-Z"),          Txt(""),  Txt(""),            Txt("-Y"),          Txt(""),            Txt(""),
       },

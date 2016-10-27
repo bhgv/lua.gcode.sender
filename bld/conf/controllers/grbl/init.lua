@@ -34,6 +34,8 @@ return {
       local out = self:help()
       exec.sendmsg("sender","NEW")
       exec.sendmsg("sender","CALCULATE")
+--      exec.sendmsg("sender","SINGLE")
+--      exec.sendmsg("sender","$C")
       exec.sendmsg("sender","SINGLE")
       exec.sendmsg("sender","G21 G90")
       return out

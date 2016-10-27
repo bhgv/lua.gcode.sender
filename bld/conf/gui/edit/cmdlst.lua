@@ -1,6 +1,7 @@
 local ui = require "tek.ui"
 local List = require "tek.class.list"
 
+--local Vparse = require "conf.gparser.vparse"
 --print(ui.ProgDir)
 
 
@@ -24,8 +25,10 @@ return ui.Group:new
                 ui.CheckMark:new
                 {
                   Text = "AutoUpdate drawing",
+                  Selected = true,
                   onSelect = function(self)
                     ui.CheckMark.onSelect(self)
+                    _G.Flags.AutoRedraw = self.Selected
 --                    local lst_wgt = self:getById("editor cmd list")
 --                    local n = lst_wgt.SelectedLine
 --                    self:getById("send from"):setValue("Text", tostring(n))
@@ -37,6 +40,7 @@ return ui.Group:new
                   Text = "Update drawing",
                   onClick = function(self)
                     ui.Button.onClick(self)
+                    do_vparse()
 --                    local cmd = self:getById("gedit"):getText()
 --                    Sender:newcmd("SINGLE")
 --                    Sender:newcmd(cmd)
@@ -83,6 +87,10 @@ return ui.Group:new
                     local n = lst_wgt.SelectedLine
                     GTXT[n] = cmd
                     lst_wgt:changeItem({{ "", cmd }}, n)
+                    
+                    if _G.Flags.AutoRedraw then
+                      do_vparse()
+                    end
                   end,
                 },
                 ui.Button:new

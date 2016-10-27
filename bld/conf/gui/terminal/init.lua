@@ -25,7 +25,7 @@ return		Group:new -- term
 				{
 				    Children =
 				    {
-					Display,
+					DisplayBlock,
 				    }
 				},
 			    },

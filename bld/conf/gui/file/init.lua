@@ -26,7 +26,7 @@ return		Group:new -- file
 				{
 				    Children =
 				    {
-					Display,
+					DisplayBlock,
 				    }
 				},
 			    },

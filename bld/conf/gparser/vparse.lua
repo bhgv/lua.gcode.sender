@@ -45,7 +45,8 @@ end
 vcb_fini = function(l, k)
   Display.Points = tmp_vpts
   Display.Bnd = tmp_vbnd
-  Display:draw()
+  Display.Changed = true
+  --Display:draw()
 end
 
 function do_vparse()

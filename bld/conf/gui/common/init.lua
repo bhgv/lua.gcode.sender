@@ -20,7 +20,78 @@ symBut = function(txt, foo, color)
 end
 
 
+symButSm = function(txt, foo, color)
+  local style = "font:ui-icons:12; width:12; color:olive;" --olive;" --navy;"
+  local par = {}
+--  if par.Style then
+--    style = style .. par.Style
+--  end
+  par.Style = style
+  par.Text = txt
+  par.Class = "caption"
+  par.onClick = function(self)
+    ui.Button.onClick(self)
+    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
+    foo(self)
+  end
+  
+  return ui.Button:new(par)
+end
+
+
+
+local disp_percent_view = ui.Text:new{Text="100%", Width=20,}
+
 Display = require "conf.gui.display"
+
+DisplayBlock = ui.Group:new
+{
+  Orientation = "vertical",
+  Children =
+  {
+    ui.Group:new
+    {
+      Children =
+      {
+        ui.Text:new{Text="view: ", Width=20,},
+        symButSm("\u{e0e0}", function(self) end),
+        symButSm("\u{e0e1}", function(self) end),
+        ui.Text:new{Text="scale: ", Width=20,},
+        symButSm("\u{e0de}", function(self) 
+            local n = _G.Flags.DispScale --tonumber(disp_percent_view.Text:match("(%d*%.?%d*)"))
+            n = n/1.1
+            _G.Flags.DispScale = n
+            disp_percent_view:setValue("Text", tostring(n) .. "%")
+            if _G.Flags.AutoRedraw then
+              Display.Changed = true
+            end
+        end),
+        disp_percent_view,
+        symButSm("\u{e0dd}", function(self) 
+            local n = _G.Flags.DispScale --tonumber(disp_percent_view.Text:match("(%d*%.?%d*)"))
+            n = n*1.1
+            _G.Flags.DispScale = n
+            disp_percent_view:setValue("Text", tostring(n) .. "%")
+            if _G.Flags.AutoRedraw then
+              Display.Changed = true
+            end
+        end),
+        symButSm("\u{e08f}", function(self) 
+            _G.Flags.DispScale = 100
+            disp_percent_view:setValue("Text", "100%")
+            if _G.Flags.AutoRedraw then
+              Display.Changed = true
+            end
+        end),
+        ui.Text:new{Text="move: ", Width=20,},
+        symButSm("\u{e0a0}", function(self) end),
+      }
+    },
+    
+    Display,
+  }
+}
+
 
 
 

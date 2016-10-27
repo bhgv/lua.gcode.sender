@@ -24,7 +24,7 @@ return		Group:new -- edit
 				{
 				    Children =
 				    {
-					Display,
+					DisplayBlock,
 				    }
 				}
 			    },
