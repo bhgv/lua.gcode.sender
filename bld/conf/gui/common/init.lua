@@ -40,6 +40,9 @@ end
 
 
 
+require "conf.gui.common.display_block"
+
+--[[
 local disp_percent_view = ui.Text:new{Text="100%", Width=20,}
 
 Display = require "conf.gui.display"
@@ -97,7 +100,7 @@ DisplayBlock = ui.Group:new
     Display,
   }
 }
-
+]]
 
 
 

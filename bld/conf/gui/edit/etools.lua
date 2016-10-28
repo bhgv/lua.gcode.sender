@@ -10,6 +10,8 @@ return ui.Group:new
   Children = 
   {
     require "conf.gui.common.panel_file",
+    ui.Input:new{Width=100},
+    symBut("\u{e0e2}", function(self) end),
   }
 }
 
