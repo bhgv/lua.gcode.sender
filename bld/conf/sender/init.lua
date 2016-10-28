@@ -161,10 +161,14 @@ return {
               if mk ~= "" and prt ~= "" and bod ~= "" then
                 MK = MKs:get(mk)
                 if MK then
-                  MK:open(prt, 0 + bod)
-                  local out = MK:init()
-                  lib:split(out.raw, "[^\u{a}\u{d}]+", lib.display_rx_msg)
-                  exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
+                  if MK:open(prt, 0 + bod) then
+                    local out = MK:init()
+                    lib:split(out.raw, "[^\u{a}\u{d}]+", lib.display_rx_msg)
+                    exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
+                  else
+                    MK = nil
+                    exec.sendport("*p", "ui", "<MESSAGE>Can't connect to " .. prt)
+                  end
                 end
               end
             elseif msg == "NEW" then

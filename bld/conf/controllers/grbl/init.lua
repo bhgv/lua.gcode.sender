@@ -4,6 +4,8 @@ local exec = require "tek.lib.exec"
 local rs232 = require('periphery').Serial
 local PORT = nil
 
+local lfs = require "lfs"
+
 
 local ports = {
     "/dev/ttyUSB0",
@@ -26,8 +28,13 @@ return {
     end,
 
     open = function(self, port, speed)
-      PORT = rs232(port, speed)
-      return PORT ~= nil
+      local attr = lfs.attributes(port)
+      if attr then
+        PORT = rs232(port, speed)
+        return PORT ~= nil
+      else
+        return false
+      end
     end,
 
     init = function(self)
