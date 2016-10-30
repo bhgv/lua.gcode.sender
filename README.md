@@ -2,7 +2,8 @@
 
 Intro
 -----
-This is an attempt to build universal g-code sender for home-made CNC and (in the future) laser & 3d printer using Lua & lua modules. as it faster than java or python (bCNC - maybe the best g-code sender) and more configurable then C/C++ based ones.
+This is an attempt to build highly configurable and changeable universal g-code sender without hard to portable elements for home-made CNC and (in the future) laser & 3d printer. 
+it has written using Lua & lua modules.
 
 Lua version
 ------
@@ -20,7 +21,7 @@ sources of lua-5.3.3 & all modules are included. just run bld script from head f
 ```sh
 $ ./bld.sh 
 ```
-current it tested only on linux-arm (raspberry pi like board)
+current it tested on linux-arm (lubuntu, raspberry pi like board) and linux-x86 (xubuntu, ibm thinkpad x31)
 
 How to execute
 -------
