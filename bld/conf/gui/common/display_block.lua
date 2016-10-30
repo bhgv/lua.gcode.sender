@@ -22,10 +22,12 @@ DisplayBlock = ui.Group:new
       {
         ui.Text:new{Text="view:", Width=20, Class = "caption"},
         symButSm("\u{e0e0}", function(self) 
+            self.Selected = true
             _G.Flags.DisplayProection = "xy"
             Display.Changed = true
         end),
         symButSm("\u{e0e1}", function(self) 
+            self.Selected = true
             _G.Flags.DisplayProection = "xyz"
             Display.Changed = true
         end),
