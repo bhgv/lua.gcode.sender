@@ -752,15 +752,20 @@ static void x11_drawstrip(struct X11Display *mod, struct TVRequest *req)
             cursor_x >= 0 && cursor_x < v->winwidth &&
             cursor_y >= 0 && cursor_y < v->winheight
         ){
+            int tdw = (cursor_x + cursor_w) - v->winwidth;
+            int tdh = (cursor_y + cursor_h) - v->winheight;
+            int tw = tdw < 0 ? cursor_w : cursor_w - tdw;
+            int th = tdh < 0 ? cursor_h : cursor_h - tdh;
+
             v->imgCursorBG = XGetImage(
                 mod->x11_Display, v->window, //v->gc,
-                cursor_x, cursor_y, cursor_w, cursor_h,
+                cursor_x, cursor_y, tw, th,
                 AllPlanes ,ZPixmap
             );
             v->old_crsr_x = cursor_x; 
             v->old_crsr_y = cursor_y; 
-            v->old_crsr_w = cursor_w;
-            v->old_crsr_h = cursor_h;
+            v->old_crsr_w = tw;
+            v->old_crsr_h = th;
         }else{
             v->imgCursorBG = 0;
         }
@@ -850,15 +855,20 @@ static void x11_drawfan(struct X11Display *mod, struct TVRequest *req)
             cursor_x >= 0 && cursor_x < v->winwidth &&
             cursor_y >= 0 && cursor_y < v->winheight
         ){
+            int tdw = (cursor_x + cursor_w) - v->winwidth;
+            int tdh = (cursor_y + cursor_h) - v->winheight;
+            int tw = tdw < 0 ? cursor_w : cursor_w - tdw;
+            int th = tdh < 0 ? cursor_h : cursor_h - tdh;
+
             v->imgCursorBG = XGetImage(
                 mod->x11_Display, v->window, //v->gc,
-                cursor_x, cursor_y, cursor_w, cursor_h,
+                cursor_x, cursor_y, tw, th,
                 AllPlanes ,ZPixmap
             );
             v->old_crsr_x = cursor_x; 
             v->old_crsr_y = cursor_y; 
-            v->old_crsr_w = cursor_w;
-            v->old_crsr_h = cursor_h;
+            v->old_crsr_w = tw;
+            v->old_crsr_h = th;
         }else{
             v->imgCursorBG = 0;
         }
@@ -1558,7 +1568,36 @@ static void x11_drawbuffer(struct X11Display *mod, struct TVRequest *req)
     dst.tpb_Format = v->pixfmt;
     pixconv_convert(&src, &dst, 0, 0, w - 1, h - 1, 0, 0, 0, 
         mod->x11_Flags & X11FL_SWAPBYTEORDER);
+//    x11_putimage(mod, v, req, x, y, w, h);
+
+    if(v->imgCursorBG){
+//        if(
+//            x <= v->old_crsr_x && 
+//            y <= v->old_crsr_y && 
+//            (x+w) >= (v->old_crsr_x + v->old_crsr_w) &&
+//            (y+h) >= (v->old_crsr_y + v->old_crsr_h)
+//        ){
+            XPutImage(mod->x11_Display, v->window, v->gc, v->imgCursorBG, 0, 0,
+                v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h);
+            XDestroyImage(v->imgCursorBG);
+//            v->imgCursorBG = 0;
+//        }else{
+//            XPutImage(mod->x11_Display, v->window, v->gc, v->imgCursorBG, 0, 0,
+//                v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h);
+//            XDestroyImage(v->imgCursorBG);
+//            v->imgCursorBG = 0;
+//        }
+    }
+    
     x11_putimage(mod, v, req, x, y, w, h);
+    
+    if(v->imgCursorBG){
+        v->imgCursorBG = XGetImage(
+                mod->x11_Display, v->window, //v->gc,
+                v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h,
+                AllPlanes ,ZPixmap
+        );
+    }
 }
 
 /*****************************************************************************/

@@ -32,7 +32,10 @@ return {
   end,
 
   cnc_stat = function(self, stat)
-      if stat then
+      if stat and
+        stat.w.x and stat.w.y and stat.w.z and
+        stat.m.x and stat.m.y and stat.m.z
+      then
         exec.sendport("*p", "ui", "<STATUS><wX>" .. stat.w.x
                                       .. "<wY>" .. stat.w.y
                                       .. "<wZ>" .. stat.w.z
@@ -40,7 +43,7 @@ return {
                                       .. "<mY>" .. stat.m.y
                                       .. "<mZ>" .. stat.m.z
             )
-        end
+      end
   end,
 --[[
   cnc_status_read = function(self, MK)

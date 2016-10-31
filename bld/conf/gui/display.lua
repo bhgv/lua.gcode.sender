@@ -115,6 +115,7 @@ function Display:drawSpindle(x, y, z)
     d:drawLine(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb-sh), c)
     d:drawLine(floor(xb+sw), floor(yb-sh), floor(xb), floor(yb), c)
     ]]
+    --print(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb))
     SPINDLEimg:draw(d, floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb), c)
   elseif _G.Flags.DisplayProection == "xyz" then
     bnd3d = {
@@ -141,6 +142,7 @@ function Display:drawSpindle(x, y, z)
     --d:drawLine(floor(xb), floor(yb), floor(xb-sw), floor(yb-sh), c)
     --d:drawLine(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb-sh), c)
     --d:drawLine(floor(xb+sw), floor(yb-sh), floor(xb), floor(yb), c)
+    --print(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb))
     SPINDLEimg:draw(d, floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb), c)
   end
   d:popClipRect()
@@ -181,7 +183,7 @@ function Display:draw()
           local yb = dy - 15 - (p[i - 1].y - bnd.ymin)*k
           local xe = dx + 15 + (p[i].x - bnd.xmin)*k
           local ye = dy - 15 - (p[i].y - bnd.ymin)*k
-          local c = p[i].p or "red"
+          local c = p[i].p or "green"
           --if c == nil then c = "red" end
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
@@ -212,7 +214,7 @@ function Display:draw()
           local xe = dx + 15 + ((p[i].x - bnd.xmin) + (p[i].y - bnd.ymin))*S60*k
           local ye = dy - 15 - (( (p[i].x - bnd.xmin) - (p[i].y - bnd.ymin))*C60 + p[i].z)*k
           
-          local c = p[i].p or "red"
+          local c = p[i].p or "green"
           --if c == nil then c = "red" end
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
@@ -229,17 +231,19 @@ end
 
 function Display:drawZeroCross(d, dx, dy, k)
   local bnd = self.Bnd
+  local c = "red"
+  
   if _G.Flags.DisplayProection == "xy" then
     local x = dx + 15 + (0 - bnd.xmin)*k
     local y = dy - 15 - (0 - bnd.ymin)*k
 
-    d:drawLine(floor(x-10), floor(y), floor(x+10), floor(y), "green") 
-    d:drawLine(floor(x), floor(y-10), floor(x), floor(y+10), "green") 
+    d:drawLine(floor(x-10), floor(y), floor(x+10), floor(y), c) 
+    d:drawLine(floor(x), floor(y-10), floor(x), floor(y+10), c) 
   elseif _G.Flags.DisplayProection == "xyz" then
     local x0 = dx + 15 + ((bnd.xmin) + (bnd.ymin))*S60 *k 
     local y0 = dy - 15 - ((bnd.xmin) - (bnd.ymin))*C60 *k 
-    d:drawLine(floor(x0-10), floor(y0), floor(x0+10), floor(y0), "green") 
-    d:drawLine(floor(x0), floor(y0-10), floor(x0), floor(y0+10), "green") 
+    d:drawLine(floor(x0-10), floor(y0), floor(x0+10), floor(y0), c) 
+    d:drawLine(floor(x0), floor(y0-10), floor(x0), floor(y0+10), c) 
   end
 end
 

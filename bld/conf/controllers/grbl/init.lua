@@ -66,7 +66,7 @@ return {
       local buf, out, ln
       local lst = {}
       local ok, er, stat = false, false, false
-      buf = PORT:read(256, 200)
+      buf = PORT:read(256, 50) --200)
       if msg_buffer and msg_buffer ~= "" then
         buf = msg_buffer .. "\n" .. buf
       end
@@ -74,7 +74,7 @@ return {
         out = ""
         repeat
           out = out .. buf
-          buf = PORT:read(256, 100)
+          buf = PORT:read(256, 50)
         until(buf == "")
         Log:msg("---------------------\n" .. out .. "\n=======================")
         for ln in string.gmatch(out, "([^\u{a}\u{d}]+)") do 

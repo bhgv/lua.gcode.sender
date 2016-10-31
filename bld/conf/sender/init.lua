@@ -92,7 +92,7 @@ return {
               if msg.msg or int_state ~= "rs" then
                 if msg.stat then
                   int_state = "m"
-                else
+                else --if msg.ok or msg.err or not msg.msg then
                   int_state = "s"
                 end
               end
