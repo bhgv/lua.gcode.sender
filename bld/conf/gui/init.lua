@@ -47,6 +47,25 @@ gLstWdgtM = ui.Lister:new
                 --self.sel_line_no
 							end
 						end,
+            
+            setup = function(self, app, win)
+              ui.Lister.setup(self, app, win)
+              --print(app, win)
+              app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+            end,
+            
+            cleanup = function(self)
+              ui.Lister.cleanup(self)
+              self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+            end,
+            
+            msgUser = function(self, msg)
+              local ud = msg[-1]
+              cmd = ud:match("<MESSAGE>error:[^%(]*%(ln%: (%d+)%)")
+              if cmd ~= nil and _G.Flags.SendFrom and _G.Flags.SendTo then
+                self:setValue("SelectedLine", tonumber(cmd))
+              end
+            end,
 					}
 
 local Group = ui.Group
@@ -96,7 +115,7 @@ local window = ui.Window:new
       {
         PageCaptions = { "_File", "_Control", 
                       --"_Plugins", 
-                      "_Edit", "_Terminal" },
+                      "_Editor", "_Terminal" },
         Style = "font:Vera/b:18;",
         Children =
         {

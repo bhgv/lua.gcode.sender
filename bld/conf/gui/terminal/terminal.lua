@@ -93,6 +93,11 @@ return ui.Group:new
                         end
         --              self:moveLine(self:getN(), true)
                         self:setValue("CursorLine", self:getN())
+                      else
+                        cmd = ud:match("<MESSAGE>error:[^%(]*%(ln%: (%d+)%)")
+                        if cmd ~= nil then
+                          self:setValue("SelectedLine", self:getN())
+                        end
                       end
                     end
                   end

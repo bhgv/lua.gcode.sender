@@ -1,9 +1,6 @@
 local ui = require "tek.ui"
 local List = require "tek.class.list"
 
---local Vparse = require "conf.gparser.vparse"
---print(ui.ProgDir)
-
 
 return ui.Group:new
 {

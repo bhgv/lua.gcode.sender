@@ -11,7 +11,6 @@ scb_fini = function(k)
 end
 
 function do_sparse(from, to)
-  --App:addCoroutine(function()
   if from == nil then
     from = 1
   end
@@ -20,6 +19,9 @@ function do_sparse(from, to)
   end
   --print (from, to)
   local txt = table.concat(GTXT, "\u{d}", from, to)
+  
+  _G.Flags.SendFrom = from
+  _G.Flags.SendTo = to
   
   --[[
   gparser.set_callback_dict {
@@ -42,7 +44,9 @@ function do_sparse(from, to)
     Sender:newcmd(o[i])
   --  print(o[i])
   end
+  Sender:newcmd("SENDFROM")
+  Sender:newcmd(tostring(from))
+  
   Sender:newcmd("CALCULATE")
-  --end)
 end
 
