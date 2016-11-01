@@ -122,7 +122,9 @@ return ui.Group:new
                   Text = "Send",
                   onClick = function(self)
                     ui.Button.onClick(self)
-                    local cmd = self:getById("user cmd"):getText()
+                    local ed = self:getById("user cmd")
+                    local cmd = ed:getText()
+                    ed:setValue("Text", " ")
                     --print(cmd)
                     Sender:newcmd("SINGLE")
                     Sender:newcmd(cmd)

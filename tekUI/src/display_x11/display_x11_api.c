@@ -731,13 +731,15 @@ static void x11_drawstrip(struct X11Display *mod, struct TVRequest *req)
     //printf("x11_drawstrip - %d, %x, (%d, %d, %d, %d)\n", iscursor, (unsigned)v->imgCursorBG,
     //    cursor_x, cursor_y, cursor_w, cursor_h
     //);
-    if(iscursor && 
+    if(iscursor && (
+        !v->imgCursorBG ||
         !(
             v->old_crsr_x == cursor_x &&
             v->old_crsr_y == cursor_y &&
             v->old_crsr_w == cursor_w &&
             v->old_crsr_h == cursor_h
         )
+      )
     ){
         if(v->imgCursorBG){
             XPutImage(
@@ -834,13 +836,15 @@ static void x11_drawfan(struct X11Display *mod, struct TVRequest *req)
     //printf("x11_drawfan - %d, %x, (%d, %d, %d, %d)\n", iscursor, (unsigned)v->imgCursorBG,
     //    cursor_x, cursor_y, cursor_w, cursor_h
     //);
-    if(iscursor &&
+    if(iscursor && (
+        !v->imgCursorBG ||
         !(
             v->old_crsr_x == cursor_x &&
             v->old_crsr_y == cursor_y &&
             v->old_crsr_w == cursor_w &&
             v->old_crsr_h == cursor_h
         )
+      )
     ){
         if(v->imgCursorBG){
             XPutImage(
@@ -1580,7 +1584,7 @@ static void x11_drawbuffer(struct X11Display *mod, struct TVRequest *req)
             XPutImage(mod->x11_Display, v->window, v->gc, v->imgCursorBG, 0, 0,
                 v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h);
             XDestroyImage(v->imgCursorBG);
-//            v->imgCursorBG = 0;
+            v->imgCursorBG = 0;
 //        }else{
 //            XPutImage(mod->x11_Display, v->window, v->gc, v->imgCursorBG, 0, 0,
 //                v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h);
@@ -1591,13 +1595,13 @@ static void x11_drawbuffer(struct X11Display *mod, struct TVRequest *req)
     
     x11_putimage(mod, v, req, x, y, w, h);
     
-    if(v->imgCursorBG){
-        v->imgCursorBG = XGetImage(
-                mod->x11_Display, v->window, //v->gc,
-                v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h,
-                AllPlanes ,ZPixmap
-        );
-    }
+//    if(v->imgCursorBG){
+//        v->imgCursorBG = XGetImage(
+//                mod->x11_Display, v->window, //v->gc,
+//                v->old_crsr_x, v->old_crsr_y, v->old_crsr_w, v->old_crsr_h,
+//                AllPlanes ,ZPixmap
+//        );
+//    }
 }
 
 /*****************************************************************************/

@@ -102,6 +102,17 @@ StatPort = ui.Group:new
                       local cmd = ud:match("<MESSAGE>(.*)")
                       if cmd then
                         --print("cmd=" .. cmd)
+                        if 
+                          cmd:match("^error:") or
+                          cmd:match("^Pause")
+                        then
+                          MKstate = "PAUSE"
+                        elseif 
+                          cmd:match("^Stop")
+                        then
+                          MKstate = "STOP"
+                        end
+                        
                         self:setValue("Text", cmd)
                       end
 											return msg

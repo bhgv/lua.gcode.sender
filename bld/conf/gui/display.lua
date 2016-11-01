@@ -88,7 +88,7 @@ function Display:drawSpindle(x, y, z)
   local bnd = self.Bnd
   local w = x1 - x0 + 1 - 20
   local h = y1 - y0 + 1 - 20
-  local sw, sh = w/80, h/12
+  local sw, sh = w/40, h/8
   local xsc, ysc = (x0+x1)/2, (y0+y1)/2
   local d = self.Window.Drawable
 --    local p = self.Points

@@ -71,6 +71,7 @@ return {
               if not msg.stat then
                 is_resp_handled = (msg.ok or msg.err) --and oks < 1
                 
+                --print(msg.ok, state, oks)
                 if msg.ok and state == "run" and oks < 1 then 
                   --is_resp_handled = (msg.ok or msg.err) --and oks < 1
                   
@@ -109,7 +110,7 @@ return {
                   (#sthread > 0 and state == "single")
                 )
               then
-                if is_resp_handled then
+                if is_resp_handled and oks < 4 then
                   if state == "single" then
                     --cmd = sthread[#sthread]
                     cmd = table.remove(sthread, #sthread)

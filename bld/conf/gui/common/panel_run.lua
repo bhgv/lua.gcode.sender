@@ -1,5 +1,6 @@
 
 local ui = require "tek.ui"
+local exec = require "tek.lib.exec"
 
 
 return ui.Group:new
@@ -22,9 +23,11 @@ return ui.Group:new
           do_sparse(from, to)
           Sender:newcmd("RESUME")
           MKstate = "RUN"
+          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
         elseif MKstate == "PAUSE" then
           Sender:newcmd("RESUME")
           MKstate = "RUN"
+          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
         end
       end
     ),
@@ -35,9 +38,11 @@ return ui.Group:new
         if MKstate == "PAUSE" then
           cmd = "RESUME"
           MKstate = "RUN"
+          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
         elseif MKstate == "RUN" then
           cmd = "PAUSE"
           MKstate = "PAUSE"
+          exec.sendport(exec.getname(), "ui", "<MESSAGE>Pause")
         end
         Sender:newcmd(cmd)
       end
@@ -49,6 +54,7 @@ return ui.Group:new
           Sender:newcmd("STOP")
           Sender:newcmd("CALCULATE")
           MKstate = "STOP"
+          exec.sendport(exec.getname(), "ui", "<MESSAGE>Stop")
         end
       end
     ),
