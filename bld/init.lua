@@ -26,6 +26,10 @@ Flags = {
   screenShift = {x=0, y=0,}
 }
 
+Plugins = {
+  Gui = {
+  },
+}
 
 GUI = require "conf.gui"
 

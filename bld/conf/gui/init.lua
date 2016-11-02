@@ -113,16 +113,22 @@ local window = ui.Window:new
     {
       ui.PageGroup:new
       {
-        PageCaptions = { "_File", "_Control", 
-                      --"_Plugins", 
-                      "_Editor", "_Terminal" },
+        PageCaptions = { 
+                      "_File", 
+                      "_Control", 
+                      "_Plugins", 
+                      "_Editor", 
+                      "_Terminal",
+                      "_Showroom"},
         Style = "font:Vera/b:18;",
         Children =
         {
           require("conf.gui.file"),
           require("conf.gui.control"),
+          require("conf.gui.plugins"),
           require("conf.gui.edit"),
           require("conf.gui.terminal"),
+          require("conf.gui.showroom"),
         },
       },
   
