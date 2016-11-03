@@ -55,7 +55,7 @@ local posInd = function(typ)
 											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
 										end,
       msgUser = function(self, msg)
-											local ud = msg[-1]
+                      local ud = msg[-1]
                       --print("ud", ud)
                       if ud:match("<STATUS>") then
                         local cmd = ud:match("<" .. typ .. ">([^<]*)")
@@ -65,8 +65,8 @@ local posInd = function(typ)
                           self:setValue("Text", cmd)
                         end
                       end
-											return msg
-										end,
+                      return msg
+                    end,
   }
   
   return out
@@ -103,14 +103,23 @@ StatPort = ui.Group:new
                       if cmd then
                         --print("cmd=" .. cmd)
                         if 
-                          cmd:match("^error:") or
+                          cmd:match("^error:") 
+                        then
+                          --MKstate = "PAUSE"
+                        elseif 
                           cmd:match("^Pause")
                         then
-                          MKstate = "PAUSE"
+                          --MKstate = "PAUSE"
+                          cmd = "status: " .. cmd
                         elseif 
                           cmd:match("^Stop")
                         then
-                          MKstate = "STOP"
+                          --MKstate = "STOP"
+                          cmd = "status: " .. cmd
+                        elseif 
+                          cmd:match("^Run")
+                        then
+                          cmd = "status: " .. cmd
                         end
                         
                         self:setValue("Text", cmd)

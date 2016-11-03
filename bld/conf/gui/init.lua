@@ -65,6 +65,7 @@ gLstWdgtM = ui.Lister:new
               if cmd ~= nil and _G.Flags.SendFrom and _G.Flags.SendTo then
                 self:setValue("SelectedLine", tonumber(cmd))
               end
+              return msg
             end,
 					}
 
@@ -151,7 +152,7 @@ local window = ui.Window:new
 											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
 										end,
         msgUser = function(self, msg)
-											local ud = msg[-1]
+                      local ud = msg[-1]
                       --print(ud)
                       local max = ud:match("<CMD GAUGE SETUP>(%d+)")
                       if max ~= nil then
@@ -165,18 +166,69 @@ local window = ui.Window:new
                           self:setValue("Value", 0+pos)
                         end
                       end
-											--self:setValue("Text", userdata)
-											return msg
-										end
+                      --self:setValue("Text", userdata)
+                      return msg
+                    end
       },
 
-      ui.Text:new
+      ui.Group:new
       {
-        Id = "status main",
---	      Orientation = "horisontal",
---	      Width = "free",
---	       Height = 5, --"auto",
-      },
+        Children =
+        {
+          ui.Text:new
+          {
+            Id = "status main",
+            Style = "font:/b:10; color:gray;", --olive;", --navy;",
+      --	      Orientation = "horisontal",
+      --	      Width = "free",
+      --	       Height = 5, --"auto",
+          },
+          ui.Text:new
+          {
+            Style = "font:/b:10; color:gray;", --olive;", --navy;",
+            Text = "Not Connected",
+            setup = function(self, app, win)
+											ui.Text.setup(self, app, win)
+											app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+										end,
+            cleanup = function(self)
+											ui.Text.cleanup(self)
+											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+										end,
+            msgUser = function(self, msg)
+                      local ud = msg[-1]
+                      --print("ud", ud)
+                      local cmd = ud:match("<MESSAGE>(.*)")
+                      if cmd then
+                        --print("cmd=" .. cmd)
+                        if 
+                          cmd:match("^error:") 
+                        then
+                          MKstate = "PAUSE"
+                        elseif 
+                          cmd:match("^Pause")
+                        then
+                          MKstate = "PAUSE"
+                          cmd = "status: " .. cmd
+                        elseif 
+                          cmd:match("^Stop")
+                        then
+                          MKstate = "STOP"
+                          cmd = "status: " .. cmd
+                        elseif 
+                          cmd:match("^Run")
+                        then
+                          cmd = "status: " .. cmd
+                        end
+                        
+                        self:setValue("Text", cmd)
+                      end
+                      return msg
+                    end,
+
+          },
+        }
+      }
 
     }
 }

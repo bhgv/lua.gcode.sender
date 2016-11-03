@@ -1,5 +1,4 @@
 
-
 db = require "tek.lib.debug"
 --db.level = db.INFO
 
@@ -19,6 +18,10 @@ Sender:start()
 
 
 Flags = {
+  Home_path = os.getenv("PWD"),
+  Plugins_path = os.getenv("PWD") .. "/conf/plugins",
+  Plugins = {},
+  
   DispScale = 100,
   AutoRedraw = true,
   DisplayMode = "drag",
@@ -30,6 +33,11 @@ Plugins = {
   Gui = {
   },
 }
+
+local utils = require "conf.utils"
+
+utils:collect_plugins()
+
 
 GUI = require "conf.gui"
 

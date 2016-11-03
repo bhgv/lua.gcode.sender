@@ -6,12 +6,9 @@ local exec = require "tek.lib.exec"
 
 
 return {
--- gthread = {},
--- icmd = 0,
  task = nil,
 
   start = function(self, param)
-    --App:addCoroutine(
     self.task = exec.run 
     {
       taskname = "sender",
