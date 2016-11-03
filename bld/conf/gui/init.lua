@@ -29,7 +29,7 @@ repeat
     p = f(); if p then table.insert(bauds, {{p}} ) end
 until(p == nil)
 
-
+--[[
 gLstWdgtM = ui.Lister:new
 					{
 						--Id = "the-list",
@@ -68,6 +68,25 @@ gLstWdgtM = ui.Lister:new
               return msg
             end,
 					}
+          
+initialiseEditor = function()
+  local NumberedList = require "conf.gui.classes.numberedlist"
+
+  local i,ln
+  local lst = {}
+  
+  for i,ln in ipairs(GTXT) do
+    table.insert(lst, {{ "", ln }})
+  end
+  
+  gLstWdgtM:setList(NumberedList:new { Items = lst })
+  
+  App:getById("send to"):setValue("Text", tostring(#GTXT))
+  App:getById("send from"):setValue("Text", "1")
+end
+]]
+
+
 
 local Group = ui.Group
 local Slider = ui.Slider

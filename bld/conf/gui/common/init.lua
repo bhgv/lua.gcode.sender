@@ -97,7 +97,7 @@ StatPort = ui.Group:new
 											self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
 										end,
       msgUser = function(self, msg)
-											local ud = msg[-1]
+                      local ud = msg[-1]
                       --print("ud", ud)
                       local cmd = ud:match("<MESSAGE>(.*)")
                       if cmd then
@@ -124,8 +124,8 @@ StatPort = ui.Group:new
                         
                         self:setValue("Text", cmd)
                       end
-											return msg
-										end,
+                      return msg
+                    end,
 
     },
     

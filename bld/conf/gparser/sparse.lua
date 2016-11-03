@@ -18,7 +18,7 @@ function do_sparse(from, to)
     to = #GTXT
   end
   --print (from, to)
-  local txt = table.concat(GTXT, "\u{d}", from, to)
+  local txt = table.concat(GTXT, "\n", from, to) .. "\n"
   
   _G.Flags.SendFrom = from
   _G.Flags.SendTo = to

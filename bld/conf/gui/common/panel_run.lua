@@ -17,17 +17,17 @@ return ui.Group:new
       "\u{e093}",
       function(self)
         if MKstate == "STOP" then
-          Sender:newcmd("FEEL")
-          local from = _G.Flags.SendFrom --tonumber( App:getById("send from"):getValue("Text") )
-          local to = _G.Flags.SendTo --tonumber( App:getById("send to"):getValue("Text") )
+          Sender:newcmd("FILL")
+          local from = _G.Flags.SendFrom 
+          local to = _G.Flags.SendTo 
           do_sparse(from, to)
           Sender:newcmd("RESUME")
           MKstate = "RUN"
-          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
+--          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
         elseif MKstate == "PAUSE" then
           Sender:newcmd("RESUME")
           MKstate = "RUN"
-          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
+--          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
         end
       end
     ),
@@ -38,11 +38,11 @@ return ui.Group:new
         if MKstate == "PAUSE" then
           cmd = "RESUME"
           MKstate = "RUN"
-          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
+          --exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")
         elseif MKstate == "RUN" then
           cmd = "PAUSE"
           MKstate = "PAUSE"
-          exec.sendport(exec.getname(), "ui", "<MESSAGE>Pause")
+          --exec.sendport(exec.getname(), "ui", "<MESSAGE>Pause")
         end
         Sender:newcmd(cmd)
       end
@@ -54,7 +54,7 @@ return ui.Group:new
           Sender:newcmd("STOP")
           Sender:newcmd("CALCULATE")
           MKstate = "STOP"
-          exec.sendport(exec.getname(), "ui", "<MESSAGE>Stop")
+          --exec.sendport(exec.getname(), "ui", "<MESSAGE>Stop")
         end
       end
     ),

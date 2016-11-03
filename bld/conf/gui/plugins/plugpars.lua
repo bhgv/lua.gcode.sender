@@ -65,6 +65,17 @@ Plugins.Gui.PlugPars = ui.Group:new
                     end,
                   }
                 )
+              elseif nxt_lvl:match("^<GCODE>") then
+                nxt_lvl = nxt_lvl:match("^<GCODE>(.*)")
+                local t = {}
+                local ln
+                --print(nxt_lvl)
+                for ln in nxt_lvl:gmatch("([^\n]+)\n") do
+                  table.insert(t, ln)
+                end
+                GTXT = t
+                initialiseEditor()
+                do_vparse()
               end
             end
             

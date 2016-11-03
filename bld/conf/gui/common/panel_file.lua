@@ -20,13 +20,12 @@ return ui.Group:new
         local app = self.Application
         app:addCoroutine(function()
                 --List = require "tek.class.list"
-                local NumberedList = require "conf.gui.classes.numberedlist"
+--                local NumberedList = require "conf.gui.classes.numberedlist"
                 local status, path, select = app:requestFile
                 {
-                  Path = "/home/orangepi/el", --pathfield:getText(),
-                  SelectMode = --app:getById("multiselect").Selected and
+                  Path = "/home/orangepi/el", 
+                  SelectMode = 
                 --		    "multi",
-                --		    or 
                         "single",
                   DisplayMode = 
                         "all" 
@@ -41,22 +40,24 @@ return ui.Group:new
                     local txt = f:read("*a")
                     GSTXT = txt
                     f:close()
-                    local l, i = "", 1
+                    local l --, i = "", 1
                     GTXT = {}
                     local lst = {} --= gcmdLst.Items
                     for l in txt:gmatch("[^\u{a}\u{d}]+") do
                     --GTXT = {txt:match((txt:gsub("[^\n]*\n", "([^\n]*)\n")))}
-                      GTXT[i] = l
-                      lst[i] = {{ "", l }}
-                      i = i + 1
+                      table.insert(GTXT, l)
+--                      table.insert(lst, {{ "", l }})
+                      --i = i + 1
                     end
                     
-                    gLstWdgtM:setList(NumberedList:new { Items = lst })
+                    initialiseEditor()
+                    
+--                    gLstWdgtM:setList(NumberedList:new { Items = lst })
                     do_vparse()
     --                gLstWdgtM:setList(List:new { Items = lst })
                   
-                    self:getById("send to"):setValue("Text", tostring(i-1))
-                    self:getById("send from"):setValue("Text", "1")
+--                    self:getById("send to"):setValue("Text", tostring(#GTXT))
+--                    self:getById("send from"):setValue("Text", "1")
                   end
                   app:getById("status main"):setValue("Text", GFNAME)
                 end

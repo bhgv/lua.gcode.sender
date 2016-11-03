@@ -58,6 +58,7 @@ local test_run_plugin = function(plug_path)
         local noerr, conf = pcall(f)
         
         if not noerr then 
+          print(conf)
           print(debug.traceback()) 
           return "can't execute: " .. plug_path
         end
@@ -87,7 +88,7 @@ local test_run_plugin = function(plug_path)
               s = s .. k .. "=" .. v .. "&" 
             end
           end
-          print("s =", s)
+          --print("s =", s)
           --exec.sendport("*p", "ui", "<PLUGIN><CONNECT>" .. s)
           exec.sendmsg("*p", s)
         else

@@ -77,6 +77,7 @@ return {
                   else
                     state = "stop"
                     icmd = 1
+                    exec.sendport("*p", "ui", "<MESSAGE>Stop")
                   end
                 end
               end
@@ -169,21 +170,25 @@ return {
               gthread = {}
               icmd = 1
               state = "stop"
+              exec.sendport("*p", "ui", "<MESSAGE>Stop")
             elseif msg == "CALCULATE" then
               exec.sendport("*p", "ui", "<CMD GAUGE SETUP>" .. #gthread)
               --state = "run"
             elseif msg == "PAUSE" then
               state = "stop"
-            elseif msg == "FEEL" then
+              exec.sendport("*p", "ui", "<MESSAGE>Pause")
+            elseif msg == "FILL" then
               stat_on = false
             elseif msg == "RESUME" then
               stat_on = true
               if state == "stop" then
                 state = "run"
+                exec.sendport("*p", "ui", "<MESSAGE>Run")
               end
             elseif msg == "STOP" then
               icmd = 1
               state = "stop"
+              exec.sendport("*p", "ui", "<MESSAGE>Stop")
             elseif msg == "SINGLE" then
               msg = exec.waitmsg(200)
               if state == "stop" then

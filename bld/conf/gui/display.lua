@@ -240,8 +240,8 @@ function Display:drawZeroCross(d, dx, dy, k)
     d:drawLine(floor(x-10), floor(y), floor(x+10), floor(y), c) 
     d:drawLine(floor(x), floor(y-10), floor(x), floor(y+10), c) 
   elseif _G.Flags.DisplayProection == "xyz" then
-    local x0 = dx + 15 + ((bnd.xmin) + (bnd.ymin))*S60 *k 
-    local y0 = dy - 15 - ((bnd.xmin) - (bnd.ymin))*C60 *k 
+    local x0 = dx + 15 - ((bnd.xmin) + (bnd.ymin))*S60 *k 
+    local y0 = dy - 15 + ((bnd.xmin) - (bnd.ymin))*C60 *k 
     d:drawLine(floor(x0-10), floor(y0), floor(x0+10), floor(y0), c) 
     d:drawLine(floor(x0), floor(y0-10), floor(x0), floor(y0+10), c) 
   end
@@ -412,6 +412,7 @@ end
 return Display:new 
     {
       Font = "Vera:9",
+      BgColor = "white",
         MinWidth = 40, MinHeight = 60,
         Style = "background-color: white, width: free,",
     }
