@@ -140,7 +140,24 @@ StatPort = ui.Group:new
           ui.Text:new{Class = "caption",Width=60, Text="MPos:"},
           posInd("mX"), posInd("mY"), posInd("mZ"), 
           ui.Text:new{Class = "caption",Width=60, },
-          ui.Button:new{Width=60, Text="x = 0"}, ui.Button:new{Width=60, Text="y = 0"}, ui.Button:new{Width=60, Text="z = 0"}, 
+          ui.Button:new{Width=60, Text="x = 0",
+            onClick = function(self)
+              ui.Button.onClick(self)
+              MK:set_xyz{x=0,}
+            end,
+          }, 
+          ui.Button:new{Width=60, Text="y = 0",
+            onClick = function(self)
+              ui.Button.onClick(self)
+              MK:set_xyz{y=0,}
+            end,
+          }, 
+          ui.Button:new{Width=60, Text="z = 0",
+            onClick = function(self)
+              ui.Button.onClick(self)
+              MK:set_xyz{z=0,}
+            end,
+          }, 
       },
     },
 

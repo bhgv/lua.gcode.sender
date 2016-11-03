@@ -100,7 +100,7 @@ local test_run_plugin = function(plug_path)
         while msg ~= "QUIT" do 
           msg = exec.waitmsg(2000)
           if msg then
-            print(msg)
+            --print(msg)
             if msg == "<CLICK>" then
               exec.sendport("*p", "ui", "<PLUGIN><REM PARAMS>")
               if conf.params then
@@ -117,7 +117,11 @@ local test_run_plugin = function(plug_path)
               for k,v in pars:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
                 partab[k] = v
               end
-              local out = conf:exec(partab)
+              local noerr, out = pcall(conf.exec, self, partab)
+              if not noerr then 
+                print(out)
+                print(debug.traceback()) 
+              end
             end
           end
         end

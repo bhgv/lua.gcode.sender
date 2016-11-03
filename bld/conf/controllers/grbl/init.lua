@@ -143,7 +143,28 @@ return {
       end
 
       if x or y or z then
-          --self:send(cmd)
+          Sender:newcmd("SINGLE")
+          Sender:newcmd(cmd)
+      end
+    end,
+    
+    set_xyz = function(self, dir)
+      local cmd = "G92 "
+      local x = dir.x
+      local y = dir.y
+      local z = dir.z
+
+      if x then
+          cmd = cmd .. "X" .. x
+      end
+      if y then
+          cmd = cmd .. "Y" .. y
+      end
+      if z then
+          cmd = cmd .. "Z" .. z
+      end
+
+      if x or y or z then
           Sender:newcmd("SINGLE")
           Sender:newcmd(cmd)
       end
