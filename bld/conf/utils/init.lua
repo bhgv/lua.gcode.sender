@@ -6,7 +6,8 @@ local plugs_no = 0
 
 
 
-local test_run_plugin = function(plug_path)  
+local test_run_plugin = function(plug_path)
+  print("test_run_plugin", plug_path)
   local task = exec.run(
     {
       taskname = "plug_" .. plugs_no,
@@ -51,7 +52,11 @@ local test_run_plugin = function(plug_path)
         
         local f = loadfile(plug_path)
         
-        if not f then return "can't load: " .. plug_path end
+        if not f then 
+          s = "can't load: " .. plug_path
+          print(s)
+          return s 
+        end
         
 --        set_upvalue(f, "_ENV", new_G)
 
@@ -108,7 +113,14 @@ local test_run_plugin = function(plug_path)
                 if type(s) == "table" then
                   s = tab2str(s)
                 end
-                exec.sendport("*p", "ui", "<PLUGIN>" .. exec.getname() .. "<SHOW PARAMS>" .. s)
+                exec.sendport("*p", "ui", 
+                  "<PLUGIN>" 
+                  .. exec.getname() 
+                  .. "<SHOW PARAMS>" 
+                  .. (conf.name or "")
+                  .. "<BODY>"
+                  .. s
+                )
               end
             elseif conf.exec and msg:match("^<EXECUTE>") then
               local pars = msg:match("^<EXECUTE>(.*)")
@@ -164,7 +176,7 @@ return {
     for file in lfs.dir(path) do
       if file ~= "." and file ~= ".." and file ~= "init.lua" then
         local f = path..'/'..file
-        print ("\t "..f)
+        --print ("\t "..f)
         local attr = lfs.attributes (f)
         assert (type(attr) == "table")
         if attr.mode == "directory" then

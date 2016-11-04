@@ -34,7 +34,8 @@ Plugins.Gui.PlugPars = ui.Group:new
                   self:remMember(v)
                 end
               elseif nxt_lvl:match("^<SHOW PARAMS>") then
-                nxt_lvl = nxt_lvl:match("^<SHOW PARAMS>(.*)")
+                local name
+                name, nxt_lvl = nxt_lvl:match("^<SHOW PARAMS>([^<]*)<BODY>(.*)")
                 local k, v
                 local chlds = {}
                 for k,v in nxt_lvl:gmatch("%s*([^=]+)=%s*([^\n]+)[;\n]+") do
@@ -42,6 +43,9 @@ Plugins.Gui.PlugPars = ui.Group:new
                   table.insert(chlds, ui.Input:new{Text=v,})
                 end
                 local gr = ui.Group:new{Columns=2, Children=chlds,}
+                if name and name ~= "" then
+                  self:addMember(ui.Text:new{Text=name})
+                end
                 self:addMember(gr)
                 self:addMember(
                   ui.Button:new{

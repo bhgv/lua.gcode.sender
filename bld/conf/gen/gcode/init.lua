@@ -10,22 +10,24 @@ local header = ""
 local footer = ""
 
 local move_to = function(par)
+      if not par then return "" end
+      
       local x, y, z, s, f = tonumber(par.x), tonumber(par.y), tonumber(par.z), tonumber(par.s), tonumber(par.f)
       local ln = ""
       if x then
-        ln = ln .. "X" .. x
+        ln = ln .. "X" .. string.format("%0.4f", x)
       end
       if y then
-        ln = ln .. "Y" .. y
+        ln = ln .. "Y" .. string.format("%0.4f", y)
       end
       if z then
-        ln = ln .. "Z" .. z
+        ln = ln .. "Z" .. string.format("%0.4f", z)
       end
       if s then
-        ln = ln .. "S" .. f
+        ln = ln .. "S" .. string.format("%0.1f", s)
       end
       if f then
-        ln = ln .. "F" .. f
+        ln = ln .. "F" .. string.format("%0.1f", f)
       end
       return ln
 end
@@ -56,20 +58,16 @@ return {
       artAbs = "G90"
   end,
   finish = function(self)
-      --local i, ln
       local gcode = header .. "\n" .. table.concat(buf, "\n") .. footer .. "\n"
-      --for i,ln in ipairs(buf) do
-      --  gcode = gcode .. ln .. "\n"
-      --end
-      --gcode = gcode .. footer .. "\n"
       exec.sendport("*p", "ui", "<PLUGIN><GCODE>" .. gcode)
   end,
   
-  absolute = function(self)
-      artAbs = "G90"
-  end,
-  relative = function(self)
-      artAbs = "G91"
+  set_param = function(self, par_nm, ...)
+      if par_nm == "absolute" then
+        artAbs = "G90"
+      elseif par_nm == "relative" then
+        artAbs = "G91"
+      end
   end,
   
   work_to = function(self, par)
