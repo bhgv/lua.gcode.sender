@@ -110,12 +110,7 @@ function Display:drawSpindle(x, y, z)
   if _G.Flags.DisplayProection == "xy" then
     xb = dx + 15 + (x - bnd.xmin)*k 
     yb = dy - 15 - (y - bnd.ymin)*k
-    --[[
-    d:drawLine(floor(xb), floor(yb), floor(xb-sw), floor(yb-sh), c)
-    d:drawLine(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb-sh), c)
-    d:drawLine(floor(xb+sw), floor(yb-sh), floor(xb), floor(yb), c)
-    ]]
-    --print(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb))
+    
     SPINDLEimg:draw(d, floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb), c)
   elseif _G.Flags.DisplayProection == "xyz" then
     bnd3d = {
@@ -124,7 +119,6 @@ function Display:drawSpindle(x, y, z)
         xmax = (bnd.xmax + bnd.ymax)*S60,
         ymax = (bnd.xmin - bnd.ymax)*C60, --+ bnd.zmax,
     }
---      self.bnd3d = bnd3d
     kw = w / (bnd3d.xmax - bnd3d.xmin)
     kh = h / (bnd3d.ymax - bnd3d.ymin)
     k = kw
@@ -139,10 +133,6 @@ function Display:drawSpindle(x, y, z)
     xb = dx + 15 + ((x - bnd.xmin) + (y - bnd.ymin))*S60*k
     yb = dy - 15 - (( (x - bnd.xmin) - (y - bnd.ymin))*C60 + z)*k
     
-    --d:drawLine(floor(xb), floor(yb), floor(xb-sw), floor(yb-sh), c)
-    --d:drawLine(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb-sh), c)
-    --d:drawLine(floor(xb+sw), floor(yb-sh), floor(xb), floor(yb), c)
-    --print(floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb))
     SPINDLEimg:draw(d, floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb), c)
   end
   d:popClipRect()
@@ -184,7 +174,6 @@ function Display:draw()
           local xe = dx + 15 + (p[i].x - bnd.xmin)*k
           local ye = dy - 15 - (p[i].y - bnd.ymin)*k
           local c = p[i].p or "green"
-          --if c == nil then c = "red" end
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
     elseif _G.Flags.DisplayProection == "xyz" then
@@ -215,7 +204,6 @@ function Display:draw()
           local ye = dy - 15 - (( (p[i].x - bnd.xmin) - (p[i].y - bnd.ymin))*C60 + p[i].z)*k
           
           local c = p[i].p or "green"
-          --if c == nil then c = "red" end
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
     end
@@ -266,17 +254,17 @@ function Display:drawAxis(d, dx, dy, k)
       end
     elseif _G.Flags.DisplayProection == "xyz" then
       for i = 0, stp_cnt do
-        local xb = dx + 15 + ((i*xstp) + (-bnd.ymin))*S60*k 
-        local yb = dy - 15 - ((i*xstp) - (-bnd.ymin))*C60*k 
-        local xe = dx + 15 + ((i*xstp) + (bnd.ymax))*S60*k 
-        local ye = dy - 15 - ((i*xstp) - (bnd.ymax))*C60*k 
+        local xb = dx + 15 + ((i*xstp) + (bnd.ymin -bnd.ymin))*S60*k 
+        local yb = dy - 15 - ((i*xstp) - (bnd.ymin -bnd.ymin))*C60*k 
+        local xe = dx + 15 + ((i*xstp) + (bnd.ymax -bnd.ymin))*S60*k 
+        local ye = dy - 15 - ((i*xstp) - (bnd.ymax -bnd.ymin))*C60*k 
 
         d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
         
-        xb = dx + 15 + ((-bnd.xmin) + (i*ystp))*S60*k 
-        yb = dy - 15 - ((-bnd.xmin) - (i*ystp))*C60*k 
-        xe = dx + 15 + ((bnd.xmax) + (i*ystp))*S60*k 
-        ye = dy - 15 - ((bnd.xmax) - (i*ystp))*C60*k 
+        xb = dx + 15 + ((bnd.xmin -bnd.xmin) + (i*ystp))*S60*k 
+        yb = dy - 15 - ((bnd.xmin -bnd.xmin) - (i*ystp))*C60*k 
+        xe = dx + 15 + ((bnd.xmax -bnd.xmin) + (i*ystp))*S60*k 
+        ye = dy - 15 - ((bnd.xmax -bnd.xmin) - (i*ystp))*C60*k 
 
         d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
@@ -411,8 +399,7 @@ end
 
 return Display:new 
     {
-      Font = "Vera:9",
-      BgColor = "white",
+        --Font = "Vera:9",
         MinWidth = 40, MinHeight = 60,
-        Style = "background-color: white, width: free,",
+        Style = "background-color: #ddd; width: free;",
     }
