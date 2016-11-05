@@ -34,9 +34,9 @@ Plugins = {
   },
 }
 
-local utils = require "conf.utils"
+local plugin_sys = require "conf.utils.plugin_system_engine"
 
-utils:collect_plugins()
+plugin_sys:collect_plugins()
 
 
 GUI = require "conf.gui"

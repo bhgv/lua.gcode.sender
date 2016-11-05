@@ -834,6 +834,7 @@ function Application:requestFile(args)
 		Location = args.Location,
 		SelectText = args.SelectText,
 		FocusElement = args.FocusElement,
+		Filter = args.Filter,
 	}
 
 	local ww = args.Width or 400

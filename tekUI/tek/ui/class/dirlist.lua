@@ -167,6 +167,12 @@ function DirList:filterEntry(vpath, entry)
 	if self.DisplayMode == "onlydirs" and
 		self:getFileStat(vpath, entry, "mode") ~= "directory" then
 		return false
+	elseif 
+			self.Filter and 
+			self:getFileStat(vpath, entry, "mode") ~= "directory" and 
+			not entry:match(self.Filter) 
+	then
+		return false
 	end
 	return true
 end
