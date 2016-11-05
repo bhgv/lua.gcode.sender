@@ -9,7 +9,7 @@ local function preparePluginParamsDlg(task, name, par_str)
   local chlds = {}
   local gr1, gr2
   
-  print(par_str)
+  --print(par_str)
   
   local pars = {}
   for k,v in par_str:gmatch("%s*([^=]+)=([^\n]*)[;\n]+") do
@@ -21,10 +21,17 @@ local function preparePluginParamsDlg(task, name, par_str)
       --print(k,v)
       local wgt
       if k == "<ImageLoader>" then
-        wgt = ui.ImageWidget:new {
+        wgt = ui.Group:new {
+            Legend = "Select an image:",
+            
+            int_type = "<ImageLoader>",
+            control_param = "", 
+            
+            Children = {
+              ui.ImageWidget:new {
                     Height = "fill",
                     Mode = "button",
-                    Style = [=[
+                    Style = [[
                             background-color: #dfc; 
                             margin: 2;
                             padding: 8;
@@ -32,20 +39,21 @@ local function preparePluginParamsDlg(task, name, par_str)
                             border-focus-width: 2;
                             min-width: 30;
                             min-height: 30;
-                    ]=],
+                    ]],
                     Image = nil,
                     im_hlp = require "conf.utils.image_helper",
-                    int_type = "<ImageLoader>",
-                    control_param = "", 
+--                    int_type = "<ImageLoader>",
+--                    control_param = "", 
                     
                     onClick = function(self)
                       ui.ImageWidget.onClick(self)
                       
                       local app = self.Application
-                      app:addCoroutine(function()
+                      app:addCoroutine(
+                                    function()
                                       local status, path, select = app:requestFile{
                                               Title = "Select an image (*.ppm)",
-                                              Path = ".", 
+                                              Path = self.old_path or ".", 
                                               SelectMode = "single",
                                               DisplayMode = "all",
                                               Filter = "%.ppm%s*$",
@@ -56,13 +64,16 @@ local function preparePluginParamsDlg(task, name, par_str)
                                         local f = self.im_hlp:loadImage(img_path)
                                         if f ~= nil then
 --                                          self:setValue("control_param", img_path)
-                                          self.control_param = img_path
+                                          self.old_path = path
+                                          wgt.control_param = img_path
                                           self:setValue("Image", f)
                                         end
                                       end
-                                  end 
+                                    end 
                       )
                     end,
+              },
+            },
         }
       end
       
@@ -178,41 +189,6 @@ Plugins.Gui.PlugPars = ui.Group:new
                 self:addMember(
                       preparePluginParamsDlg(task, name, nxt_lvl)
                 )
---[[
-                local k, v
-                local chlds = {}
-                for k,v in nxt_lvl:gmatch("%s*([^=]+)=%s*([^\n]+)[;\n]+") do
-                  table.insert(chlds, ui.Text:new{Text=k,})
-                  table.insert(chlds, ui.Input:new{Text=v,})
-                end
-                local gr = ui.Group:new{Columns=2, Children=chlds,}
-                if name and name ~= "" then
-                  self:addMember(ui.Text:new{Text=name})
-                end
-                self:addMember(gr)
-                self:addMember(
-                  ui.Button:new{
-                    plug_task = task, 
-                    par_group = gr, --chlds, --gr,
-                    Text = "Execute",
-                    onClick = function(self)
-                      ui.Button.onClick(self)
-                      
-                      local out
-                      local lst = self.par_group:getChildren()
-                      --print("exec", #lst)
-                      if lst and #lst > 0 then
-                        local i
-                        out = ""
-                        for i = 1, #lst, 2 do
-                          out = out .. lst[i].Text .. "=" .. lst[i+1]:getText() .. "\n"
-                        end
-                        exec.sendmsg(self.plug_task, "<EXECUTE>" .. out)
-                      end
-                    end,
-                  }
-                )
-]]
               elseif nxt_lvl:match("^<GCODE>") then
                 nxt_lvl = nxt_lvl:match("^<GCODE>(.*)")
                 local t = {}

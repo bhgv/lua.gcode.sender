@@ -23,7 +23,7 @@ return ui.Group:new
 --                local NumberedList = require "conf.gui.classes.numberedlist"
                 local status, path, select = app:requestFile
                 {
-                  Path = "/home/orangepi/el", 
+                  Path = self.old_path or "/home/orangepi/el", 
                   SelectMode = 
                 --		    "multi",
                         "single",
@@ -32,6 +32,8 @@ return ui.Group:new
                 --		    or "onlydirs"
                 }
                 if status == "selected" then
+                  self.old_path = path
+                  
                   GFNAME = path .. "/" .. select[1]
                   app:getById("status main"):setValue("Text", "Opening " .. GFNAME)
                   --print(status, path, table.concat(select, ", "))
