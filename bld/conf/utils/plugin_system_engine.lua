@@ -50,23 +50,42 @@ local test_run_plugin = function(plug_path)
 
         local plug_path = arg[1]
         
-        local f = loadfile(plug_path)
+        local fpar = loadfile(plug_path .. "/params.lua")
+        
+        if not fpar then 
+          s = "can't load: " .. plug_path .. "/params.lua"
+          print(s)
+          return s 
+        end
+        
+        local f = loadfile(plug_path .. "/init.lua")
         
         if not f then 
-          s = "can't load: " .. plug_path
+          s = "can't load: " .. plug_path .. "/init.lua"
           print(s)
           return s 
         end
         
 --        set_upvalue(f, "_ENV", new_G)
 
+        local noerr_par, conf_par = pcall(fpar)
+        
+        if not noerr_par then 
+          print(conf)
+          print(debug.traceback()) 
+          return "can't execute: " .. plug_path .. "/params.lua"
+        end
+        
         local noerr, conf = pcall(f)
         
         if not noerr then 
           print(conf)
           print(debug.traceback()) 
-          return "can't execute: " .. plug_path
+          return "can't execute: " .. plug_path .. "/init.lua"
         end
+        
+        --conf.__plugin_path = plug_path
+        --conf.params = conf_par
         
         print("loaded plugin: " .. conf.name .. ", (" .. plug_path .. ")")
         
@@ -108,8 +127,8 @@ local test_run_plugin = function(plug_path)
             --print(msg)
             if msg == "<CLICK>" then
               exec.sendport("*p", "ui", "<PLUGIN><REM PARAMS>")
-              if conf.params then
-                local s = conf.params
+              if conf_par then -- conf.params then
+                local s = conf_par --conf.params
                 if type(s) == "table" then
                   s = tab2str(s)
                 end
@@ -133,6 +152,20 @@ local test_run_plugin = function(plug_path)
               if not noerr then 
                 print(out)
                 print(debug.traceback()) 
+              end
+--            end
+            elseif conf.exec and msg:match("^<SAVE>") then
+              local pars = msg:match("^<SAVE>(.*)")
+              local partab = {}
+              local k,v
+              --print(plug_path .. "/params.lua")
+              local fsv = io.open(plug_path .. "/params.lua", "w")
+              if fsv then
+                fsv:write("return {\n")
+                for k,v in pars:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
+                  fsv:write("\t['" .. k .. "'] = '" .. v .. "',\n")
+                end
+                fsv:write("}\n")
               end
             end
           end
@@ -180,8 +213,11 @@ return {
         local attr = lfs.attributes (f)
         assert (type(attr) == "table")
         if attr.mode == "directory" then
-          if lfs.attributes(f .. "/init.lua") then
-            test_run_plugin(f .. "/init.lua") 
+          if 
+              lfs.attributes(f .. "/init.lua") 
+              and lfs.attributes(f .. "/params.lua") 
+          then
+            test_run_plugin(f) 
           end
         elseif file:match("%.lua$") then
         --  for name, value in pairs(attr) do

@@ -53,7 +53,7 @@ local function preparePluginParamsDlg(task, name, par_str)
                                     function()
                                       local status, path, select = app:requestFile{
                                               Title = "Select an image (*.ppm)",
-                                              Path = self.old_path or ".", 
+                                              Path = self.old_path or "./conf/icons", 
                                               SelectMode = "single",
                                               DisplayMode = "all",
                                               Filter = "%.ppm%s*$",
@@ -145,6 +145,52 @@ local function preparePluginParamsDlg(task, name, par_str)
                       if out then
                         --print(out)
                         exec.sendmsg(self.plug_task, "<EXECUTE>" .. out)
+                      end
+                    end,
+                }
+  )
+  table.insert(dlg, 
+                ui.Button:new{
+                    plug_task = task, 
+                    par_complex = gr1,
+                    par_group = gr2, --chlds, --gr,
+                    Text = "Save as default",
+                    onClick = function(self)
+                      ui.Button.onClick(self)
+                      
+                      local out
+                      local lst
+                      if self.par_group then
+                        lst = self.par_group:getChildren()
+                        --print("exec", #lst)
+                        if lst and #lst > 0 then
+                          local i
+                          out = ""
+                          for i = 1, #lst, 2 do
+                            out = out .. lst[i].Text .. "=" .. lst[i+1]:getText() .. "\n"
+                          end
+                        end
+                      end
+                      
+                      if self.par_complex then
+                        lst = self.par_complex:getChildren()
+                        --print("exec", #lst)
+                        if lst and #lst > 0 then
+                          local i
+                          out = out or ""
+                          for i = 1, #lst do
+                            local it = lst[i]
+                            if it.int_type then
+                              --print(it.int_type .. "=" .. it.control_param)
+                              out = out .. it.int_type .. "=" .. it.control_param .. "\n"
+                            end
+                          end
+                        end
+                      end
+                      
+                      if out then
+                        --print(out)
+                        exec.sendmsg(self.plug_task, "<SAVE>" .. out)
                       end
                     end,
                 }

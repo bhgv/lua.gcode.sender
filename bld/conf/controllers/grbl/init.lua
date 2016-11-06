@@ -52,9 +52,11 @@ return {
     end,
 
     pause = function(self)
+      PORT:write("!")
     end,
 
     resume = function(self)
+      PORT:write("~")
     end,
 
     send = function(self, cmd)
@@ -66,54 +68,74 @@ return {
       local buf, out, ln
       local lst = {}
       local ok, er, stat = false, false, false
-      buf = PORT:read(256, 50) --200)
+      buf = PORT:read(256, 200) --200)
+      --if buf then print("> ", buf) end
       if msg_buffer and msg_buffer ~= "" then
-        buf = msg_buffer .. "\n" .. buf
+        if buf and buf ~= "" then
+          buf = msg_buffer .. "\n" .. buf
+        else 
+          buf = msg_buffer
+        end
       end
       if buf ~= "" then
         out = ""
         repeat
           out = out .. buf
           buf = PORT:read(256, 50)
+          --if buf then print("... ", buf) end
         until(buf == "")
-        Log:msg("---------------------\n" .. out .. "\n=======================")
+        --Log:msg("---------------------\n" .. out .. "\n=======================")
         for ln in string.gmatch(out, "([^\u{a}\u{d}]+)") do 
           --print(ln)
-          --if ln ~= "" then
+          if ln and ln ~= "" then
             table.insert(lst, ln) 
-          --end
+          end
         end
       --print(#lst, lst[1])
-        if lst[1]:match("<") then
-          --self:status_parse(out)
-          stat = true
-          if lst[2] and lst[2]:match("ok") then
+        if lst[1] then
+          if lst[1]:match("<") then
+            --self:status_parse(out)
+            stat = true
+            -- [[
+            if lst[2] and lst[2]:match("ok") then
+              ok = true
+              msg_buffer = table.concat(lst, "\n", 3)
+            else
+            --]]
+              msg_buffer = table.concat(lst, "\n", 2)
+            end
+          elseif lst[1]:match("error") then
+            msg_buffer = table.concat(lst, "\n", 2)
+            er = true
+          elseif lst[1]:match("ok") then
+            msg_buffer = table.concat(lst, "\n", 2)
             ok = true
           end
-          msg_buffer = table.concat(lst, "\n", 3)
-        elseif lst[1]:match("error") then
-          msg_buffer = table.concat(lst, "\n", 2)
-          er = true
-        elseif lst[1]:match("ok") then
-          msg_buffer = table.concat(lst, "\n", 2)
-          ok = true
-        end
         
+          return {
+            msg = lst[1], --out,
+            ok = ok,
+            err = er,
+            stat = stat,
+            raw = out,
+          }
+        else
+          msg_buffer = table.concat(lst, "\n", 2)
+          return {
+        --    ok = ok,
+        --    err = er,
+        --    stat = stat,
+          }
+        end
         --if msg_buffer ~= "" then print("--------------\nmsg_buffer =", msg_buffer) end
         
+      else
         return {
-          msg = lst[1], --out,
-          ok = ok,
-          err = er,
-          stat = stat,
-          raw = out,
+        --    ok = ok,
+        --    err = er,
+        --    stat = stat,
         }
       end
-      return {
-          ok = ok,
-          err = er,
-          stat = stat,
-      }
     end,
 
     help = function(self)

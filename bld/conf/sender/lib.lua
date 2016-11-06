@@ -12,15 +12,14 @@ return {
   end,
         
   display_rx = function(self, s)
-      if s then
+      if s and s ~= "" then
         exec.sendport("*p", "ui", "<PORT RX>" .. s) 
       end
   end,
         
   display_rx_msg = function(self, s) 
-      if s then
+      if s and s ~= "" then
         local t = "<PORT RX MSG>" .. s
-        --print (t)
         exec.sendport("*p", "ui", t) 
       end
   end,

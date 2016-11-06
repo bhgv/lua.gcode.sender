@@ -149,16 +149,6 @@ return {
   image = nil,
   symbol = "\u{e0e3}",
   
-  params = {
-    Size = 50,
-    Frequency = 40,
-    ["Walk Z"] = 10,
-    Depth = 5,
-    Passes = 5,
-    ["Step (deg)"] = 5,
-    ["Shaft diam"] = 10,
-  },
-  
   exec = function(self, pars)
     --for k,v in pairs(pars) do
     --  print("exec ", k, v)
