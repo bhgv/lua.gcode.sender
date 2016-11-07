@@ -10,6 +10,7 @@ return ui.Group:new
     symBut(
       "\u{e078}",
       function(self)
+          Sender:newcmd('SINGLE')
           Sender:newcmd('$H')
       end
     ),

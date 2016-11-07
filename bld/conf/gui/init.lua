@@ -237,6 +237,7 @@ local window = ui.Window:new
                         elseif 
                           cmd:match("^Run")
                         then
+                          MKstate = "RUN"
                           cmd = "status: " .. cmd
                         end
                         

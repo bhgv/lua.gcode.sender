@@ -6,6 +6,26 @@ local PORT = nil
 
 local lfs = require "lfs"
 
+local status_mode = 3
+local status_mask_choises = {
+      [3] =   "<([^>,]*)," .. 
+              "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
+              "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),?" ..
+              "([^>]*)>",
+      [15] =  "<([^>,]*)," .. 
+              "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
+              "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
+              "Buf:([^,]+),RX:([^>]+)>",
+}
+local status_mask = status_mask_choises[3]
+
+
+local read_timeout_choises = {
+      [3] =   200,
+      [15] =  50,
+}
+local read_timeout = read_timeout_choises[3]
+
 
 local ports = {
     "/dev/ttyUSB0",
@@ -18,7 +38,44 @@ local bauds = {
 
 local msg_buffer = ""
 
+
+local mk_flags = {
+      Buf = nil,
+      RX = nil,
+}
+
+
+local is_resp_handled = true
+local oks = 0
+local oks_max = 3000
+
+
+
+local function calc_mk_status(msg)
+    if msg and (msg.ok or msg.err) then oks = oks - 1 end
+    
+    if not is_resp_handled then
+      if mk_flags.RX then
+        is_resp_handled = tonumber(mk_flags.Buf) < 15 and tonumber(mk_flags.RX) < 2
+      else
+        is_resp_handled = oks < 1
+      end
+    end
+--    print("calc_mk_status", msg.ok, msg.err, oks, is_resp_handled)
+
+    return is_resp_handled
+end
+
+
+
+
+
+
+
+
 return {
+    out_access = false,
+    
     info = function(self)
       return {
             name = "grbl",
@@ -31,7 +88,9 @@ return {
       local attr = lfs.attributes(port)
       if attr then
         PORT = rs232(port, speed)
-        return PORT ~= nil
+        self.out_access = PORT ~= nil
+        
+        return PORT
       else
         return false
       end
@@ -61,14 +120,19 @@ return {
 
     send = function(self, cmd)
       PORT:write(cmd)
+      
+      is_resp_handled = false
+      oks = oks + 1
+      
       return ""
     end,
 
     read = function(self)
       local buf, out, ln
       local lst = {}
+      local msg = {}
       local ok, er, stat = false, false, false
-      buf = PORT:read(256, 200) --200)
+      buf = PORT:read(256, read_timeout) --200)
       --if buf then print("> ", buf) end
       if msg_buffer and msg_buffer ~= "" then
         if buf and buf ~= "" then
@@ -112,7 +176,7 @@ return {
             ok = true
           end
         
-          return {
+          msg = {
             msg = lst[1], --out,
             ok = ok,
             err = er,
@@ -121,29 +185,36 @@ return {
           }
         else
           msg_buffer = table.concat(lst, "\n", 2)
-          return {
-        --    ok = ok,
-        --    err = er,
-        --    stat = stat,
-          }
         end
         --if msg_buffer ~= "" then print("--------------\nmsg_buffer =", msg_buffer) end
-        
-      else
-        return {
-        --    ok = ok,
-        --    err = er,
-        --    stat = stat,
-        }
       end
+      
+      self.out_access = calc_mk_status(msg)
+
+      return msg
     end,
 
     help = function(self)
+      local oks_t = oks
       self:send("$$\n")
-      local out
+      local out, _stat_mode
+      local s = ""
       repeat
         out = self:read()
+        if out.raw then
+          s = s .. out.raw
+        end
       until(out.msg)
+      
+      _stat_mode = s:match("%$10=(%d+)")
+      
+      if _stat_mode then
+        status_mode = tonumber(_stat_mode)
+        status_mask = status_mask_choises[status_mode]
+        read_timeout = read_timeout_choises[status_mode]
+      end
+      
+      oks = oks_t
       
       return out
     end,
@@ -193,18 +264,21 @@ return {
     end,
     
     status_query = function(self)
-      self:send("?\n")
+      if oks < oks_max then
+        self:send("?\n")
+      end
     end,
     
     status_parse = function(self, status)
       local s = status
-      local fr, to, state, mx, my, mz, wx, wy, wz = 
-            string.find(s,
-              "<([^>,]*)," .. 
-              "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
-              "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),?" ..
-              "([^>]*)>"
-            )
+      local fr, to, state, mx, my, mz, wx, wy, wz, Buf, RX = 
+            string.find(s, status_mask)
+      
+      mk_flags.Buf = Buf
+      mk_flags.RX = RX
+      
+--      if Buf and RX then print("Buf =", Buf, ", RX =", RX) end
+      
       local out
       out = {
         state = state,

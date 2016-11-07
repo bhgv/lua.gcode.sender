@@ -1,3 +1,7 @@
+-------------------------
+-- copyright by bhgv 2016
+-------------------------
+
 
 g = require "conf.gen.gcode"
 

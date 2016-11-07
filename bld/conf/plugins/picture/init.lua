@@ -1,3 +1,6 @@
+-------------------------
+-- copyright by bhgv 2016
+-------------------------
 
 local imhlp = require "conf.utils.image_helper"
 

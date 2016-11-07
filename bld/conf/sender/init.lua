@@ -26,7 +26,6 @@ return {
         local state = "stop"
         local int_state = "s"
         
-        local is_resp_handled = true
         local req_inc_cmd = false
         
         local stat_on = true
@@ -41,10 +40,6 @@ return {
         
         local sthread = {}
         
-        oks = 0
-        
-        local oks_max = 3000
-        
         local send_from = 1
         
         while cmd ~= "SENDER_STOP" do
@@ -53,10 +48,7 @@ return {
             
             if int_state == "s" then
               if stat_on then
-                if oks < oks_max then
-                  MK:status_query()
-                  oks = oks + 1
-                end
+                MK:status_query()
                 int_state = "rs"
               else
                 int_state = "m"
@@ -67,28 +59,15 @@ return {
                 msg = lib:cnc_read_parse(MK, state)
             --  until(msg.msg or int_state == "r")
               
-              if msg and (msg.ok or msg.err) then oks = oks - 1 end
-              
-              if not is_resp_handled then
-                is_resp_handled = --[[(msg.ok or msg.err) and]] oks < 1
-              end
-              
-              if --[[msg and]] msg.ok and oks < 1 and req_inc_cmd then --or not msg.stat then
---                is_resp_handled = --[[(msg.ok or msg.err) and]] oks < 1
-                
-                --print(msg.ok, state, oks)
-                if --[[msg.ok and state == "run" and]] is_resp_handled then --oks < 1 then 
-                  --is_resp_handled = (msg.ok or msg.err) --and oks < 1
-                  
-                  if icmd < #gthread then
-                    icmd = icmd + 1 
-                  else
-                    state = "stop"
-                    icmd = 1
-                    exec.sendport("*p", "ui", "<MESSAGE>Stop")
-                  end
-                  req_inc_cmd = false
+              if --[[msg and]] msg.ok and MK.out_access and req_inc_cmd then
+                if icmd < #gthread then
+                  icmd = icmd + 1 
+                else
+                  state = "stop"
+                  icmd = 1
+                  exec.sendport("*p", "ui", "<MESSAGE>Stop")
                 end
+                req_inc_cmd = false
               end
               
               if msg.err then
@@ -98,19 +77,9 @@ return {
                               )
                 state = "stop"
                 --stat_on = true
-                oks = oks - 1
                 icmd = icmd + 1
               end
               
---[[
-              if int_state == "rs" then
-                if msg.stat then
-                  int_state = "m"
-              --  else --if msg.ok or msg.err or not msg.msg then
-              --    int_state = "s"
-                end
-              else
-]]
               if msg.msg or int_state ~= "rs" then
                 if msg.stat or int_state == "rs" then
                   int_state = "m"
@@ -121,6 +90,7 @@ return {
             
             elseif int_state == "m" then
               --print(#gthread, state)
+              --print(MK.out_access)
               if
                 (
                   (#gthread > 0 and state == "run") or 
@@ -128,7 +98,7 @@ return {
                 )
               then
                 --print(is_resp_handled, oks, oks_max)
-                if is_resp_handled and oks < oks_max then
+                if MK.out_access then --? is_resp_handled and oks < oks_max then
                   if state == "single" then
                     --cmd = sthread[#sthread]
                     cmd = table.remove(sthread, #sthread)
@@ -153,9 +123,6 @@ return {
                   MK:send(cmd .. '\n')
                   --Log:msg(icmd .. ", " .. tostring(is_resp_handled) .. ", m cmd: " .. cmd)
                   
-                  oks = oks + 1
-                  
-                  is_resp_handled = false
                   req_inc_cmd = true
                 end
                 
@@ -202,8 +169,8 @@ return {
             elseif msg == "FILL" then
               stat_on = false
             elseif msg == "RESUME" then
-              stat_on = true
               MK:resume()
+              stat_on = true
               if state == "stop" then
                 state = "run"
                 exec.sendport("*p", "ui", "<MESSAGE>Run")

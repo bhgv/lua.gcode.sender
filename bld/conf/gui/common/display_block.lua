@@ -9,7 +9,7 @@ _G.Flags.ShowScale = function(n)
   disp_percent_view:setValue("Text", string.format("%0.2f", n) .. "%")
 end
 
-Display = require "conf.gui.display"
+Display = require "conf.gui.common.display"
 
 DisplayBlock = ui.Group:new
 {
