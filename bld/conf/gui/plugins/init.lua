@@ -4,33 +4,40 @@ local Group = ui.Group
 --local display = dofile("conf/gui/display.lua")
 
 
-return		Group:new -- file
+return function(grp)
+  local hd = require "conf.gui.plugins.head"
+  local ppars = require "conf.gui.plugins.plugpars"
+  local pg = 
+    Group:new -- file
 		{
 		    Orientation = "vertical",
 		    Children =
 		    {
-			Group:new
-			{
-			    Orientation = "horisontal",
-			    Children =
-			    {
-				require "conf.gui.plugins.head",
-			    },
-			},
-			Group:new
-			{
-			    Children =
-			    {
-				require "conf.gui.plugins.plugpars",
-				ui.Handle:new {  },
-				ui.Group:new 
-				{
-				    Children =
-				    {
-					DisplayBlock,
-				    }
-				},
-			    },
-			}
+          Group:new
+          {
+              Orientation = "horisontal",
+              Children =
+              {
+                hd(grp),
+              },
+          },
+          Group:new
+          {
+              Children =
+              {
+                ppars(grp),
+                ui.Handle:new {  },
+                ui.Group:new 
+                {
+                    Children =
+                    {
+                      DisplayBlock,
+                    }
+                },
+              },
+          }
 		    }
 		}
+    
+  return pg
+end

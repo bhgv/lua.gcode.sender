@@ -6,7 +6,7 @@ local plugs_no = 0
 
 
 
-local test_run_plugin = function(plug_path)
+local test_run_plugin = function(plug_path, sep_pars)
   print("test_run_plugin", plug_path)
   local task = exec.run(
     {
@@ -49,16 +49,25 @@ local test_run_plugin = function(plug_path)
 ]]
 
         local plug_path = arg[1]
+        local sep_pars = (arg[2] == "true")
         
-        local fpar = loadfile(plug_path .. "/params.lua")
+        print (sep_pars)
         
-        if not fpar then 
-          s = "can't load: " .. plug_path .. "/params.lua"
-          print(s)
-          return s 
+        local f, fpar
+        
+        if sep_pars then
+          fpar = loadfile(plug_path .. "/params.lua")
+          
+          if not fpar then 
+            s = "can't load: " .. plug_path .. "/params.lua"
+            print(s)
+            return s 
+          end
+          
+          f = loadfile(plug_path .. "/init.lua")
+        else
+          f = loadfile(plug_path)
         end
-        
-        local f = loadfile(plug_path .. "/init.lua")
         
         if not f then 
           s = "can't load: " .. plug_path .. "/init.lua"
@@ -68,12 +77,15 @@ local test_run_plugin = function(plug_path)
         
 --        set_upvalue(f, "_ENV", new_G)
 
-        local noerr_par, conf_par = pcall(fpar)
-        
-        if not noerr_par then 
-          print(conf)
-          print(debug.traceback()) 
-          return "can't execute: " .. plug_path .. "/params.lua"
+        local noerr_par, conf_par
+        if sep_pars then
+          noerr_par, conf_par = pcall(fpar)
+          
+          if not noerr_par then 
+            print(conf)
+            print(debug.traceback()) 
+            return "can't execute: " .. plug_path .. "/params.lua"
+          end
         end
         
         local noerr, conf = pcall(f)
@@ -89,11 +101,16 @@ local test_run_plugin = function(plug_path)
         
         print("loaded plugin: " .. conf.name .. ", (" .. plug_path .. ")")
         
+        if not conf.subtype then conf.subtype = "Stuff" end
+        
         if conf.type == "plugin" then
           local k, v, s
           s = ""
           for k,v in pairs(conf) do 
             if k == "params" then
+              if not sep_pars then
+                conf_par = v
+              end
               --[[
               s = s .. "params="
               local k1, v1
@@ -126,7 +143,13 @@ local test_run_plugin = function(plug_path)
           if msg then
             --print(msg)
             if msg == "<CLICK>" then
-              exec.sendport("*p", "ui", "<PLUGIN><REM PARAMS>")
+              exec.sendport("*p", "ui", 
+                "<PLUGIN>" 
+                .. conf.subtype 
+                .. "<NAME>"
+                .. exec.getname() 
+                .. "<REM PARAMS>"
+              )
               if conf_par then -- conf.params then
                 local s = conf_par --conf.params
                 if type(s) == "table" then
@@ -134,6 +157,8 @@ local test_run_plugin = function(plug_path)
                 end
                 exec.sendport("*p", "ui", 
                   "<PLUGIN>" 
+                  .. conf.subtype
+                  .. "<NAME>"
                   .. exec.getname() 
                   .. "<SHOW PARAMS>" 
                   .. (conf.name or "")
@@ -174,7 +199,8 @@ local test_run_plugin = function(plug_path)
         return msg
       end,
     },
-    plug_path
+    plug_path,
+    tostring(sep_pars)
   )
   
   local msg = exec.waitmsg(1000)
@@ -196,6 +222,15 @@ local test_run_plugin = function(plug_path)
         conf = t,
     })
   
+    local grps = _G.Flags.Plugins.Groups
+    if t.subtype then
+      if not grps[t.subtype] then
+        grps[t.subtype] = {}
+      end
+      table.insert(grps[t.subtype], #_G.Flags.Plugins)
+    else
+      table.insert(grps.Stuff, #_G.Flags.Plugins)
+    end
     plugs_no = plugs_no + 1
   end
 end
@@ -217,13 +252,13 @@ return {
               lfs.attributes(f .. "/init.lua") 
               and lfs.attributes(f .. "/params.lua") 
           then
-            test_run_plugin(f) 
+            test_run_plugin(f, true) 
           end
         elseif file:match("%.lua$") then
         --  for name, value in pairs(attr) do
         --    print (name, value)
         --  end
-          test_run_plugin(f)
+          test_run_plugin(f, false)
         end
       end
     end

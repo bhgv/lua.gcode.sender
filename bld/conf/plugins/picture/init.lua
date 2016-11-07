@@ -216,6 +216,7 @@ end
 return {
   name = "Image (*.ppm) to g-code",
   type = "plugin", 
+  subtype = "CAM",
   gui = "button",
   image = nil,
   symbol = "\u{e02c}",

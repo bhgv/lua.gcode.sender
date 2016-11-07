@@ -217,6 +217,7 @@ end
 return {
   name = "simple Gear",
   type = "plugin", 
+  subtype = "CAM", 
   gui = "button",
   image = nil,
   symbol = "\u{e041}",

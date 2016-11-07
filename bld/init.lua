@@ -20,7 +20,11 @@ Sender:start()
 Flags = {
   Home_path = os.getenv("PWD"),
   Plugins_path = os.getenv("PWD") .. "/conf/plugins",
-  Plugins = {},
+  Plugins = {
+    Groups = {
+      Stuff = {},
+    },
+  },
   
   DispScale = 100,
   AutoRedraw = true,
@@ -31,6 +35,8 @@ Flags = {
 
 Plugins = {
   Gui = {
+    Headers = {},
+    PlugPars = {},
   },
 }
 

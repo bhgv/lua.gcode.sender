@@ -48,6 +48,7 @@ local plugBut = function(conf, taskname)
   return nil
 end
 
+--[[
 local chlds = {}
 local i, plg, conf
 for i,plg in ipairs(_G.Flags.Plugins) do
@@ -59,12 +60,42 @@ for i,plg in ipairs(_G.Flags.Plugins) do
     end
   end
 end
+]]
 
-
-Plugins.Gui.Header = ui.Group:new
+--[[
+--Plugins.Gui.Header = ui.Group:new
+local hdr = ui.Group:new
 {
   Children = chlds,
 }
+]]
+--return hdr --Plugins.Gui.Header
 
-return Plugins.Gui.Header
+return function(grp)
+  local chlds = {}
+  local i, j, plg, conf
+  local gr_tab = _G.Flags.Plugins.Groups[grp]
+  for j = 1,#gr_tab do
+    i = gr_tab[j]
+    plg = _G.Flags.Plugins[i]
+  --for i,plg in ipairs(_G.Flags.Plugins) do
+    conf = plg.conf
+    if conf.gui == "button" then
+      local b = plugBut(conf, plg.taskname)
+      if b then
+        table.insert(chlds, b)
+      end
+    end
+  end
 
+  local hdr = ui.Group:new
+  {
+    Children = chlds,
+  }
+
+  lastGroup = nil
+  
+  Plugins.Gui.Headers[grp] = hdr
+  
+  return hdr --Plugins.Gui.Header
+end

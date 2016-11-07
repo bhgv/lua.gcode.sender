@@ -199,59 +199,69 @@ local function preparePluginParamsDlg(task, name, par_str)
 end
 
 
+local function cr_plugpars(grp)
+  local ppars =
+          ui.Group:new
+          {
+            Orientation = "vertical",
+          --  Width = 75+120+32,
+            Pars_group = grp,
+            Children = 
+            {
+            },
+            setup = function(self, app, win)
+                      ui.Group.setup(self, app, win)
+                      app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+            end,
+            cleanup = function(self)
+                      ui.Group.cleanup(self)
+                      self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+            end,
+            msgUser = function(self, msg)
+                      local ud = msg[-1]
+                      --print("ud", ud)
+                      local grp, task, nxt_lvl
+                      grp, task, nxt_lvl = ud:match("^<PLUGIN>([^<]*)<NAME>([^<]*)(<.*)")
+                      --print(self.Pars_group, grp, task, nxt_lvl)
+                      if grp and self.Pars_group == grp and nxt_lvl then
+                        if nxt_lvl:match("^<REM PARAMS>") then
+                          --self:setValue("Children", {})
+                          local lst = self:getChildren()
+                          local i,v 
+                          for i = #lst,1,-1 do
+                            v = lst[i]
+                            self:remMember(v)
+                          end
+                        elseif nxt_lvl:match("^<SHOW PARAMS>") then
+                          local name
+                          name, nxt_lvl = nxt_lvl:match("^<SHOW PARAMS>([^<]*)<BODY>(.*)")
+                          self:addMember(
+                                preparePluginParamsDlg(task, name, nxt_lvl)
+                          )
+                        --[[
+                        elseif nxt_lvl:match("^<GCODE>") then
+                          nxt_lvl = nxt_lvl:match("^<GCODE>(.*)")
+                          local t = {}
+                          local ln
+                          --print(nxt_lvl)
+                          for ln in nxt_lvl:gmatch("([^\n]+)\n") do
+                            table.insert(t, ln)
+                          end
+                          GTXT = t
+                          initialiseEditor()
+                          do_vparse()
+                        ]]
+                        end
+                      end
+                      
+                      return msg
+            end,
+          }
+  
+  Plugins.Gui.PlugPars[grp] = ppars
+  
+  return ppars
+end
 
-Plugins.Gui.PlugPars = ui.Group:new
-{
-  Orientation = "vertical",
---  Width = 75+120+32,
-  Children = 
-  {
-  },
-  setup = function(self, app, win)
-            ui.Group.setup(self, app, win)
-            app:addInputHandler(ui.MSG_USER, self, self.msgUser)
-  end,
-  cleanup = function(self)
-            ui.Group.cleanup(self)
-            self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
-  end,
-  msgUser = function(self, msg)
-            local ud = msg[-1]
-            --print("ud", ud)
-            local task, nxt_lvl
-            task, nxt_lvl = ud:match("^<PLUGIN>([^<]*)(<.*)")
-            if nxt_lvl then
-              if nxt_lvl:match("^<REM PARAMS>") then
-                --self:setValue("Children", {})
-                local lst = self:getChildren()
-                local i,v 
-                for i = #lst,1,-1 do
-                  v = lst[i]
-                  self:remMember(v)
-                end
-              elseif nxt_lvl:match("^<SHOW PARAMS>") then
-                local name
-                name, nxt_lvl = nxt_lvl:match("^<SHOW PARAMS>([^<]*)<BODY>(.*)")
-                self:addMember(
-                      preparePluginParamsDlg(task, name, nxt_lvl)
-                )
-              elseif nxt_lvl:match("^<GCODE>") then
-                nxt_lvl = nxt_lvl:match("^<GCODE>(.*)")
-                local t = {}
-                local ln
-                --print(nxt_lvl)
-                for ln in nxt_lvl:gmatch("([^\n]+)\n") do
-                  table.insert(t, ln)
-                end
-                GTXT = t
-                initialiseEditor()
-                do_vparse()
-              end
-            end
-            
-            return msg
-  end,
-}
 
-
-return Plugins.Gui.PlugPars
+return cr_plugpars --Plugins.Gui.PlugPars

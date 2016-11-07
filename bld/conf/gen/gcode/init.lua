@@ -43,6 +43,7 @@ return {
     end
     header = str
   end,
+  
   footer = function(self, str)
     local t = type(str)
     if t == "string" then
@@ -57,9 +58,17 @@ return {
       buf = {}
       artAbs = "G90"
   end,
+  
   finish = function(self)
       local gcode = header .. "\n" .. table.concat(buf, "\n") .. footer .. "\n"
-      exec.sendport("*p", "ui", "<PLUGIN><GCODE>" .. gcode)
+      exec.sendport("*p", "ui", 
+--        "<PLUGIN>"
+--        .. "<NAME>"
+--        .. exec.getname() 
+--        .. 
+        "<GCODE>" 
+        .. gcode
+      )
   end,
   
   set_param = function(self, par_nm, ...)
@@ -70,10 +79,12 @@ return {
       end
   end,
   
+  
   work_to = function(self, par)
       local ln = partAbs .. " G1 " .. move_to(par)
       table.insert(buf, ln)
   end,
+  
   walk_to = function(self, par)
       local ln = partAbs .. " G0 " .. move_to(par)
       table.insert(buf, ln)
@@ -106,7 +117,6 @@ return {
       local ln = "S" .. tonumber(speed)
       table.insert(buf, ln)
   end,
-      
   
 }
 

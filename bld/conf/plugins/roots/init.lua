@@ -149,6 +149,7 @@ end
 return {
   name = "Lobe-Roots shape",
   type = "plugin", 
+  subtype = "CAM",
   gui = "button",
   image = nil,
   symbol = "\u{e0e3}",

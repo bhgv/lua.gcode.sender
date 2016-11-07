@@ -116,6 +116,34 @@ App = ui.Application:new {
 }
 
 
+local page_captions = {
+          "_File", 
+          "_Control", 
+}
+local pages = {
+          require("conf.gui.file"),
+          require("conf.gui.control"),
+}
+
+local k,v 
+for k,v in pairs(_G.Flags.Plugins.Groups) do
+  --print(k, v)
+  if type(v) == "table" and #v > 0 then
+    table.insert(page_captions, k)
+    local pg = require("conf.gui.plugins")
+    table.insert(pages, pg(k))
+  end
+end
+
+table.insert(page_captions, "_Editor")
+table.insert(pages, require("conf.gui.edit"))
+table.insert(page_captions, "_Terminal")
+table.insert(pages, require("conf.gui.terminal"))
+table.insert(page_captions, "_Showroom")
+table.insert(pages, require("conf.gui.showroom"))
+  
+
+
 local window = ui.Window:new
 {
     Orientation = "vertical",
@@ -133,15 +161,20 @@ local window = ui.Window:new
     {
       ui.PageGroup:new
       {
-        PageCaptions = { 
+        PageCaptions = page_captions,
+        --[[
+        { 
                       "_File", 
                       "_Control", 
                       "_Plugins", 
                       "_Editor", 
                       "_Terminal",
-                      "_Showroom"},
+                      "_Showroom"
+        },
+        ]]
         Style = "font:Vera/b:18;",
-        Children =
+        Children = pages,
+        --[[
         {
           require("conf.gui.file"),
           require("conf.gui.control"),
@@ -150,6 +183,7 @@ local window = ui.Window:new
           require("conf.gui.terminal"),
           require("conf.gui.showroom"),
         },
+        ]]
       },
   
       ui.Gauge:new
@@ -249,8 +283,35 @@ local window = ui.Window:new
           },
         }
       }
-
-    }
+    },
+  
+    setup = function(self, app, win)
+                      ui.Window.setup(self, app, win)
+                      app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+    end,
+    cleanup = function(self)
+                      ui.Window.cleanup(self)
+                      self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+    end,
+    msgUser = function(self, msg)
+                      local ud = msg[-1]
+                      --print("ud", ud)
+                      local g
+                      if ud:match("^<GCODE>") then
+                        g = ud:match("^<GCODE>(.*)")
+                        local t = {}
+                        local ln
+                        --print(nxt_lvl)
+                        for ln in g:gmatch("([^\n]+)\n") do
+                          table.insert(t, ln)
+                        end
+                        GTXT = t
+                        initialiseEditor()
+                        do_vparse()
+                      end
+                      
+                      return msg
+    end,
 }
 
 
