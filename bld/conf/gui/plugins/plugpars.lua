@@ -95,7 +95,7 @@ local function preparePluginParamsDlg(task, name, par_str)
   
   dlg = {}
   if name and name ~= "" then
-    dlg[1] = ui.Text:new{Text=name}
+    dlg[1] = ui.Text:new{Text=name,Class = "caption",}
   end
   if gr1 then
     table.insert(dlg, gr1)
@@ -195,7 +195,7 @@ local function preparePluginParamsDlg(task, name, par_str)
                     end,
                 }
   )
-  return ui.Group:new{Orientation = "vertical", Children = dlg, }
+  return ui.Group:new{Orientation = "vertical",Legend="Parameters:",Children = dlg, }
 end
 
 
