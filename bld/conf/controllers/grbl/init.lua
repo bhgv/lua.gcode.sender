@@ -47,12 +47,12 @@ local mk_flags = {
 
 local is_resp_handled = true
 local oks = 0
-local oks_max = 3000
+local oks_max = 256
 
 
 
 local function calc_mk_status(msg)
-    if msg and (msg.ok or msg.err) then oks = oks - 1 end
+--    if msg and (msg.ok or msg.err) then oks = oks - 1 end
     
     if not is_resp_handled then
       if mk_flags.RX then
@@ -61,9 +61,9 @@ local function calc_mk_status(msg)
         is_resp_handled = oks < 1
       end
     end
---    print("calc_mk_status", msg.ok, msg.err, oks, is_resp_handled)
+    --print("calc_mk_status", msg.ok, msg.err, oks, is_resp_handled, msg.msg)
 
-    return is_resp_handled
+    return is_resp_handled and (msg.ok) -- or msg.err)
 end
 
 
@@ -89,6 +89,8 @@ return {
       if attr then
         PORT = rs232(port, speed)
         self.out_access = PORT ~= nil
+        
+        oks = 0
         
         return PORT
       else
@@ -121,6 +123,7 @@ return {
     send = function(self, cmd)
       PORT:write(cmd)
       
+      self.out_access = false
       is_resp_handled = false
       oks = oks + 1
       
@@ -131,6 +134,7 @@ return {
       local buf, out, ln
       local lst = {}
       local msg = {}
+      local ln_1, ln, _
       local ok, er, stat = false, false, false
       buf = PORT:read(256, read_timeout) --200)
       --if buf then print("> ", buf) end
@@ -157,27 +161,51 @@ return {
         end
       --print(#lst, lst[1])
         if lst[1] then
-          if lst[1]:match("<") then
+          if lst[1]:match("^<") then
             --self:status_parse(out)
             stat = true
-            -- [[
-            if lst[2] and lst[2]:match("ok") then
+            ln_1 = lst[1]
+            
+            if lst[2] and lst[2]:match("^ok") then
               ok = true
+              oks = oks - 1
               msg_buffer = table.concat(lst, "\n", 3)
             else
-            --]]
               msg_buffer = table.concat(lst, "\n", 2)
             end
-          elseif lst[1]:match("error") then
+            --table.remove(lst, 1)
+          elseif lst[1]:match("^error") then
             msg_buffer = table.concat(lst, "\n", 2)
+            ln_1 = lst[1]
+            oks = oks - 1
             er = true
-          elseif lst[1]:match("ok") then
-            msg_buffer = table.concat(lst, "\n", 2)
-            ok = true
+            --table.remove(lst, 1)
+          else
+            ln_1 = lst[1]
+            --table.remove(lst, 1)
+            
+            local i = 1
+            while i <= #lst do
+              ln = lst[i]
+              i = i + 1
+              --table.remove(lst, 1)
+              if ln:match("^ok") then
+                ok = true
+                --for _ in ln:gmatch("ok") do
+                  oks = oks - 1
+                --end
+              else
+                break
+              end
+            end
+            msg_buffer = table.concat(lst, "\n", i)
+            --print(msg_buffer)
           end
         
+          --print("ln_1", ln_1)
+          
           msg = {
-            msg = lst[1], --out,
+            msg = ln_1, --lst[1], --out,
             ok = ok,
             err = er,
             stat = stat,
@@ -190,21 +218,27 @@ return {
       end
       
       self.out_access = calc_mk_status(msg)
+      
+      --msg.ok = ok and self.out_access
 
       return msg
     end,
 
     help = function(self)
-      local oks_t = oks
       self:send("$$\n")
       local out, _stat_mode
       local s = ""
-      repeat
+      
+      out = self:read()
+      --repeat
+      while not out.msg do
         out = self:read()
-        if out.raw then
-          s = s .. out.raw
-        end
-      until(out.msg)
+        --if out.raw then
+        --  s = s .. out.raw
+        --end
+      end
+      --until(out.msg)
+      s = out.raw
       
       _stat_mode = s:match("%$10=(%d+)")
       
@@ -213,8 +247,6 @@ return {
         status_mask = status_mask_choises[status_mode]
         read_timeout = read_timeout_choises[status_mode]
       end
-      
-      oks = oks_t
       
       return out
     end,
@@ -277,7 +309,7 @@ return {
       mk_flags.Buf = Buf
       mk_flags.RX = RX
       
---      if Buf and RX then print("Buf =", Buf, ", RX =", RX) end
+      --if Buf and RX then print("Buf =", Buf, ", RX =", RX) end
       
       local out
       out = {

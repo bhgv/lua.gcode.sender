@@ -168,15 +168,22 @@ local test_run_plugin = function(plug_path, sep_pars)
               end
             elseif conf.exec and msg:match("^<EXECUTE>") then
               local pars = msg:match("^<EXECUTE>(.*)")
-              local partab = {}
-              local k,v
-              for k,v in pars:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
-                partab[k] = v
-              end
-              local noerr, out = pcall(conf.exec, self, partab)
-              if not noerr then 
-                print(out)
-                print(debug.traceback()) 
+              --print("conf.subtype =", conf.subtype)
+              if conf.subtype == "Filter" then
+                exec.sendmsg("sender", "ADDFILTER")
+                exec.sendmsg("sender", exec.getname())
+                exec.sendmsg("sender", pars)
+              else
+                local partab = {}
+                local k,v
+                for k,v in pars:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
+                  partab[k] = v
+                end
+                local noerr, out = pcall(conf.exec, self, partab)
+                if not noerr then 
+                  print(out)
+                  print(debug.traceback()) 
+                end
               end
 --            end
             elseif conf.exec and msg:match("^<SAVE>") then
@@ -191,6 +198,22 @@ local test_run_plugin = function(plug_path, sep_pars)
                   fsv:write("\t['" .. k .. "'] = '" .. v .. "',\n")
                 end
                 fsv:write("}\n")
+              end
+            elseif conf.exec and msg:match("^<FILTER>") then
+              --print(msg)
+              local cmd, pars_s = msg:match("<FILTER>([^<]*)<CMD>(.*)")  
+                local partab = {}
+                local k,v
+                for k,v in pars_s:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
+                  partab[k] = v
+                end
+              local noerr, out = pcall(conf.exec, self, cmd, partab)
+              if not noerr then 
+                print(out)
+                print(debug.traceback()) 
+              else
+                if not out then out = cmd end
+                exec.sendmsg("sender", out)
               end
             end
           end

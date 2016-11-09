@@ -103,23 +103,25 @@ local function preparePluginParamsDlg(task, name, par_str)
   if gr2 then
     table.insert(dlg, gr2)
   end
+  --local b_name = "Execute"
+  --if
   table.insert(dlg, 
                 ui.Button:new{
                     plug_task = task, 
                     par_complex = gr1,
                     par_group = gr2, --chlds, --gr,
-                    Text = "Execute",
+                    Text = "Execute", --(pars.subtype == "Filter" and "Attach") or "Execute",
                     onClick = function(self)
                       ui.Button.onClick(self)
                       
-                      local out
+                      local out = ""
                       local lst
                       if self.par_group then
                         lst = self.par_group:getChildren()
                         --print("exec", #lst)
                         if lst and #lst > 0 then
                           local i
-                          out = ""
+                          --out = ""
                           for i = 1, #lst, 2 do
                             out = out .. lst[i].Text .. "=" .. lst[i+1]:getText() .. "\n"
                           end
@@ -131,7 +133,7 @@ local function preparePluginParamsDlg(task, name, par_str)
                         --print("exec", #lst)
                         if lst and #lst > 0 then
                           local i
-                          out = out or ""
+                          --out = out or ""
                           for i = 1, #lst do
                             local it = lst[i]
                             if it.int_type then

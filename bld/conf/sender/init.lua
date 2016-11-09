@@ -23,6 +23,8 @@ return {
         
         local lib = require "conf.sender.lib"
         
+        local GFilters = {}
+        
         local state = "stop"
         local int_state = "s"
         
@@ -44,7 +46,7 @@ return {
         
         while cmd ~= "SENDER_STOP" do
           if MK then
-            --print("int_state =", int_state, oks)
+            --print("int_state =", int_state) --, oks)
             
             if int_state == "s" then
               if stat_on then
@@ -59,7 +61,48 @@ return {
                 msg = lib:cnc_read_parse(MK, state)
             --  until(msg.msg or int_state == "r")
               
-              if --[[msg and]] msg.ok and MK.out_access and req_inc_cmd then
+              --[=[
+              if --[[msg and]] --[[msg.ok and]] MK.out_access and req_inc_cmd then
+                if icmd < #gthread then
+                  icmd = icmd + 1 
+                else
+                  state = "stop"
+                  icmd = 1
+                  exec.sendport("*p", "ui", "<MESSAGE>Stop")
+                end
+                req_inc_cmd = false
+              end
+              ]=]
+              
+              if msg.err then
+                exec.sendport("*p", "ui", "<MESSAGE>" 
+                              .. msg.msg:match("([^\u{a}\u{d}]+)") 
+                              .. " (ln: " .. (send_from + icmd - 1) .. ")"
+                              )
+                state = "stop"
+                --stat_on = true
+                --icmd = icmd + 1
+              end
+              
+              if msg.msg then --or int_state ~= "rs" then
+              --  if msg.stat then --or int_state == "rs" then
+                  int_state = "m"
+              --  else --if msg.ok or msg.err or not msg.msg then
+              --    int_state = "s"
+              --  end
+              elseif (not msg.msg) then
+                if int_state ~= "rs" and stat_on then
+                  int_state = "s"
+                else
+                  int_state = "m"
+                end
+              end
+            
+            elseif int_state == "m" then
+              --print(#gthread, state)
+              --print(MK.out_access)
+              
+              if --[[msg and]] --[[msg.ok and]] MK.out_access and req_inc_cmd and state == "run" then
                 if icmd < #gthread then
                   icmd = icmd + 1 
                 else
@@ -70,52 +113,44 @@ return {
                 req_inc_cmd = false
               end
               
-              if msg.err then
-                exec.sendport("*p", "ui", "<MESSAGE>" 
-                              .. msg.msg:match("([^\u{a}\u{d}]+)") 
-                              .. " (ln: " .. (send_from + icmd - 1) .. ")"
-                              )
-                state = "stop"
-                --stat_on = true
-                icmd = icmd + 1
-              end
-              
-              if msg.msg or int_state ~= "rs" then
-                if msg.stat or int_state == "rs" then
-                  int_state = "m"
-                else --if msg.ok or msg.err or not msg.msg then
-                  int_state = "s"
-                end
-              end
-            
-            elseif int_state == "m" then
-              --print(#gthread, state)
-              --print(MK.out_access)
               if
                 (
-                  (#gthread > 0 and state == "run") or 
+                  (#gthread >= icmd and state == "run") or 
                   (#sthread > 0 and state == "single")
                 )
               then
                 --print(is_resp_handled, oks, oks_max)
                 if MK.out_access then --? is_resp_handled and oks < oks_max then
+                  local num_str
                   if state == "single" then
                     --cmd = sthread[#sthread]
                     cmd = table.remove(sthread, #sthread)
                     if #sthread == 0 then
                       state = "stop"
                     end
+                    num_str = ""
                   else
                     --icmd = icmd + 1
-                    cmd = '(' .. (send_from + icmd - 1) .. ') ' .. gthread[ icmd ]
+                    cmd = gthread[ icmd ]
                     --cmd = table.remove(gthread, 1)
                     
-                    exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd)
+                    exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd
+                    )
+                    num_str = '(' .. (send_from + icmd - 1) .. ') '
                   end
                   
-                  lib:display_tx(cmd)
+                  --lib:display_tx( '(' .. (send_from + icmd - 1) .. ') ' .. cmd )
                   
-                
+                  if #GFilters > 0 then
+                    local i,flt
+                    for i,flt in ipairs(GFilters) do
+                      cmd = flt:filter(cmd) or cmd
+                      --print ("send", cmd)
+                    end
+                  end
+                  
+                  lib:display_tx( num_str .. cmd )
+
                   --if cmd == nil then
                   --  cmd = ""
                   --end
@@ -128,7 +163,7 @@ return {
                 
                 int_state = "r"
               else
-                int_state = "s"
+                int_state = "r" --"s"
               end
             end
           end
@@ -146,7 +181,7 @@ return {
                 if MK then
                   if MK:open(prt, 0 + bod) then
                     local out = MK:init()
-                    lib:split(out.raw, "[^\u{a}\u{d}]+", lib.display_rx_msg)
+                    lib:split(out.msg, "[^\u{a}\u{d}]+", lib.display_rx_msg)
                     exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
                   else
                     MK = nil
@@ -158,6 +193,7 @@ return {
               gthread = {}
               icmd = 1
               state = "stop"
+              req_inc_cmd = false
               exec.sendport("*p", "ui", "<MESSAGE>Stop")
             elseif msg == "CALCULATE" then
               exec.sendport("*p", "ui", "<CMD GAUGE SETUP>" .. #gthread)
@@ -177,6 +213,7 @@ return {
               end
             elseif msg == "STOP" then
               icmd = 1
+              req_inc_cmd = false
               state = "stop"
               exec.sendport("*p", "ui", "<MESSAGE>Stop")
             elseif msg == "SINGLE" then
@@ -189,6 +226,50 @@ return {
               msg = exec.waitmsg(200)
               if state == "stop" and msg then
                 send_from = tonumber(msg)
+              end
+            elseif msg == "ADDFILTER" then
+              local nm = exec.waitmsg(200)
+              if nm then
+                local pars_s = exec.waitmsg(200)
+                local partab = {}
+                local k,v
+                for k,v in pars_s:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
+                  partab[k] = v
+                end
+                
+                local i,flt
+                for i = #GFilters,1,-1 do
+                  flt = GFilters[i]
+                  if flt.name == nm then
+                    table.remove(GFilters[i])
+                  end
+                end
+                table.insert(GFilters, {
+                    name = nm,
+                    pars = partab,
+                    pars_s = pars_s,
+                    filter = function(self, cmd)
+                      if cmd then
+                        --exec.sendport("*p", "ui", "<FILTER>" self.name .. "<CMD>" .. cmd)
+                        exec.sendmsg(self.name, "<FILTER>" .. cmd .. "<CMD>" .. self.pars_s)
+                        return exec.waitmsg(500) or cmd
+                      end
+                      return ""
+                    end
+                })
+                
+              end
+            elseif msg == "DELFILTER" then
+              msg = exec.waitmsg(200)
+              if msg then
+                local i,flt
+                local nm = msg
+                for i = #GFilters,1,-1 do
+                  flt = GFilters[i]
+                  if flt.name == nm then
+                    table.remove(GFilters[i])
+                  end
+                end
               end
             else
               gthread[#gthread + 1] = msg

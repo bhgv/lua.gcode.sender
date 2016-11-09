@@ -40,6 +40,9 @@ Plugins = {
   },
 }
 
+GFilters = {
+}
+
 local plugin_sys = require "conf.utils.plugin_system_engine"
 
 plugin_sys:collect_plugins()

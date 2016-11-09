@@ -65,14 +65,13 @@ return {
               if out.msg then
                 if out.stat then
                   self:cnc_stat(MK:status_parse(out.msg))
-                elseif out.ok or out.err then
-                  if state == "run" then
+                else --if out.ok or out.err then
+                  if state == "run" and (out.ok or out.err) then
                     self:split(out.msg, "[^\u{a}\u{d}]+", self.display_rx)
                   else
-                    self:split(out.raw, "[^\u{a}\u{d}]+", self.display_rx_msg)
+                    self:split(out.msg, "[^\u{a}\u{d}]+", self.display_rx_msg)
                   end
                 end
-                --print(out.msg)
               end
               return out
   end,

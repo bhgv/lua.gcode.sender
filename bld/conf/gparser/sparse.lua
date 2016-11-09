@@ -20,7 +20,7 @@ function do_sparse(from, to)
   --print (from, to)
   local txt = table.concat(GTXT, "\n", from, to) .. "\n"
   
-  _G.Flags.SendFrom = from
+  _G.Flags.SendFrom = from or 1
   _G.Flags.SendTo = to
   
   --[[
@@ -45,7 +45,7 @@ function do_sparse(from, to)
   --  print(o[i])
   end
   Sender:newcmd("SENDFROM")
-  Sender:newcmd(tostring(from))
+  Sender:newcmd(tostring(from or 1))
   
   Sender:newcmd("CALCULATE")
 end
