@@ -14,6 +14,7 @@ Used Lua plugins
 - http://hg.neoscientists.org/tekui/
 - https://github.com/keplerproject/luafilesystem
 - https://github.com/vsergeev/lua-periphery
+- https://github.com/memononen/nanosvg
 
 How to build
 -------
