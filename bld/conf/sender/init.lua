@@ -172,6 +172,7 @@ return {
           
           if msg ~= nil then
             Log:msg("msg = " .. msg)
+            --print("msg = " .. msg)
             if msg == "PORT" then
               local mk = exec.waitmsg(2000)
               local prt = exec.waitmsg(2000)

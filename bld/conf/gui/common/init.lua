@@ -2,8 +2,14 @@
 ui = require "tek.ui"
 
 
-symBut = function(txt, foo, color)
-  local style = "font:ui-icons:20; width:24; color:olive;" --olive;" --navy;"
+symBut = function(txt, foo, color, isnosym)
+  local font = ":18" --"Vera:18"
+  --print (isnosym,txt)
+  if not isnosym then
+    font = "ui-icons:20"
+  end
+  
+  local style = "font:" .. font .. "; width:24; color:olive;" --olive;" --navy;"
   local par = {}
 --  if par.Style then
 --    style = style .. par.Style

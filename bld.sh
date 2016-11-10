@@ -20,6 +20,10 @@ echo "  --> gcode parser"
 cd $DIR/gcode-parser
 ./bld.sh
 
+echo "  --> luaSVG"
+cd $DIR/luaSVG
+./bld.sh
+
 echo "  --> tekUI"
 cd $DIR/tekUI
 make all

@@ -8,10 +8,15 @@ local plugBut = function(conf, taskname)
   local crfoo
   local ico
   local issmall = false
+  local isnosym = false
   
   if conf.symbol then
     crfoo = symBut
     ico = conf.symbol
+  elseif conf.nosymbol then
+    crfoo = symBut
+    ico = conf.nosymbol
+    isnosym = true
   elseif conf.symbolsm then
     crfoo = symButSm
     ico = conf.symbolsm
@@ -25,7 +30,9 @@ local plugBut = function(conf, taskname)
         local task = self.plug_task
         
         exec.sendmsg(task, "<CLICK>")
-      end
+      end,
+      "olive",
+      isnosym
   )
   but.plug_conf = conf
   but.plug_task = taskname

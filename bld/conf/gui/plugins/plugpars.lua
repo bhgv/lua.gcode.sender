@@ -3,6 +3,8 @@ local exec = require "tek.lib.exec"
 
 --print(ui.ProgDir)
 
+local complexcontrol = require "conf.gui.plugins.lib.complexcontrol"
+
 
 local function preparePluginParamsDlg(task, name, par_str)
   local k, v
@@ -19,7 +21,8 @@ local function preparePluginParamsDlg(task, name, par_str)
   for k,v in pairs(pars) do -- par_str:gmatch("%s*([^=]+)=%s*([^\n]+)[;\n]+") do
     if k:match("^<") then
       --print(k,v)
-      local wgt
+      local wgt = complexcontrol(k)
+      --[==[
       if k == "<ImageLoader>" then
         wgt = ui.Group:new {
             Legend = "Select an image:",
@@ -76,6 +79,7 @@ local function preparePluginParamsDlg(task, name, par_str)
             },
         }
       end
+      ]==]
       
       table.insert(chlds, wgt)
       --table.insert(chlds, ui.Text:new{Text=k,})
