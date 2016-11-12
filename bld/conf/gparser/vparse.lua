@@ -2,6 +2,8 @@
 local ui = require "tek.ui"
 
 
+local rel_gcode_display
+
 t_cb = function(l, k, p1, p2)
 --  print(k, p1, p2)
 end
@@ -16,6 +18,9 @@ vcb_eol = function(l, k)
     tmp_vpt.ln_n = l
     tmp_vpts[tmp_vi] = tmp_vpt
     tmp_vi = tmp_vi + 1
+    
+    rel_gcode_display[l] = #tmp_vpts
+    
     --print(tmp_vpt.x, tmp_vpt.y)
     tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false}
   end
@@ -66,9 +71,12 @@ function do_vparse()
     no_callback= nil,
   }
   
+  rel_gcode_display = {}
+  
   --local o = 
   gparser:do_parse(txt)
 
+  _G.Flags.Rel_gcode2display = rel_gcode_display
   --for i = 1,#o do
   --  print(o[i])
   --end

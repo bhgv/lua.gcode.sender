@@ -506,24 +506,51 @@ function Display:onMButton(msg)
       
       if min_dist_n then
         --print("min_dist_n = ", min_dist_n, min_dist)
-        local d = self.Window.Drawable
-        local ln = self.scr_lns[min_dist_n]
-        local oln = self.sel_line
-        if oln then
-          d:drawLine(oln.xb, oln.yb, oln.xe, oln.ye, oln.c)
-        end
-        d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+        --local d = self.Window.Drawable
+        --local ln = self.scr_lns[min_dist_n]
+        --local oln = self.sel_line
+        --if oln then
+        --  d:drawLine(oln.xb, oln.yb, oln.xe, oln.ye, oln.c)
+        --end
+        --d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+        local ln_n = self:sel_item(min_dist_n)
         
         --print("---", ln.ln_n)
-        gLstWdgtM:setValue("SelectedLine", ln.ln_n)
-        gLstWdgtM:setValue("CursorLine", ln.ln_n)
+        if ln_n then
+          gLstWdgtM:setValue("SelectedLine", ln_n)
+          gLstWdgtM:setValue("CursorLine", ln_n)
+        end
 
-        self.sel_line = ln
+        --self.sel_line = ln
       end
     --elseif key == 2 then
     end
   end
   return msg
+end
+
+
+function Display:sel_item(i)
+  local ln = nil
+  local d = self.Window.Drawable  
+  local ln_n = nil
+  
+  d:pushClipRect(self:getRect())
+  
+  local oln = self.sel_line
+  if oln then
+    d:drawLine(oln.xb, oln.yb, oln.xe, oln.ye, oln.c)
+  end
+  if i then
+    ln = self.scr_lns[i]
+    d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+    ln_n = ln.ln_n
+  end
+  self.sel_line = ln
+  
+  d:popClipRect()
+  
+  return ln_n
 end
 
 

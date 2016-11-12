@@ -18,6 +18,7 @@ gLstWdgtM = ui.Lister:new
                 App:getById("gedit"):setValue("Text", line[1][2])
 								--self.Window:setRecord(line[1])
                 --self.sel_line_no
+                Display:sel_item(_G.Flags.Rel_gcode2display[lineno])
 							end
 						end,
             
@@ -40,7 +41,9 @@ gLstWdgtM = ui.Lister:new
                 local i = tonumber(cmd)
                 self:setValue("SelectedLine", i)
                 self:setValue("CursorLine", i)
-
+                
+                Display:sel_item(_G.Flags.Rel_gcode2display[i])
+--[[
               else
                 cmd = ud:match("<EDITOR SEL LN>(%d+)")
                 if cmd then
@@ -49,6 +52,7 @@ gLstWdgtM = ui.Lister:new
                   self:setValue("SelectedLine", i)
                   self:setValue("CursorLine", i)
                 end
+]]
               end
               return msg
             end,
