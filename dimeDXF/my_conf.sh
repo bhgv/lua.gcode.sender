@@ -1,3 +1,5 @@
 #!/bin/sh
 
-./configure --enable-static=yes --with-pic --enable-html --prefix=$PWD/bld
+./configure --enable-static=yes --with-pic --prefix=$PWD/bld
+# --enable-html
+

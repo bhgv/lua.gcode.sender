@@ -87,11 +87,13 @@ local function parse_dxf(pars)
       for j,face in ipairs(layer.faces) do
         for k,pt in ipairs(face) do
           if k == 1 then
-            g:walk_to{x = pt.x, y = pt.y, z = pt.z}
+            g:walk_to{x = pt.x, y = pt.y}
+            g:walk_to{z = pt.z}
           else
             g:work_to{x = pt.x, y = pt.y, z = pt.z}
           end
         end
+        g:walk_to{z = z_wlk}
       end
     end
     
@@ -99,11 +101,13 @@ local function parse_dxf(pars)
       for j,line in ipairs(layer.lines) do
         for k,pt in ipairs(line) do
           if k == 1 then
-            g:walk_to{x = pt.x, y = pt.y, z = pt.z}
+            g:walk_to{x = pt.x, y = pt.y}
+            g:walk_to{z = pt.z}
           else
             g:work_to{x = pt.x, y = pt.y, z = pt.z}
           end
         end
+        g:walk_to{z = z_wlk}
       end
     end
   end

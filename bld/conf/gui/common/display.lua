@@ -244,11 +244,17 @@ function Display:drawAxis(d, dx, dy, k)
     
     local c = "bright"
     
+    if xstp == 0 or ystp == 0 then return end
+    
     if _G.Flags.DisplayProection == "xy" then
       for i = 0, stp_cnt do
         local x = floor(dx + 15 + (i*xstp)*k)
         local y = floor(dy - 15 - (i*ystp)*k)
         
+        --print(i, xstp, i*xstp)
+        --print(floor(x), floor(y0+5), floor(x), floor(y1-15), c) 
+        --print(floor(x0+15), floor(y), floor(x1-5), floor(y), c) 
+        --if x == math.nan or y == math.nan then return end
         d:drawLine(floor(x), floor(y0+5), floor(x), floor(y1-15), c) 
         d:drawLine(floor(x0+15), floor(y), floor(x1-5), floor(y), c) 
       end
