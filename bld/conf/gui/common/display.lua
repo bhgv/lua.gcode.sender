@@ -3,6 +3,8 @@ local floor = math.floor
 local ui = require "tek.ui"
 local Frame = ui.Frame
 
+local exec = require "tek.lib.exec"
+
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
 
@@ -20,8 +22,40 @@ local SPINDLEimg = Image:new{
   true,
   {{0xa000, 3, {1, 2, 3, 4}, "black"}}
 }
---[[]]
---local Region = require "tek.lib.region"
+
+
+
+local maxX = 10
+
+local function ptXline(pars)
+  local ln = pars.line 
+  local pt = pars.point
+  local a = (ln.ye - ln.yb)/(ln.xe - ln.xb)
+  local bl = ln.yb - ln.xb*a
+  local bp = pt.y - pt.x*a
+  
+  local bnd = {
+    xmin = (ln.xb < ln.xe and ln.xb) or ln.xe,
+    xmax = (ln.xe > ln.xb and ln.xe) or ln.xb,
+    ymin = (ln.yb < ln.ye and ln.yb) or ln.ye,
+    ymax = (ln.ye > ln.yb and ln.ye) or ln.yb,
+  }
+  
+  if 
+      pt.x < bnd.xmin - maxX or
+      pt.x > bnd.xmax + maxX or
+      pt.y < bnd.ymin - maxX or
+      pt.y > bnd.ymax + maxX 
+  then
+    return nil
+  end
+  
+  local r = math.abs(bl - bp)
+  return r == r and r
+end
+
+
+
 
 
 local Display = Frame:newClass()
@@ -78,6 +112,27 @@ function Display:update()
         self:setFlags(ui.FL_REDRAW)
     end
   end
+end
+
+
+
+function Display:calcScale()
+  local x0, y0, x1, y1 = self:getRect()
+  --local xb, yb
+  local bnd = self.Bnd
+  local w = x1 - x0 + 1 - 20
+  local h = y1 - y0 + 1 - 20
+  --local sw, sh = w/40, h/8
+  --local xsc, ysc = (x0+x1)/2, (y0+y1)/2
+  --local d = self.Window.Drawable
+--    local p = self.Points
+  local kw = w / (bnd.xmax - bnd.xmin)
+  local kh = h / (bnd.ymax - bnd.ymin)
+  local k = kw
+  if kh < kw then k = kh end
+  k = k * _G.Flags.DispScale / 100
+  
+  return k
 end
 
 
@@ -162,6 +217,12 @@ function Display:draw()
     local dx, dy = 
               xsc - xbc + _G.Flags.screenShift.x, 
               ysc + ybc + _G.Flags.screenShift.y
+              
+    self.dx = dx
+    self.dy = dy
+    
+    local scr_lns = {}
+    local ln 
     
     d:pushClipRect(x0, y0, x1, y1)
     
@@ -174,6 +235,15 @@ function Display:draw()
           local xe = dx + 15 + (p[i].x - bnd.xmin)*k
           local ye = dy - 15 - (p[i].y - bnd.ymin)*k
           local c = p[i].p or "green"
+          
+          ln = {
+              xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
+              i = i, 
+              c = c,
+              ln_n = p[i].ln_n
+          }
+          table.insert(scr_lns, ln)
+          
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
     elseif _G.Flags.DisplayProection == "xyz" then
@@ -204,6 +274,15 @@ function Display:draw()
           local ye = dy - 15 - (( (p[i].x - bnd.xmin) - (p[i].y - bnd.ymin))*C60 + p[i].z)*k
           
           local c = p[i].p or "green"
+          
+          ln = {
+              xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
+              i = i, 
+              c = c, 
+              ln_n = p[i].ln_n
+          }
+          table.insert(scr_lns, ln)
+          
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
       end
     end
@@ -211,7 +290,17 @@ function Display:draw()
     self:drawWritings(d, dx, dy, k)
     self:drawZeroCross(d, dx, dy, k)
     
+    self.scr_lns = scr_lns
+    
+    local ln = self.sel_line
+    if ln then
+      ln = scr_lns[ln.i]
+      d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+      self.sel_line = ln
+    end
+
     d:popClipRect()
+    
     return true
   end
 end
@@ -251,10 +340,8 @@ function Display:drawAxis(d, dx, dy, k)
         local x = floor(dx + 15 + (i*xstp)*k)
         local y = floor(dy - 15 - (i*ystp)*k)
         
-        --print(i, xstp, i*xstp)
-        --print(floor(x), floor(y0+5), floor(x), floor(y1-15), c) 
-        --print(floor(x0+15), floor(y), floor(x1-5), floor(y), c) 
-        --if x == math.nan or y == math.nan then return end
+        if x ~= x or y ~= y then return end
+        
         d:drawLine(floor(x), floor(y0+5), floor(x), floor(y1-15), c) 
         d:drawLine(floor(x0+15), floor(y), floor(x1-5), floor(y), c) 
       end
@@ -382,6 +469,59 @@ function Display:onMButton(msg)
       end
     end
 --    print("pos = ", x, y, key)
+  else -- not _G.Flags.DisplayMode == "drag"
+    if key == 1 and 
+      (x0 < x and x < x1) and
+      (y0 < y and y < y1)
+    then
+      --print("pos = ", x, y, key)
+      local k = self:calcScale()
+      local bnd = self.Bnd
+
+      local i, pb, pe
+
+      local dist
+      local min_dist = 10000
+      local min_dist_n
+      
+      local pt = {
+        x = x, --(x - self.dx - 15)/k + bnd.xmin, 
+        y = y, --(self.dy - 15 - y)/k + bnd.ymin,
+      }
+      --print("cnv pt", pt.x, pt.y)
+      
+      for i = 1, #self.scr_lns do --#self.Points do
+        dist = ptXline {
+          point = pt,
+          i = i,
+          line = self.scr_lns[i],
+        }
+        
+        if dist and dist < min_dist then
+          min_dist = dist
+          min_dist_n = i
+          --print(i, dist)
+        end
+      end
+      
+      if min_dist_n then
+        --print("min_dist_n = ", min_dist_n, min_dist)
+        local d = self.Window.Drawable
+        local ln = self.scr_lns[min_dist_n]
+        local oln = self.sel_line
+        if oln then
+          d:drawLine(oln.xb, oln.yb, oln.xe, oln.ye, oln.c)
+        end
+        d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+        
+        --print("---", ln.ln_n)
+        gLstWdgtM:setValue("SelectedLine", ln.ln_n)
+        gLstWdgtM:setValue("CursorLine", ln.ln_n)
+
+        self.sel_line = ln
+      end
+    --elseif key == 2 then
+    end
   end
   return msg
 end

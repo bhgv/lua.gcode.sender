@@ -34,9 +34,21 @@ gLstWdgtM = ui.Lister:new
             
             msgUser = function(self, msg)
               local ud = msg[-1]
+              
               cmd = ud:match("<MESSAGE>error:[^%(]*%(ln%: (%d+)%)")
-              if cmd ~= nil and _G.Flags.SendFrom and _G.Flags.SendTo then
-                self:setValue("SelectedLine", tonumber(cmd))
+              if cmd then --~= nil and _G.Flags.SendFrom and _G.Flags.SendTo then
+                local i = tonumber(cmd)
+                self:setValue("SelectedLine", i)
+                self:setValue("CursorLine", i)
+
+              else
+                cmd = ud:match("<EDITOR SEL LN>(%d+)")
+                if cmd then
+                  --print(cmd)
+                  local i = tonumber(cmd)
+                  self:setValue("SelectedLine", i)
+                  self:setValue("CursorLine", i)
+                end
               end
               return msg
             end,

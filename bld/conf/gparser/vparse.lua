@@ -1,8 +1,9 @@
 
 local ui = require "tek.ui"
 
+
 t_cb = function(l, k, p1, p2)
-  print(k, p1, p2)
+--  print(k, p1, p2)
 end
 vcb_init = function(l, k)
   tmp_vpts = { [0]={x=0, y=0, z=0} }
@@ -12,6 +13,7 @@ vcb_init = function(l, k)
 end
 vcb_eol = function(l, k)
   if tmp_vpt.chng then
+    tmp_vpt.ln_n = l
     tmp_vpts[tmp_vi] = tmp_vpt
     tmp_vi = tmp_vi + 1
     --print(tmp_vpt.x, tmp_vpt.y)
