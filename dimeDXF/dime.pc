@@ -1,0 +1,20 @@
+prefix=/home/orangepi/grbl/dimeDXF/bld
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+datarootdir=${prefix}/share
+datadir=${datarootdir}
+
+Name: Dime
+Description: library for reading, constructing, manipulating, and writing DXF file data
+Version: 0.9.1
+Requires:
+Conflicts:
+Libs: -L${libdir} -L${exec_prefix}/lib -ldime
+Cflags: -I${includedir} -g -O2 -I${prefix}/include
+
+dime_host="armv7l-unknown-linux-gnueabi"
+compiler=g++
+compiler_is_gcc=@ac_compiler_gnu@
+frameworkdir=@frameworkdir@
+msvcrt=

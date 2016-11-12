@@ -15,6 +15,7 @@ Used Lua plugins
 - https://github.com/keplerproject/luafilesystem
 - https://github.com/vsergeev/lua-periphery
 - https://github.com/memononen/nanosvg
+- https://bitbucket.org/Coin3D/dime (DXF reader library)
 
 How to build
 -------

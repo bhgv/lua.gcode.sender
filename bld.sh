@@ -24,6 +24,15 @@ echo "  --> luaSVG"
 cd $DIR/luaSVG
 ./bld.sh
 
+echo "  --> luaDXF"
+cd $DIR/dimeDXF
+./my_conf.sh
+make
+make install
+
+cd $DIR/luaDXF2
+./bld.sh
+
 echo "  --> tekUI"
 cd $DIR/tekUI
 make all

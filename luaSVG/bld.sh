@@ -1,7 +1,5 @@
 #!/bin/sh
 
-#echo `python-config --cflags`
-#echo `python-config --ldflags`
 
 export DBG="-g"
 #export DBG=""
@@ -22,11 +20,11 @@ gcc $C_FLAGS $DBG \
 -o luaSVG.o luaSVG.c 
 
 #g++ $C_FLAGS $DBG \
-#-o GCode_foos.o GCode_foos.cpp
 
 gcc $LD_FLAGS $DBG \
 -o luaSVG.so luaSVG.o 
 
+strip luaSVG.so
 cp luaSVG.so ../bld/lib/lua/5.3
 
 #-march=armv7-a -mtune=cortex-a7 -mfpu=neon-vfpv4 -marm \
