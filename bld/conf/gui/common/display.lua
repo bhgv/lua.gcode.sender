@@ -95,6 +95,20 @@ function Display:show(drawable)
     --self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMove)
     self.Window:addInputHandler(ui.MSG_MOUSEBUTTON, self, self.onMButton)
     --self.Window:addInputHandler(ui.MSG_USER, self, self.msgUser)
+    self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMdisplayXY)
+    
+    local clr, i
+    local d = self.Window.Drawable
+    local penTab = {}
+    for i = 0,150 do
+      clr = d:allocPen(170, 150-i, 150-i, 0xff) --string.format("0x%0.2X%0.2X%0.2X", mod_clr, mod_clr, base_clr)
+      table.insert(penTab, clr)
+    end
+    self.PenTab = penTab
+    self.PenWalk = d:allocPen(170, 0, 0x80, 0)
+    self.PenSpindle = d:allocPen(200, 200, 0, 150)
+    self.PenGrid = d:allocPen(255, 250, 250, 250)
+    self.PenCross = d:allocPen(100, 240, 0, 0)
 end
 
 function Display:hide()
@@ -102,7 +116,21 @@ function Display:hide()
     self.Window:remInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMove)
     self.Window:remInputHandler(ui.MSG_MOUSEBUTTON, self, self.onMButton)
     --self.Window:remInputHandler(ui.MSG_USER, self, self.msgUser)
+    self.Window:remInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMdisplayXY)
+    
     Frame.hide(self)
+
+    local i
+    local d = self.Window.Drawable
+    local penTab = self.PenTab
+    for i = 1,#penTab do
+      d:freePen(penTab[i])
+    end
+    self.PenTab = {}
+    d:freePen(self.PenWalk)
+    d:freePen(self.PenSpindle)
+    d:freePen(self.PenGrid)
+    d:freePen(self.PenCross)
 end
 
 function Display:update()
@@ -158,7 +186,7 @@ function Display:drawSpindle(x, y, z)
             xsc - xbc + _G.Flags.screenShift.x, 
             ysc + ybc + _G.Flags.screenShift.y
     
-  local c = d:allocPen(200, 200, 0, 150) --  "orange"
+  local c = self.PenSpindle
     
   d:pushClipRect(x0, y0, x1, y1)
     
@@ -192,8 +220,21 @@ function Display:drawSpindle(x, y, z)
   end
   d:popClipRect()
   
-  d:freePen(c)
   --self.Changed = true
+end
+
+
+function Display:calcPen(d, base_clr, z)
+  local clr
+  if base_clr == nil then
+    clr = self.PenWalk
+  else
+    local bnd = self.Bnd
+    local k = (z - bnd.zmin) / (bnd.zmax - bnd.zmin)
+    
+    clr = self.PenTab[1+math.ceil((#self.PenTab - 1) * k)]
+  end
+  return clr
 end
 
 
@@ -234,7 +275,7 @@ function Display:draw()
           local yb = dy - 15 - (p[i - 1].y - bnd.ymin)*k
           local xe = dx + 15 + (p[i].x - bnd.xmin)*k
           local ye = dy - 15 - (p[i].y - bnd.ymin)*k
-          local c = p[i].p or "green"
+          local c = self:calcPen(d, p[i].p, p[i].z) -- or "green"
           
           ln = {
               xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
@@ -245,6 +286,8 @@ function Display:draw()
           table.insert(scr_lns, ln)
           
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
+          
+          --d:freePen(c)
       end
     elseif _G.Flags.DisplayProection == "xyz" then
       local bnd3d = {
@@ -254,16 +297,21 @@ function Display:draw()
         ymax = (bnd.xmin - bnd.ymax)*C60, --+ bnd.zmax,
       }
       self.bnd3d = bnd3d
+      
       kw = w / (bnd3d.xmax - bnd3d.xmin)
       kh = h / (bnd3d.ymax - bnd3d.ymin)
       k = kw
       if kh < kw then k = kh end
       k = k * _G.Flags.DispScale / 100
+      self.k3d = k
       
       xbc, ybc = (bnd3d.xmax + bnd3d.xmin)*k/2, (bnd3d.ymax + bnd3d.ymin)*k/2
       dx, dy = 
               xsc - xbc + _G.Flags.screenShift.x, 
               ysc + ybc + _G.Flags.screenShift.y
+              
+      self.dx = dx
+      self.dy = dy
 
       self:drawAxis(d, dx, dy, k)
 
@@ -273,7 +321,8 @@ function Display:draw()
           local xe = dx + 15 + ((p[i].x - bnd.xmin) + (p[i].y - bnd.ymin))*S60*k
           local ye = dy - 15 - (( (p[i].x - bnd.xmin) - (p[i].y - bnd.ymin))*C60 + p[i].z)*k
           
-          local c = p[i].p or "green"
+--          local c = p[i].p or "green"
+          local c = self:calcPen(d, p[i].p, p[i].z) -- or "green"
           
           ln = {
               xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
@@ -284,6 +333,8 @@ function Display:draw()
           table.insert(scr_lns, ln)
           
           d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
+      
+          --d:freePen(c)
       end
     end
     
@@ -308,7 +359,7 @@ end
 
 function Display:drawZeroCross(d, dx, dy, k)
   local bnd = self.Bnd
-  local c = "red"
+  local c = self.PenCross --"red"
   
   if _G.Flags.DisplayProection == "xy" then
     local x = dx + 15 + (0 - bnd.xmin)*k
@@ -331,7 +382,7 @@ function Display:drawAxis(d, dx, dy, k)
     local xstp = (bnd.xmax - bnd.xmin) / stp_cnt
     local ystp = (bnd.ymax - bnd.ymin) / stp_cnt
     
-    local c = "bright"
+    local c = self.PenGrid --"bright"
     
     if xstp == 0 or ystp == 0 then return end
     
@@ -414,12 +465,58 @@ function Display:drawWritings(d, dx, dy, k)
     end
 end
 
+
+function Display:onMMdisplayXY(msg)
+  local x, y = msg[4], msg[5]
+  
+  local x0, y0, x1, y1 = self:getRect()
+  if 
+    x < x0 or x > x1 or
+    y < y0 or y > y1
+  then
+    return msg
+  end
+  
+  local dx = self.dx
+  local dy = self.dy
+  local k = self:calcScale()
+  local bnd = self.Bnd
+
+  if _G.Flags.DisplayProection == "xy" then
+    if dx and dy and k and bnd then
+      _G.Flags.showMouseXY(
+            (x - dx - 15)/k + bnd.xmin, -- x
+            (dy - 15 - y)/k + bnd.ymin  -- y
+      )
+    end
+  elseif _G.Flags.DisplayProection == "xyz" then
+    local k = self.k3d
+    if dx and dy and k and bnd then
+      local S60_k_2 = S60 * k * 2
+      local C60_k_2 = C60 * k * 2
+      
+      local X_dX_15 = (x - dx - 15)/S60_k_2
+      local Y_dY_15 = (dy - 15 - y)/C60_k_2
+    
+      _G.Flags.showMouseXY(
+            X_dX_15 + Y_dY_15 + bnd.xmin, -- x
+            X_dX_15 - Y_dY_15 + bnd.ymin  -- y
+      )
+    end
+  end
+
+  return msg
+end
+
+
 function Display:onMMove(msg)
   local x, y = msg[4], msg[5]
   --print("pos = ", x, y, msg[3])
   
   _G.Flags.screenShift.x = x - self.moveStart.x
   _G.Flags.screenShift.y = y - self.moveStart.y
+  
+  self:onMMdisplayXY(msg)
   
   self.Changed = true
   
@@ -439,6 +536,8 @@ function Display:onMButton(msg)
       self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMove)
     elseif key == 2 then
       self.Window:remInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMove)
+      
+      self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMdisplayXY)
     elseif key == 128 and 
       (x0 < x and x < x1) and
       (y0 < y and y < y1)
@@ -505,17 +604,8 @@ function Display:onMButton(msg)
       end
       
       if min_dist_n then
-        --print("min_dist_n = ", min_dist_n, min_dist)
-        --local d = self.Window.Drawable
-        --local ln = self.scr_lns[min_dist_n]
-        --local oln = self.sel_line
-        --if oln then
-        --  d:drawLine(oln.xb, oln.yb, oln.xe, oln.ye, oln.c)
-        --end
-        --d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
         local ln_n = self:sel_item(min_dist_n)
         
-        --print("---", ln.ln_n)
         if ln_n then
           gLstWdgtM:setValue("SelectedLine", ln_n)
           gLstWdgtM:setValue("CursorLine", ln_n)

@@ -3,13 +3,18 @@ ui = require "tek.ui"
 
 
 
-local disp_percent_view = ui.Text:new{Text="100%", Width=20,}
+local disp_percent_view = ui.Text:new{Text="100%", Width=40,}
 
 _G.Flags.ShowScale = function(n)
   disp_percent_view:setValue("Text", string.format("%0.2f", n) .. "%")
 end
 
 Display = require "conf.gui.common.display"
+
+
+local posX = ui.Text:new {Width=60}
+local posY = ui.Text:new {Width=60}
+
 
 DisplayBlock = ui.Group:new
 {
@@ -35,6 +40,7 @@ DisplayBlock = ui.Group:new
         symButSm("\u{e0de}", function(self) 
             local n = _G.Flags.DispScale --tonumber(disp_percent_view.Text:match("(%d*%.?%d*)"))
             n = n/1.1
+            if n < 10 then n = 10 end
             _G.Flags.DispScale = n
             --disp_percent_view:setValue("Text", string.format("%0.2f", n) .. "%")
             _G.Flags.ShowScale(n)
@@ -68,6 +74,10 @@ DisplayBlock = ui.Group:new
         symButSm("\u{e0a0}", function(self) 
             _G.Flags.DisplayMode = "drag"
         end),
+        ui.Text:new{Text="pos X:", Width=10,Class = "caption"},
+        posX,
+        ui.Text:new{Text=" Y:", Width=10,Class = "caption"},
+        posY,
       }
     },
     
@@ -76,4 +86,11 @@ DisplayBlock = ui.Group:new
 }
 
 
-
+_G.Flags.showMouseXY = function(x, y)
+  if x then
+    posX:setValue("Text", string.format("%0.2f", x))
+  end
+  if y then
+    posY:setValue("Text", string.format("%0.2f", y))
+  end
+end

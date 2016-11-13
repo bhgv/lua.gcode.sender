@@ -11,7 +11,11 @@ vcb_init = function(l, k)
   tmp_vpts = { [0]={x=0, y=0, z=0} }
   tmp_vpt = {x=0, y=0, z=0, chng=false}
   tmp_vi = 1
-  tmp_vbnd = {xmax = 000000, xmin = 000000, ymax = 000000, ymin = 000000}
+  tmp_vbnd = {
+            xmax = math.mininteger, xmin = math.maxinteger, 
+            ymax = math.mininteger, ymin = math.maxinteger, 
+            zmax = math.mininteger, zmin = math.maxinteger
+  }
 end
 vcb_eol = function(l, k)
   if tmp_vpt.chng then
@@ -22,30 +26,36 @@ vcb_eol = function(l, k)
     rel_gcode_display[l] = #tmp_vpts
     
     --print(tmp_vpt.x, tmp_vpt.y)
-    tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false}
+    tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false, iswork = false}
   end
 end
 vcb_cmd = function(l, k, p1, p2)
-  if p1 == "G" and (p2 == "0" or p2 == "1") then 
+  p2 = tonumber(p2)
+  if p1 == "G" and (p2 == 0 or p2 == 1) then 
     vcb_eol(k)
-    if p2 == "0" then
-      tmp_vpt.p = "blue"
+    if p2 == 1 then
+      tmp_vpt.p = 0xff
+      tmp_vpt.iswork = true
     end
   elseif p1 == "X" then
-    local x = 0+p2
+    local x = p2
     tmp_vpt.x = x
     if x < tmp_vbnd.xmin then tmp_vbnd.xmin = x end
     if x > tmp_vbnd.xmax then tmp_vbnd.xmax = x end
     tmp_vpt.chng = true
   elseif p1 == "Y" then
-    local y = 0+p2
+    local y = p2
     tmp_vpt.y = y
     if y < tmp_vbnd.ymin then tmp_vbnd.ymin = y end
     if y > tmp_vbnd.ymax then tmp_vbnd.ymax = y end
     tmp_vpt.chng = true
   elseif p1 == "Z" then
-    local z = 0+p2
+    local z = p2
     tmp_vpt.z = z
+    if tmp_vpt.iswork then
+      if z < tmp_vbnd.zmin then tmp_vbnd.zmin = z end
+      if z > tmp_vbnd.zmax then tmp_vbnd.zmax = z end
+    end
     tmp_vpt.chng = true
   end
 end
@@ -57,7 +67,6 @@ vcb_fini = function(l, k)
 end
 
 function do_vparse()
-  --App:addCoroutine(function()
   local txt = table.concat(GTXT, "\n")
   
   gparser.set_callback_dict {
@@ -80,6 +89,5 @@ function do_vparse()
   --for i = 1,#o do
   --  print(o[i])
   --end
-  --end)
 end
 
