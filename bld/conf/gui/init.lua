@@ -1,19 +1,6 @@
 
---local ui = require "tek.ui"
-local exec = require "tek.lib.exec"
-
---[[
-return exec.run (
-    {
-      taskname = "gui",
-      abort = false,
-      func = 
-      function()
-]]
-local exec = require "tek.lib.exec"
-
-
 local ui = require "tek.ui"
+local exec = require "tek.lib.exec"
 
 
 ports = {}
@@ -29,64 +16,6 @@ repeat
     p = f(); if p then table.insert(bauds, {{p}} ) end
 until(p == nil)
 
---[[
-gLstWdgtM = ui.Lister:new
-					{
-						--Id = "the-list",
-            Id = "editor cmd list",
-						SelectMode = "single", --"multi",
---						ListObject = gcmdLst,
-            
-						onSelectLine = function(self)
-							ui.Lister.onSelectLine(self)
-              local lineno = self.SelectedLine
-							local line = self:getItem(lineno)
-							if line then
-                App:getById("gedit"):setValue("Text", line[1][2])
-								--self.Window:setRecord(line[1])
-                --self.sel_line_no
-							end
-						end,
-            
-            setup = function(self, app, win)
-              ui.Lister.setup(self, app, win)
-              --print(app, win)
-              app:addInputHandler(ui.MSG_USER, self, self.msgUser)
-            end,
-            
-            cleanup = function(self)
-              ui.Lister.cleanup(self)
-              self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
-            end,
-            
-            msgUser = function(self, msg)
-              local ud = msg[-1]
-              cmd = ud:match("<MESSAGE>error:[^%(]*%(ln%: (%d+)%)")
-              if cmd ~= nil and _G.Flags.SendFrom and _G.Flags.SendTo then
-                self:setValue("SelectedLine", tonumber(cmd))
-              end
-              return msg
-            end,
-					}
-          
-initialiseEditor = function()
-  local NumberedList = require "conf.gui.classes.numberedlist"
-
-  local i,ln
-  local lst = {}
-  
-  for i,ln in ipairs(GTXT) do
-    table.insert(lst, {{ "", ln }})
-  end
-  
-  gLstWdgtM:setList(NumberedList:new { Items = lst })
-  
-  App:getById("send to"):setValue("Text", tostring(#GTXT))
-  App:getById("send from"):setValue("Text", "1")
-end
-]]
-
-
 
 local Group = ui.Group
 local Slider = ui.Slider
@@ -94,10 +23,6 @@ local Text = ui.Text
 
 local L = ui.getLocale("tekui-demo", "schulze-mueller.de")
 
-
-
-
---gparser = require "gcodeparser"
 
 require "conf.gparser"
 
@@ -162,28 +87,8 @@ local window = ui.Window:new
       ui.PageGroup:new
       {
         PageCaptions = page_captions,
-        --[[
-        { 
-                      "_File", 
-                      "_Control", 
-                      "_Plugins", 
-                      "_Editor", 
-                      "_Terminal",
-                      "_Showroom"
-        },
-        ]]
         Style = "font:Vera/b:18;",
         Children = pages,
-        --[[
-        {
-          require("conf.gui.file"),
-          require("conf.gui.control"),
-          require("conf.gui.plugins"),
-          require("conf.gui.edit"),
-          require("conf.gui.terminal"),
-          require("conf.gui.showroom"),
-        },
-        ]]
       },
   
       ui.Gauge:new
@@ -191,8 +96,6 @@ local window = ui.Window:new
         Min = 0,
         Max = 1,
         Value = 0,
---	      Id = "gauge-thresh",
---	      Orientation = "horisontal",
         Width = "free",
         Height = 5, --"auto",
       

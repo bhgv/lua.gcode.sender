@@ -26,6 +26,14 @@ Flags = {
     },
   },
   
+  Transformations = {
+    CurOp = "none",
+    Move = {x=0, y=0, z=0},
+    Rotate = 0,
+    Scale = {x=1.0, y=1.0, z=1.0},
+    Mirror = {h=false, v=false},
+  },
+  
   DispScale = 100,
   AutoRedraw = true,
   DisplayMode = "drag",

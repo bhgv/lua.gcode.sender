@@ -1,14 +1,15 @@
 
-local floor = math.floor
 local ui = require "tek.ui"
 local Frame = ui.Frame
 
 local exec = require "tek.lib.exec"
 
+local floor = math.floor
+
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
 
---[[]]
+--[[
 local Image = ui.Image
 
 local SPINDLEimg = Image:new{
@@ -22,7 +23,7 @@ local SPINDLEimg = Image:new{
   true,
   {{0xa000, 3, {1, 2, 3, 4}, "black"}}
 }
-
+]]
 
 
 local maxX = 10
@@ -69,6 +70,13 @@ function Display.new(class, self)
     self = Frame.new(class, self)
     self.shiftX = 0
     self.shiftY = 0
+    
+    self.drawAxis = require "conf.gui.common.lib.display.draw_axis"
+    self.draw = require "conf.gui.common.lib.display.draw_draft"
+    self.drawSpindle = require "conf.gui.common.lib.display.draw_spindle"
+    
+    
+    
     self:reset()
     return self
 end
@@ -164,202 +172,9 @@ function Display:calcScale()
 end
 
 
-function Display:drawSpindle(x, y, z)
-  --if Frame.draw(self) then
-  local x0, y0, x1, y1 = self:getRect()
-  local xb, yb
-  local bnd = self.Bnd
-  local w = x1 - x0 + 1 - 20
-  local h = y1 - y0 + 1 - 20
-  local sw, sh = w/40, h/8
-  local xsc, ysc = (x0+x1)/2, (y0+y1)/2
-  local d = self.Window.Drawable
---    local p = self.Points
-  local kw = w / (bnd.xmax - bnd.xmin)
-  local kh = h / (bnd.ymax - bnd.ymin)
-  local k = kw
-  if kh < kw then k = kh end
-  k = k * _G.Flags.DispScale / 100
-  
-  local xbc, ybc = (bnd.xmax - bnd.xmin)*k/2, (bnd.ymax - bnd.ymin)*k/2
-  local dx, dy = 
-            xsc - xbc + _G.Flags.screenShift.x, 
-            ysc + ybc + _G.Flags.screenShift.y
-    
-  local c = self.PenSpindle
-    
-  d:pushClipRect(x0, y0, x1, y1)
-    
-  if _G.Flags.DisplayProection == "xy" then
-    xb = dx + 15 + (x - bnd.xmin)*k 
-    yb = dy - 15 - (y - bnd.ymin)*k
-    
-    SPINDLEimg:draw(d, floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb), c)
-  elseif _G.Flags.DisplayProection == "xyz" then
-    bnd3d = {
-        xmin = (bnd.xmin + bnd.ymin)*S60,
-        ymin = (bnd.xmax - bnd.ymin)*C60, --+ bnd.zmin,
-        xmax = (bnd.xmax + bnd.ymax)*S60,
-        ymax = (bnd.xmin - bnd.ymax)*C60, --+ bnd.zmax,
-    }
-    kw = w / (bnd3d.xmax - bnd3d.xmin)
-    kh = h / (bnd3d.ymax - bnd3d.ymin)
-    k = kw
-    if kh < kw then k = kh end
-    k = k * _G.Flags.DispScale / 100
-    
-    xbc, ybc = (bnd3d.xmax + bnd3d.xmin)*k/2, (bnd3d.ymax + bnd3d.ymin)*k/2
-    dx, dy = 
-            xsc - xbc + _G.Flags.screenShift.x, 
-            ysc + ybc + _G.Flags.screenShift.y
-          
-    xb = dx + 15 + ((x - bnd.xmin) + (y - bnd.ymin))*S60*k
-    yb = dy - 15 - (( (x - bnd.xmin) - (y - bnd.ymin))*C60 + z)*k
-    
-    SPINDLEimg:draw(d, floor(xb-sw), floor(yb-sh), floor(xb+sw), floor(yb), c)
-  end
-  d:popClipRect()
-  
-  --self.Changed = true
-end
-
-
-function Display:calcPen(d, base_clr, z)
-  local clr
-  if base_clr == nil then
-    clr = self.PenWalk
-  else
-    local bnd = self.Bnd
-    local k = (z - bnd.zmin) / (bnd.zmax - bnd.zmin)
-    
-    clr = self.PenTab[1+math.ceil((#self.PenTab - 1) * k)]
-  end
-  return clr
-end
-
-
-function Display:draw()
-  if Frame.draw(self) then
-    local x0, y0, x1, y1 = self:getRect()
-    local xb, yb, xe, ye
-    local bnd = self.Bnd
-    local w = x1 - x0 + 1 - 20
-    local h = y1 - y0 + 1 - 20
-    local xsc, ysc = (x0+x1)/2, (y0+y1)/2
-    local d = self.Window.Drawable
-    local p = self.Points
-    local kw = w / (bnd.xmax - bnd.xmin)
-    local kh = h / (bnd.ymax - bnd.ymin)
-    local k = kw
-    if kh < kw then k = kh end
-    k = k * _G.Flags.DispScale / 100
-    
-    local xbc, ybc = (bnd.xmax - bnd.xmin)*k/2, (bnd.ymax - bnd.ymin)*k/2
-    local dx, dy = 
-              xsc - xbc + _G.Flags.screenShift.x, 
-              ysc + ybc + _G.Flags.screenShift.y
-              
-    self.dx = dx
-    self.dy = dy
-    
-    local scr_lns = {}
-    local ln 
-    
-    d:pushClipRect(x0, y0, x1, y1)
-    
-    if _G.Flags.DisplayProection == "xy" then
-      self:drawAxis(d, dx, dy, k)
-      
-      for i = 1, #self.Points do
-          local xb = dx + 15 + (p[i - 1].x - bnd.xmin)*k 
-          local yb = dy - 15 - (p[i - 1].y - bnd.ymin)*k
-          local xe = dx + 15 + (p[i].x - bnd.xmin)*k
-          local ye = dy - 15 - (p[i].y - bnd.ymin)*k
-          local c = self:calcPen(d, p[i].p, p[i].z) -- or "green"
-          
-          ln = {
-              xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
-              i = i, 
-              c = c,
-              ln_n = p[i].ln_n
-          }
-          table.insert(scr_lns, ln)
-          
-          d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
-          
-          --d:freePen(c)
-      end
-    elseif _G.Flags.DisplayProection == "xyz" then
-      local bnd3d = {
-        xmin = (bnd.xmin + bnd.ymin)*S60,
-        ymin = (bnd.xmax - bnd.ymin)*C60, --+ bnd.zmin,
-        xmax = (bnd.xmax + bnd.ymax)*S60,
-        ymax = (bnd.xmin - bnd.ymax)*C60, --+ bnd.zmax,
-      }
-      self.bnd3d = bnd3d
-      
-      kw = w / (bnd3d.xmax - bnd3d.xmin)
-      kh = h / (bnd3d.ymax - bnd3d.ymin)
-      k = kw
-      if kh < kw then k = kh end
-      k = k * _G.Flags.DispScale / 100
-      self.k3d = k
-      
-      xbc, ybc = (bnd3d.xmax + bnd3d.xmin)*k/2, (bnd3d.ymax + bnd3d.ymin)*k/2
-      dx, dy = 
-              xsc - xbc + _G.Flags.screenShift.x, 
-              ysc + ybc + _G.Flags.screenShift.y
-              
-      self.dx = dx
-      self.dy = dy
-
-      self:drawAxis(d, dx, dy, k)
-
-      for i = 1, #self.Points do
-          local xb = dx + 15 + ((p[i-1].x - bnd.xmin) + (p[i-1].y - bnd.ymin))*S60*k
-          local yb = dy - 15 - (( (p[i-1].x - bnd.xmin) - (p[i-1].y - bnd.ymin))*C60 + p[i-1].z)*k
-          local xe = dx + 15 + ((p[i].x - bnd.xmin) + (p[i].y - bnd.ymin))*S60*k
-          local ye = dy - 15 - (( (p[i].x - bnd.xmin) - (p[i].y - bnd.ymin))*C60 + p[i].z)*k
-          
---          local c = p[i].p or "green"
-          local c = self:calcPen(d, p[i].p, p[i].z) -- or "green"
-          
-          ln = {
-              xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
-              i = i, 
-              c = c, 
-              ln_n = p[i].ln_n
-          }
-          table.insert(scr_lns, ln)
-          
-          d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
-      
-          --d:freePen(c)
-      end
-    end
-    
-    self:drawWritings(d, dx, dy, k)
-    self:drawZeroCross(d, dx, dy, k)
-    
-    self.scr_lns = scr_lns
-    
-    local ln = self.sel_line
-    if ln then
-      ln = scr_lns[ln.i]
-      d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
-      self.sel_line = ln
-    end
-
-    d:popClipRect()
-    
-    return true
-  end
-end
-
-
 function Display:drawZeroCross(d, dx, dy, k)
   local bnd = self.Bnd
-  local c = self.PenCross --"red"
+  local c = self.PenCross 
   
   if _G.Flags.DisplayProection == "xy" then
     local x = dx + 15 + (0 - bnd.xmin)*k
@@ -373,46 +188,6 @@ function Display:drawZeroCross(d, dx, dy, k)
     d:drawLine(floor(x0-10), floor(y0), floor(x0+10), floor(y0), c) 
     d:drawLine(floor(x0), floor(y0-10), floor(x0), floor(y0+10), c) 
   end
-end
-
-function Display:drawAxis(d, dx, dy, k)
-    local x0, y0, x1, y1 = self:getRect()
-    local bnd = self.Bnd
-    local stp_cnt = floor(_G.Flags.DispScale * 10 / 100)
-    local xstp = (bnd.xmax - bnd.xmin) / stp_cnt
-    local ystp = (bnd.ymax - bnd.ymin) / stp_cnt
-    
-    local c = self.PenGrid --"bright"
-    
-    if xstp == 0 or ystp == 0 then return end
-    
-    if _G.Flags.DisplayProection == "xy" then
-      for i = 0, stp_cnt do
-        local x = floor(dx + 15 + (i*xstp)*k)
-        local y = floor(dy - 15 - (i*ystp)*k)
-        
-        if x ~= x or y ~= y then return end
-        
-        d:drawLine(floor(x), floor(y0+5), floor(x), floor(y1-15), c) 
-        d:drawLine(floor(x0+15), floor(y), floor(x1-5), floor(y), c) 
-      end
-    elseif _G.Flags.DisplayProection == "xyz" then
-      for i = 0, stp_cnt do
-        local xb = dx + 15 + ((i*xstp) + (bnd.ymin -bnd.ymin))*S60*k 
-        local yb = dy - 15 - ((i*xstp) - (bnd.ymin -bnd.ymin))*C60*k 
-        local xe = dx + 15 + ((i*xstp) + (bnd.ymax -bnd.ymin))*S60*k 
-        local ye = dy - 15 - ((i*xstp) - (bnd.ymax -bnd.ymin))*C60*k 
-
-        d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
-        
-        xb = dx + 15 + ((bnd.xmin -bnd.xmin) + (i*ystp))*S60*k 
-        yb = dy - 15 - ((bnd.xmin -bnd.xmin) - (i*ystp))*C60*k 
-        xe = dx + 15 + ((bnd.xmax -bnd.xmin) + (i*ystp))*S60*k 
-        ye = dy - 15 - ((bnd.xmax -bnd.xmin) - (i*ystp))*C60*k 
-
-        d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
-      end
-    end
 end
 
 
@@ -465,6 +240,13 @@ function Display:drawWritings(d, dx, dy, k)
     end
 end
 
+
+
+local mouseMode = {
+                  lb="up",
+                  Rstart = 0,
+                  sc = 1.0,
+}
 
 function Display:onMMdisplayXY(msg)
   local x, y = msg[4], msg[5]
@@ -573,6 +355,7 @@ function Display:onMButton(msg)
       (x0 < x and x < x1) and
       (y0 < y and y < y1)
     then
+      mouseMode.lb = "down"
       --print("pos = ", x, y, key)
       local k = self:calcScale()
       local bnd = self.Bnd
@@ -613,11 +396,111 @@ function Display:onMButton(msg)
 
         --self.sel_line = ln
       end
-    --elseif key == 2 then
+    
+      mouseMode.Mstart = {
+            x=x, -- - _G.Flags.screenShift.x, 
+            y=y -- - _G.Flags.screenShift.y
+      }
+      
+      local transf = _G.Flags.Transformations 
+
+      local x0, y0, x1, y1 = self:getRect()
+      local xc, yc = (x0 + x1)/2, (y0 + y1)/2
+      
+      mouseMode.Rstart = math.atan2(y - yc, x - xc) + transf.Rotate
+      mouseMode.Center = {x = xc, y = yc, }
+      
+      if op == "mirrorX" or op == "mirrorY" then  
+        if op == "mirrorX" then
+          --transf.Mirror.v
+        else
+        end
+      else
+        self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMTransform)
+      end
+    elseif key == 2 then
+      mouseMode.lb = "up"
+      self.Window:remInputHandler(ui.MSG_MOUSEMOVE, self, self.onMTransform)
     end
   end
   return msg
 end
+
+
+function Display:onMTransform(msg)
+  local x, y = msg[4], msg[5]
+  local transf = _G.Flags.Transformations 
+  local op = transf.CurOp
+  local txt_out
+  
+  local dx, dy =
+      (x - mouseMode.Mstart.x), 
+      (mouseMode.Mstart.y - y)
+      
+  --move
+  if op == "move" then
+    local tr_mv = transf.Move
+    tr_mv.x = tr_mv.x + dx/self.k
+    tr_mv.y = tr_mv.y + dy/self.k
+    
+    mouseMode.Mstart = {
+            x=x, 
+            y=y 
+    } 
+    txt_out = string.format( "X=%.2f, Y=%.2f, Z=%.2f",
+                                  tr_mv.x,
+                                  tr_mv.y,
+                                  tr_mv.z 
+                  )
+
+  --scaleXY
+  elseif op == "scaleXY" then
+    local xc, yc = mouseMode.Mstart.x, mouseMode.Mstart.y 
+    local xs, ys = (x - xc), (yc - y)
+    local sgn = ((xs+ys) < 0 and -1) or 1
+    local zoom = sgn * math.sqrt(xs*xs + ys*ys) * 0.01
+    transf.Scale.x = transf.Scale.x + zoom
+    transf.Scale.y = transf.Scale.x + zoom
+      
+    mouseMode.Mstart = {
+            x=x, 
+            y=y 
+    } 
+    txt_out = string.format( "X=%.2f, Y=%.2f, Z=%.2f",
+                                  transf.Scale.x,
+                                  transf.Scale.y,
+                                  transf.Scale.z 
+                  )
+
+  --rotate
+  elseif op == "rotate" then
+    local xc, yc = mouseMode.Center.x, mouseMode.Center.y 
+    transf.Rotate = mouseMode.Rstart - math.atan2(y - yc, x - xc) 
+
+    txt_out = string.format( "Angle=%.2f",
+                                  math.deg(transf.Rotate)
+                  )
+
+--[[    
+  elseif op == "mirrorX" then
+    --transf.Mirror.v
+  
+  elseif op == "mirrorY" then
+    --transf.Mirror.v
+]]
+  end
+
+  if txt_out then
+    _G.Flags.TransformInput:setValue("Text", txt_out)
+  end
+  
+  self:onMMdisplayXY(msg)
+  
+  self.Changed = true
+  
+  return msg
+end
+
 
 
 function Display:sel_item(i)

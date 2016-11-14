@@ -16,6 +16,41 @@ local posX = ui.Text:new {Width=60}
 local posY = ui.Text:new {Width=60}
 
 
+
+local projXY, projXYZ
+
+projXY = symButSm("\u{e0e0}", function(self) 
+            projXYZ:setValue("Selected", false)
+            _G.Flags.DisplayProection = "xy"
+            Display.Changed = true
+        end)
+projXY:setValue("Mode", "touch")
+projXY:setValue("Selected", true)
+  
+projXYZ = symButSm("\u{e0e1}", function(self) 
+            projXY:setValue("Selected", false)
+            _G.Flags.DisplayProection = "xyz"
+            Display.Changed = true
+        end)
+projXYZ:setValue("Mode", "touch")
+
+
+local modeMv, modeEd
+
+modeEd = symButSm(--[["\u{e089}"]] "\u{e0a3}", function(self) 
+            modeMv:setValue("Selected", false)
+            _G.Flags.DisplayMode = "select"
+        end)
+modeEd:setValue("Mode", "touch")
+
+modeMv = symButSm("\u{e0a0}", function(self) 
+            modeEd:setValue("Selected", false)
+            _G.Flags.DisplayMode = "drag"
+        end)
+modeMv:setValue("Mode", "touch")
+modeMv:setValue("Selected", true)
+
+
 DisplayBlock = ui.Group:new
 {
   Orientation = "vertical",
@@ -26,16 +61,9 @@ DisplayBlock = ui.Group:new
       Children =
       {
         ui.Text:new{Text="view:", Width=20, Class = "caption"},
-        symButSm("\u{e0e0}", function(self) 
-            self.Selected = true
-            _G.Flags.DisplayProection = "xy"
-            Display.Changed = true
-        end),
-        symButSm("\u{e0e1}", function(self) 
-            self.Selected = true
-            _G.Flags.DisplayProection = "xyz"
-            Display.Changed = true
-        end),
+        projXY,
+        projXYZ,
+        
         ui.Text:new{Text="scale:", Width=20, Class = "caption"},
         symButSm("\u{e0de}", function(self) 
             local n = _G.Flags.DispScale --tonumber(disp_percent_view.Text:match("(%d*%.?%d*)"))
@@ -66,14 +94,11 @@ DisplayBlock = ui.Group:new
               Display.Changed = true
             end
         end),
+        
         ui.Text:new{Text="mode:", Width=20,Class = "caption"},
-        symButSm("\u{e089}", function(self) 
-            _G.Flags.DisplayMode = "select"
-        end),
---        symButSm("\u{e0a8}", function(self) end),
-        symButSm("\u{e0a0}", function(self) 
-            _G.Flags.DisplayMode = "drag"
-        end),
+        modeEd,
+        modeMv,
+      
         ui.Text:new{Text="pos X:", Width=10,Class = "caption"},
         posX,
         ui.Text:new{Text=" Y:", Width=10,Class = "caption"},
