@@ -15,11 +15,16 @@ local function calcPen(self, d, base_clr, z)
     clr = self.PenWalk
   else
     local bnd = self.Bnd
-    local k = (z - bnd.zmin) / (bnd.zmax - bnd.zmin)
-    
-    clr = self.PenTab[1+math.ceil((#self.PenTab - 1) * k)]
+    local k
+    if (bnd.zmax - bnd.zmin) ~= 0 then
+      k = (z - bnd.zmin) / (bnd.zmax - bnd.zmin)
+      clr = self.PenTab[1+math.ceil((#self.PenTab - 1) * k)]
+    else
+      --k = 0
+      clr = self.PenTab[#self.PenTab]
+    end
   end
-  return clr
+  return clr or self.PenWalk
 end
 
 

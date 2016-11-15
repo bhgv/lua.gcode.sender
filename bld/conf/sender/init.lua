@@ -273,9 +273,12 @@ return {
                 end
               end
             else
-              gthread[#gthread + 1] = msg
+              while msg do
+                gthread[#gthread + 1] = msg
               --exec.sendport("main", "ui", "<CMD GAUGE SETUP 2>" .. #gthread)
-              cmd = msg
+                msg = exec.waitmsg(20)
+              end
+              --cmd = msg
             end
           end
         end

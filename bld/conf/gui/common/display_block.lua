@@ -3,10 +3,10 @@ ui = require "tek.ui"
 
 
 
-local disp_percent_view = ui.Text:new{Text="100%", Width=40,}
+local disp_percent_view = ui.Text:new{Text="100.0%", Width=60,}
 
 _G.Flags.ShowScale = function(n)
-  disp_percent_view:setValue("Text", string.format("%0.2f", n) .. "%")
+  disp_percent_view:setValue("Text", string.format("%0.1f", n) .. "%")
 end
 
 Display = require "conf.gui.common.display"
@@ -89,7 +89,7 @@ DisplayBlock = ui.Group:new
         end),
         symButSm("\u{e08f}", function(self) 
             _G.Flags.DispScale = 100
-            disp_percent_view:setValue("Text", "100%")
+            disp_percent_view:setValue("Text", "100.0%")
             if _G.Flags.AutoRedraw then
               Display.Changed = true
             end

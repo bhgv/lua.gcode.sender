@@ -4,10 +4,10 @@ local ui = require "tek.ui"
 
 local rel_gcode_display
 
-t_cb = function(l, k, p1, p2)
+local t_cb = function(l, k, p1, p2)
 --  print(k, p1, p2)
 end
-vcb_init = function(l, k)
+local vcb_init = function(l, k)
   tmp_vpts = { [0]={x=0, y=0, z=0} }
   tmp_vpt = {x=0, y=0, z=0, chng=false}
   tmp_vi = 1
@@ -17,7 +17,7 @@ vcb_init = function(l, k)
             zmax = math.mininteger, zmin = math.maxinteger
   }
 end
-vcb_eol = function(l, k)
+local vcb_eol = function(l, k)
   if tmp_vpt.chng then
     tmp_vpt.ln_n = l
     tmp_vpts[tmp_vi] = tmp_vpt
@@ -29,10 +29,10 @@ vcb_eol = function(l, k)
     tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false, iswork = false}
   end
 end
-vcb_cmd = function(l, k, p1, p2)
+local vcb_cmd = function(l, k, p1, p2)
   p2 = tonumber(p2)
   if p1 == "G" and (p2 == 0 or p2 == 1) then 
-    vcb_eol(k)
+    --vcb_eol(k)
     if p2 == 1 then
       tmp_vpt.p = 0xff
       tmp_vpt.iswork = true
@@ -59,7 +59,7 @@ vcb_cmd = function(l, k, p1, p2)
     tmp_vpt.chng = true
   end
 end
-vcb_fini = function(l, k)
+local vcb_fini = function(l, k)
   Display.Points = tmp_vpts
   Display.Bnd = tmp_vbnd
   Display.Changed = true

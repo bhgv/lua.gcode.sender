@@ -112,7 +112,7 @@ return ui.Group:new
                 ui.Button:new
                 {
                   Style = "font:\b; color:olive;",
-                  Text = "Send selected",
+                  Text = "Send sel",
                   onClick = function(self)
                     ui.Button.onClick(self)
                     local cmd = self:getById("gedit"):getText()

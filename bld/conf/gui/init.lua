@@ -72,8 +72,8 @@ table.insert(pages, require("conf.gui.showroom"))
 local window = ui.Window:new
 {
     Orientation = "vertical",
-    Width = 1024,
-    Height = 600,
+    Width = 1000,
+    Height = 650,
     MinWidth = 800,
     MinHeight = 600,
     MaxWidth = "none", 
@@ -135,9 +135,6 @@ local window = ui.Window:new
           {
             Id = "status main",
             Style = "font:/b:10; color:gray;", --olive;", --navy;",
-      --	      Orientation = "horisontal",
-      --	      Width = "free",
-      --	       Height = 5, --"auto",
           },
           ui.Text:new
           {
