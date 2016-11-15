@@ -221,13 +221,42 @@ transformInput = ui.Input:new{Width = 200,}
 local transformOk = symButSm("\u{e0cc}", 
   function(self) 
     local transf = _G.Flags.Transformations 
+    
+    local inp = transformInput:getText()
+    local op = transf.CurOp
+    local x, y, z, a
+    
+    --print (inp)
+    if op == "move" then
+      local tr_mv = transf.Move
+      x = inp:match("[xX]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      y = inp:match("[yY]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      z = inp:match("[zZ]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      tr_mv.x, tr_mv.y, tr_mv.z = tonumber(x), tonumber(y), tonumber(z)
+      --print("Move", x, y, z)
+      
+    elseif op == "scaleXY" then
+      local tr_sc = transf.Scale
+      x = inp:match("[xX]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      y = inp:match("[yY]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      z = inp:match("[zZ]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      tr_sc.x, tr_sc.y, tr_sc.z = tonumber(x), tonumber(y), tonumber(z)
+      --print("Scale", x, y, z)
+      
+    elseif op == "rotate" then
+      a = inp:match("[Aa][nN][gG][lL]?[eE]?%s*=%s*([%+%-]?%s*%d*%.?%d*)")
+      transf.Rotate = math.rad(a)
+      --print("Rotate", a)
+    end
+    
+    Display.Changed = true
+    
     --[[  {
     Move = {x=0, y=0, z=0},
     Rotate = 0,
     Scale = {x=1.0, y=1.0, z=1.0},
     Mirror = {h=false, v=true},
     }  ]]
-
   end
 )
 
