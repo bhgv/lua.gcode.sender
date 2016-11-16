@@ -60,8 +60,13 @@ local vcb_cmd = function(l, k, p1, p2)
   end
 end
 local vcb_fini = function(l, k)
+  local nm, v
   Display.Points = tmp_vpts
   Display.Bnd = tmp_vbnd
+  Display.Bnd0 = {}
+  for nm,v in pairs(tmp_vbnd) do 
+    Display.Bnd0[nm] = v 
+  end
   Display.Changed = true
   --Display:draw()
 end

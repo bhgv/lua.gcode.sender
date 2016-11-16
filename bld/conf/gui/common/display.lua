@@ -9,22 +9,6 @@ local floor = math.floor
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
 
---[[
-local Image = ui.Image
-
-local SPINDLEimg = Image:new{
-  {
-    0x8000,0,
-    0x4000, 0xffff,
-    0xc000, 0xffff,
-    0x8000,0
-  },
-  false, false,
-  true,
-  {{0xa000, 3, {1, 2, 3, 4}, "black"}}
-}
-]]
-
 
 local maxX = 10
 
@@ -71,12 +55,21 @@ function Display.new(class, self)
     self.shiftX = 0
     self.shiftY = 0
     
-    self.drawAxis = require "conf.gui.common.lib.display.draw_axis"
-    self.draw = require "conf.gui.common.lib.display.draw_draft"
-    self.drawSpindle = require "conf.gui.common.lib.display.draw_spindle"
+    local load_from_lib = function(lib_name)
+      local nm, foo
+      for nm,foo in pairs( require("conf.gui.common.lib.display." ..  lib_name) ) do
+        self[nm] = foo
+      end
+    end
     
+    load_from_lib("setup")
     
-    
+    load_from_lib("draw_axis")
+    load_from_lib("draw_draft")
+    load_from_lib("draw_spindle")
+    load_from_lib("draw_writings")
+    load_from_lib("draw_zero_cross")
+        
     self:reset()
     return self
 end
@@ -85,61 +78,6 @@ function Display:reset()
 end
 
 
-function Display:setup(app, win)
-  ui.Frame.setup(self, app, win)
-  --print(app, win)
-  app:addInputHandler(ui.MSG_USER, self, self.msgUser)
-end
-
-function Display:cleanup()
-  ui.Frame.cleanup(self)
-  self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
-end
-
-
-function Display:show(drawable)
-    Frame.show(self, drawable)
-    self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.update)
-    --self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMove)
-    self.Window:addInputHandler(ui.MSG_MOUSEBUTTON, self, self.onMButton)
-    --self.Window:addInputHandler(ui.MSG_USER, self, self.msgUser)
-    self.Window:addInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMdisplayXY)
-    
-    local clr, i
-    local d = self.Window.Drawable
-    local penTab = {}
-    for i = 0,150 do
-      clr = d:allocPen(170, 150-i, 150-i, 0xff) --string.format("0x%0.2X%0.2X%0.2X", mod_clr, mod_clr, base_clr)
-      table.insert(penTab, clr)
-    end
-    self.PenTab = penTab
-    self.PenWalk = d:allocPen(170, 0, 0x80, 0)
-    self.PenSpindle = d:allocPen(200, 200, 0, 150)
-    self.PenGrid = d:allocPen(255, 250, 250, 250)
-    self.PenCross = d:allocPen(100, 240, 0, 0)
-end
-
-function Display:hide()
-    self.Window:remInputHandler(ui.MSG_INTERVAL, self, self.update)
-    self.Window:remInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMove)
-    self.Window:remInputHandler(ui.MSG_MOUSEBUTTON, self, self.onMButton)
-    --self.Window:remInputHandler(ui.MSG_USER, self, self.msgUser)
-    self.Window:remInputHandler(ui.MSG_MOUSEMOVE, self, self.onMMdisplayXY)
-    
-    Frame.hide(self)
-
-    local i
-    local d = self.Window.Drawable
-    local penTab = self.PenTab
-    for i = 1,#penTab do
-      d:freePen(penTab[i])
-    end
-    self.PenTab = {}
-    d:freePen(self.PenWalk)
-    d:freePen(self.PenSpindle)
-    d:freePen(self.PenGrid)
-    d:freePen(self.PenCross)
-end
 
 function Display:update()
   if self.Window.Drawable then
@@ -169,75 +107,6 @@ function Display:calcScale()
   k = k * _G.Flags.DispScale / 100
   
   return k
-end
-
-
-function Display:drawZeroCross(d, dx, dy, k)
-  local bnd = self.Bnd
-  local c = self.PenCross 
-  
-  if _G.Flags.DisplayProection == "xy" then
-    local x = dx + 15 + (0 - bnd.xmin)*k
-    local y = dy - 15 - (0 - bnd.ymin)*k
-
-    d:drawLine(floor(x-10), floor(y), floor(x+10), floor(y), c) 
-    d:drawLine(floor(x), floor(y-10), floor(x), floor(y+10), c) 
-  elseif _G.Flags.DisplayProection == "xyz" then
-    local x0 = dx + 15 - ((bnd.xmin) + (bnd.ymin))*S60 *k 
-    local y0 = dy - 15 + ((bnd.xmin) - (bnd.ymin))*C60 *k 
-    d:drawLine(floor(x0-10), floor(y0), floor(x0+10), floor(y0), c) 
-    d:drawLine(floor(x0), floor(y0-10), floor(x0), floor(y0+10), c) 
-  end
-end
-
-
-function Display:drawWritings(d, dx, dy, k)
-    local x0, y0, x1, y1 = self:getRect()
-    local x, y
-    local stp_cnt = floor(_G.Flags.DispScale * 10 / 100)
-    local bnd = self.Bnd
-    local xstp = (bnd.xmax - bnd.xmin) / stp_cnt
-    local ystp = (bnd.ymax - bnd.ymin) / stp_cnt
-    
-    local font = self.font or self.Application.Display:openFont(self.Font)
-    local cw, ch
-        
-    local c = "black"
-
-    self.font = font
-    d:setFont(font)
-    
-    if _G.Flags.DisplayProection == "xy" then
-      for i = 0,stp_cnt do
-        x = floor(dx + 15 + (i*xstp)*k)
-        y = floor(dy - 15 - (i*ystp)*k)
-
-        sx = string.format("%0.2f", i*xstp + bnd.xmin)
-        sy = string.format("%0.2f", i*ystp + bnd.ymin)
-        
-        cw, ch = font:getTextSize(sy)
-        d:drawText(floor(x0), floor(y), floor(x0+cw), floor(y-ch), sy, c)
-        cw, ch = font:getTextSize(sx)
-        d:drawText(floor(x), floor(y1-ch), floor(x+cw), floor(y1), sx, c)
-      end
-    elseif _G.Flags.DisplayProection == "xyz" then
-      for i = 0,stp_cnt do
-        sx = string.format("%0.2f", i*xstp + bnd.xmin)
-        sy = string.format("%0.2f", i*ystp + bnd.ymin)
-        
-        x = dx + 15 + ((i*xstp) + (-bnd.ymin))*S60*k
-        y = dy - 15 - ((i*xstp) - (-bnd.ymin))*C60*k
-        
-        cw, ch = font:getTextSize(sx)
-        d:drawText(floor(x-cw), floor(y), floor(x), floor(y+ch), sx, c)
-
-        x = dx + 15 + ((-bnd.xmin) + (i*ystp))*S60*k 
-        y = dy - 15 - ((-bnd.xmin) - (i*ystp))*C60*k 
-      
-        cw, ch = font:getTextSize(sy)
-        d:drawText(floor(x-cw), floor(y-ch), floor(x), floor(y), sy, c)
-      end
-    end
 end
 
 
@@ -427,11 +296,20 @@ function Display:onMButton(msg)
 end
 
 
+local transformCoords = require "conf.utils.transform_coords"
+
 function Display:onMTransform(msg)
   local x, y = msg[4], msg[5]
   local transf = _G.Flags.Transformations 
   local op = transf.CurOp
   local txt_out
+  
+  local bnd = self.Bnd
+  local bnd0 = self.Bnd0
+  
+  local xmin0, ymin0, zmin0 = bnd0.xmin, bnd0.ymin, bnd0.zmin
+  local xmax0, ymax0, zmax0 = bnd0.xmax, bnd0.ymax, bnd0.zmax
+
   
   local dx, dy =
       (x - mouseMode.Mstart.x), 
@@ -455,13 +333,16 @@ function Display:onMTransform(msg)
 
   --scaleXY
   elseif op == "scaleXY" then
+    local tr_sc = transf.Scale
     local xc, yc = mouseMode.Mstart.x, mouseMode.Mstart.y 
     local xs, ys = (x - xc), (yc - y)
     local sgn = ((xs+ys) < 0 and -1) or 1
     local zoom = sgn * math.sqrt(xs*xs + ys*ys) * 0.01
-    transf.Scale.x = transf.Scale.x + zoom
-    transf.Scale.y = transf.Scale.x + zoom
-      
+    tr_sc.x = tr_sc.x + zoom
+    tr_sc.y = tr_sc.y + zoom
+    if tr_sc.x < 0.1 then tr_sc.x = 0.1 end
+    if tr_sc.y < 0.1 then tr_sc.y = 0.1 end
+    
     mouseMode.Mstart = {
             x=x, 
             y=y 
@@ -489,6 +370,13 @@ function Display:onMTransform(msg)
     --transf.Mirror.v
 ]]
   end
+
+  local pt
+  pt = transformCoords {x = bnd0.xmin, y = bnd0.ymin, z = bnd0.zmin }
+  bnd.xmin, bnd.ymin, bnd.zmin = pt.x, pt.y, pt.z
+  
+  pt = transformCoords {x = bnd0.xmax, y = bnd0.ymax, z = bnd0.zmax }
+  bnd.xmax, bnd.ymax, bnd.zmax = pt.x, pt.y, pt.z
 
   if txt_out then
     _G.Flags.TransformInput:setValue("Text", txt_out)

@@ -216,6 +216,7 @@ local mirrorYModel = symBut("\u{e0e7}",
 )
 
 
+local transformCoords = require "conf.utils.transform_coords"
 
 transformInput = ui.Input:new{Width = 200,}
 local transformOk = symButSm("\u{e0cc}", 
@@ -249,6 +250,15 @@ local transformOk = symButSm("\u{e0cc}",
       --print("Rotate", a)
     end
     
+    local bnd = Display.Bnd
+    local bnd0 = Display.Bnd0
+    local pt
+    pt = transformCoords {x = bnd0.xmin, y = bnd0.ymin, z = bnd0.zmin }
+    bnd.xmin, bnd.ymin, bnd.zmin = pt.x, pt.y, pt.z
+    
+    pt = transformCoords {x = bnd0.xmax, y = bnd0.ymax, z = bnd0.zmax }
+    bnd.xmax, bnd.ymax, bnd.zmax = pt.x, pt.y, pt.z
+
     Display.Changed = true
     
     --[[  {
