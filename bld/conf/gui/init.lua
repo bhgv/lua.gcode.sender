@@ -72,7 +72,7 @@ table.insert(pages, require("conf.gui.showroom"))
 local window = ui.Window:new
 {
     Orientation = "vertical",
-    Width = 1000,
+    Width = 1024,
     Height = 650,
     MinWidth = 800,
     MinHeight = 600,

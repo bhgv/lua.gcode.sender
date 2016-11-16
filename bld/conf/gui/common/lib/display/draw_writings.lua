@@ -44,14 +44,14 @@ return {
         sx = string.format("%0.2f", i*xstp + bnd.xmin)
         sy = string.format("%0.2f", i*ystp + bnd.ymin)
         
-        x = dx + 15 + ((i*xstp) + (-bnd.ymin))*S60*k
-        y = dy - 15 - ((i*xstp) - (-bnd.ymin))*C60*k
+        x = dx + 15 + ((i*xstp) + (bnd.ymin-bnd.ymin))*S60*k
+        y = dy - 15 - ((i*xstp) - (bnd.ymin-bnd.ymin))*C60*k
         
         cw, ch = font:getTextSize(sx)
         d:drawText(floor(x-cw), floor(y), floor(x), floor(y+ch), sx, c)
 
-        x = dx + 15 + ((-bnd.xmin) + (i*ystp))*S60*k 
-        y = dy - 15 - ((-bnd.xmin) - (i*ystp))*C60*k 
+        x = dx + 15 + ((bnd.xmin -bnd.xmin) + (i*ystp))*S60*k 
+        y = dy - 15 - ((bnd.xmin -bnd.xmin) - (i*ystp))*C60*k 
       
         cw, ch = font:getTextSize(sy)
         d:drawText(floor(x-cw), floor(y-ch), floor(x), floor(y), sy, c)

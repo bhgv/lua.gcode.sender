@@ -298,6 +298,21 @@ end
 
 local transformCoords = require "conf.utils.transform_coords"
 
+local function coord_min(a1, a2, a3, a4)
+    local a = a1
+    if a > a2 then a = a2 end
+    if a > a3 then a = a3 end
+    if a > a4 then a = a4 end
+    return a
+end
+local function coord_max(a1, a2, a3, a4)
+    local a = a1
+    if a < a2 then a = a2 end
+    if a < a3 then a = a3 end
+    if a < a4 then a = a4 end
+    return a
+end
+
 function Display:onMTransform(msg)
   local x, y = msg[4], msg[5]
   local transf = _G.Flags.Transformations 
@@ -340,8 +355,8 @@ function Display:onMTransform(msg)
     local zoom = sgn * math.sqrt(xs*xs + ys*ys) * 0.01
     tr_sc.x = tr_sc.x + zoom
     tr_sc.y = tr_sc.y + zoom
-    if tr_sc.x < 0.1 then tr_sc.x = 0.1 end
-    if tr_sc.y < 0.1 then tr_sc.y = 0.1 end
+    if tr_sc.x < 0.001 then tr_sc.x = 0.001 end
+    if tr_sc.y < 0.001 then tr_sc.y = 0.001 end
     
     mouseMode.Mstart = {
             x=x, 
@@ -371,12 +386,19 @@ function Display:onMTransform(msg)
 ]]
   end
 
-  local pt
-  pt = transformCoords {x = bnd0.xmin, y = bnd0.ymin, z = bnd0.zmin }
-  bnd.xmin, bnd.ymin, bnd.zmin = pt.x, pt.y, pt.z
+  local pt1, pt2, pt3, pt4
+  pt1 = transformCoords {x = bnd0.xmin, y = bnd0.ymin, z = 0, } 
+  pt2 = transformCoords {x = bnd0.xmax, y = bnd0.ymin, z = 0, } 
+  pt3 = transformCoords {x = bnd0.xmin, y = bnd0.ymax, z = 0, } 
+  pt4 = transformCoords {x = bnd0.xmax, y = bnd0.ymax, z = 0, } 
   
-  pt = transformCoords {x = bnd0.xmax, y = bnd0.ymax, z = bnd0.zmax }
-  bnd.xmax, bnd.ymax, bnd.zmax = pt.x, pt.y, pt.z
+  bnd.xmin, bnd.ymin = 
+                coord_min(pt1.x, pt2.x, pt3.x, pt4.x), 
+                coord_min(pt1.y, pt2.y, pt3.y, pt4.y)
+  
+  bnd.xmax, bnd.ymax =
+                coord_max(pt1.x, pt2.x, pt3.x, pt4.x), 
+                coord_max(pt1.y, pt2.y, pt3.y, pt4.y)  
 
   if txt_out then
     _G.Flags.TransformInput:setValue("Text", txt_out)
