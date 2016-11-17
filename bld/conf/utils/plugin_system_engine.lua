@@ -137,6 +137,8 @@ local test_run_plugin = function(plug_path, sep_pars)
           return "wrong config. plugin: " .. plug_path
         end
         
+        
+        
         local msg
         while msg ~= "QUIT" do 
           msg = exec.waitmsg(2000)
@@ -167,7 +169,7 @@ local test_run_plugin = function(plug_path, sep_pars)
                   .. s
                 )
               end
-              
+            
             elseif conf.exec and msg:match("^<EXECUTE>") then
               local pars = msg:match("^<EXECUTE>(.*)")
               --print("conf.subtype =", conf.subtype)

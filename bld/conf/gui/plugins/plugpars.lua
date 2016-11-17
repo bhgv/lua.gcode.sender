@@ -247,10 +247,15 @@ local function cr_plugpars(grp)
                 
                 onSelectLine = function(self)
                   ui.Lister.onSelectLine(self)
-                  local line = self:getItem(self.SelectedLine)
-                  if line then
-                    --App:getById("user cmd"):setValue("Text", line[1][2])
-                    --self.Window:setRecord(line[1])
+                  local line = self.SelectedLine --self:getItem(self.SelectedLine)
+                  --print("on sel ln", line)
+                  if line and self.EnabledFilterPos[line] then
+                    local trd = self.EnabledFilterPos[line].trd
+                    --print("trd", trd)
+                    if trd then
+                      --print("click")
+                      exec.sendmsg(trd, "<CLICK>")
+                    end
                   end
                 end,
                     
@@ -278,13 +283,17 @@ local function cr_plugpars(grp)
                   if typ then
                     --print(ud)
                     --print( typ, trd, nm )
-                    
-                    local itm = self.EnabledFilterPos[trd]
-                    if itm then
-                      self:remItem( itm.i )
+                    local i, it
+                    for i = #self.EnabledFilterPos,1,-1 do
+                      it = self.EnabledFilterPos[i]
+                      if it and it.trd == trd then
+                        table.remove(self.EnabledFilterPos, i)
+                        self:remItem( i )
+                      end
                     end
                     self:addItem( {{"", nm}} )
-                    self.EnabledFilterPos[trd] = { i = self:getN() }
+                    i = self:getN()
+                    table.insert(self.EnabledFilterPos, i, {trd=trd, })
                   else
                     typ, trd, nm = ud:match("<PLUGIN>" 
                                           .. "([^<]*)"
@@ -294,14 +303,15 @@ local function cr_plugpars(grp)
                                           .. "(.*)"
                     )
                     if typ then
-                      --print(ud)
-                      --print( typ, trd, nm )
-                      
-                      local itm = self.EnabledFilterPos[trd]
-                      if itm then
-                        self:remItem( itm.i )
+                      --print("detach", typ, trd, nm )
+                      local i, it
+                      for i = #self.EnabledFilterPos,1,-1 do
+                        it = self.EnabledFilterPos[i]
+                        if it and it.trd == trd then
+                          table.remove(self.EnabledFilterPos, i)
+                          self:remItem( i )
+                        end
                       end
-                      self.EnabledFilterPos[trd] = nil
                     end
                   end
                   
