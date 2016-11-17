@@ -51,7 +51,7 @@ local test_run_plugin = function(plug_path, sep_pars)
         local plug_path = arg[1]
         local sep_pars = (arg[2] == "true")
         
-        print (sep_pars)
+        --print (sep_pars)
         
         local f, fpar
         
@@ -142,6 +142,7 @@ local test_run_plugin = function(plug_path, sep_pars)
           msg = exec.waitmsg(2000)
           if msg then
             --print(msg)
+            
             if msg == "<CLICK>" then
               exec.sendport("*p", "ui", 
                 "<PLUGIN>" 
@@ -166,6 +167,7 @@ local test_run_plugin = function(plug_path, sep_pars)
                   .. s
                 )
               end
+              
             elseif conf.exec and msg:match("^<EXECUTE>") then
               local pars = msg:match("^<EXECUTE>(.*)")
               --print("conf.subtype =", conf.subtype)
@@ -173,6 +175,19 @@ local test_run_plugin = function(plug_path, sep_pars)
                 exec.sendmsg("sender", "ADDFILTER")
                 exec.sendmsg("sender", exec.getname())
                 exec.sendmsg("sender", pars)
+                
+                local m = exec.waitmsg(200)
+                local i = m:match("<FILTER><ATTACHED>(%d*)")
+                --print ("inst", i)
+                
+                exec.sendport("*p", "ui", 
+                  "<PLUGIN>" 
+                  .. conf.subtype
+                  .. "<NAME>"
+                  .. exec.getname() 
+                  .. "<ATTACHED>" 
+                  .. (conf.name or "")
+                )
               else
                 local partab = {}
                 local k,v
@@ -186,6 +201,26 @@ local test_run_plugin = function(plug_path, sep_pars)
                 end
               end
 --            end
+
+            elseif conf.exec and msg:match("^<DETACH>") then
+              if conf.subtype == "Filter" then
+                exec.sendmsg("sender", "DELFILTER")
+                exec.sendmsg("sender", exec.getname())
+                
+                local m = exec.waitmsg(200)
+                local i = m:match("<FILTER><DETACHED>") --(%d*)")
+                --print ("inst", i)
+                
+                exec.sendport("*p", "ui", 
+                  "<PLUGIN>" 
+                  .. conf.subtype
+                  .. "<NAME>"
+                  .. exec.getname() 
+                  .. "<DETACHED>" 
+                  .. (conf.name or "")
+                )
+              end
+
             elseif conf.exec and msg:match("^<SAVE>") then
               local pars = msg:match("^<SAVE>(.*)")
               local partab = {}
@@ -199,6 +234,7 @@ local test_run_plugin = function(plug_path, sep_pars)
                 end
                 fsv:write("}\n")
               end
+              
             elseif conf.exec and msg:match("^<FILTER>") then
               --print(msg)
               local cmd, pars_s = msg:match("<FILTER>([^<]*)<CMD>(.*)")  
@@ -216,6 +252,7 @@ local test_run_plugin = function(plug_path, sep_pars)
                 exec.sendmsg("sender", out)
               end
             end
+            
           end
         end
         

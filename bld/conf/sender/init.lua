@@ -242,7 +242,7 @@ return {
                 for i = #GFilters,1,-1 do
                   flt = GFilters[i]
                   if flt.name == nm then
-                    table.remove(GFilters[i])
+                    table.remove(GFilters, i)
                   end
                 end
                 table.insert(GFilters, {
@@ -258,8 +258,9 @@ return {
                       return ""
                     end
                 })
-                
+                exec.sendmsg(nm, "<FILTER><ATTACHED>" .. (#GFilters))
               end
+              
             elseif msg == "DELFILTER" then
               msg = exec.waitmsg(200)
               if msg then
@@ -268,10 +269,12 @@ return {
                 for i = #GFilters,1,-1 do
                   flt = GFilters[i]
                   if flt.name == nm then
-                    table.remove(GFilters[i])
+                    table.remove(GFilters, i)
                   end
                 end
+                exec.sendmsg(nm, "<FILTER><DETACHED>")
               end
+              
             else
               while msg do
                 gthread[#gthread + 1] = msg

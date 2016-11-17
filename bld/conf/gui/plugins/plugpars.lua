@@ -6,7 +6,7 @@ local exec = require "tek.lib.exec"
 local complexcontrol = require "conf.gui.plugins.lib.complexcontrol"
 
 
-local function preparePluginParamsDlg(task, name, par_str)
+local function preparePluginParamsDlg(plug_group, task, name, par_str)
   local k, v
   local chlds = {}
   local gr1, gr2
@@ -114,7 +114,7 @@ local function preparePluginParamsDlg(task, name, par_str)
                     plug_task = task, 
                     par_complex = gr1,
                     par_group = gr2, --chlds, --gr,
-                    Text = "Execute", --(pars.subtype == "Filter" and "Attach") or "Execute",
+                    Text = (plug_group == "Filter" and "Attach") or "Execute",
                     onClick = function(self)
                       ui.Button.onClick(self)
                       
@@ -155,6 +155,26 @@ local function preparePluginParamsDlg(task, name, par_str)
                     end,
                 }
   )
+  
+  if plug_group == "Filter" then
+    table.insert(dlg, 
+                ui.Button:new{
+                    plug_task = task, 
+                    par_complex = gr1,
+                    par_group = gr2, --chlds, --gr,
+                    Text = "Detach",
+                    onClick = function(self)
+                      ui.Button.onClick(self)
+                      
+                      --if out then
+                        --print(out)
+                        exec.sendmsg(self.plug_task, "<DETACH>")
+                      --end
+                    end,
+                }
+    )
+  end
+  
   table.insert(dlg, 
                 ui.Button:new{
                     plug_task = task, 
@@ -205,16 +225,100 @@ local function preparePluginParamsDlg(task, name, par_str)
 end
 
 
+
+local NumberedList = require "conf.gui.classes.numberedlist"
+
 local function cr_plugpars(grp)
+  local chldrn = {}
+  --print (grp)
+  if grp == "Filter" then
+    local lst = ui.ListView:new {
+              --Height = 200,
+              VSliderMode = "auto",
+              HSliderMode = "auto",
+              Headers = { "n", "Filter" },
+              Child = ui.Lister:new
+              {
+                SelectMode = "single",
+                
+                EnabledFilterPos = {},
+                
+        				ListObject = NumberedList:new{},
+                
+                onSelectLine = function(self)
+                  ui.Lister.onSelectLine(self)
+                  local line = self:getItem(self.SelectedLine)
+                  if line then
+                    --App:getById("user cmd"):setValue("Text", line[1][2])
+                    --self.Window:setRecord(line[1])
+                  end
+                end,
+                    
+                setup = function(self, app, win)
+                  ui.Lister.setup(self, app, win)
+                  --print(app, win)
+                  app:addInputHandler(ui.MSG_USER, self, self.msgUser)
+                end,
+                
+                cleanup = function(self)
+                  ui.Lister.cleanup(self)
+                  self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+                end,
+                
+                msgUser = function(self, msg)
+                  local ud = msg[-1]
+                  --print(ud)
+                  local typ, trd, nm = ud:match("<PLUGIN>" 
+                                        .. "([^<]*)"
+                                        .. "<NAME>"
+                                        .. "([^<]*)"
+                                        .. "<ATTACHED>" 
+                                        .. "(.*)"
+                  )
+                  if typ then
+                    --print(ud)
+                    --print( typ, trd, nm )
+                    
+                    local itm = self.EnabledFilterPos[trd]
+                    if itm then
+                      self:remItem( itm.i )
+                    end
+                    self:addItem( {{"", nm}} )
+                    self.EnabledFilterPos[trd] = { i = self:getN() }
+                  else
+                    typ, trd, nm = ud:match("<PLUGIN>" 
+                                          .. "([^<]*)"
+                                          .. "<NAME>"
+                                          .. "([^<]*)"
+                                          .. "<DETACHED>" 
+                                          .. "(.*)"
+                    )
+                    if typ then
+                      --print(ud)
+                      --print( typ, trd, nm )
+                      
+                      local itm = self.EnabledFilterPos[trd]
+                      if itm then
+                        self:remItem( itm.i )
+                      end
+                      self.EnabledFilterPos[trd] = nil
+                    end
+                  end
+                  
+                  return msg
+                end,
+
+              },
+    }
+    table.insert(chldrn, lst)
+  end
   local ppars =
           ui.Group:new
           {
             Orientation = "vertical",
           --  Width = 75+120+32,
             Pars_group = grp,
-            Children = 
-            {
-            },
+            Children = chldrn,
             setup = function(self, app, win)
                       ui.Group.setup(self, app, win)
                       app:addInputHandler(ui.MSG_USER, self, self.msgUser)
@@ -232,18 +336,26 @@ local function cr_plugpars(grp)
                       if grp and self.Pars_group == grp and nxt_lvl then
                         if nxt_lvl:match("^<REM PARAMS>") then
                           --self:setValue("Children", {})
+                          
+                          --[[
                           local lst = self:getChildren()
                           local i,v 
                           for i = #lst,1,-1 do
                             v = lst[i]
                             self:remMember(v)
                           end
+                          ]]
+                          if self.Param_grp then
+                            self:remMember(self.Param_grp)
+                            self.Param_grp = nil
+                          end
                         elseif nxt_lvl:match("^<SHOW PARAMS>") then
                           local name
                           name, nxt_lvl = nxt_lvl:match("^<SHOW PARAMS>([^<]*)<BODY>(.*)")
-                          self:addMember(
-                                preparePluginParamsDlg(task, name, nxt_lvl)
-                          )
+                          
+                          local param_grp = preparePluginParamsDlg(self.Pars_group, task, name, nxt_lvl)
+                          self.Param_grp = param_grp
+                          self:addMember( param_grp )
                         --[[
                         elseif nxt_lvl:match("^<GCODE>") then
                           nxt_lvl = nxt_lvl:match("^<GCODE>(.*)")
