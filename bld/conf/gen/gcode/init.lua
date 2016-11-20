@@ -33,7 +33,33 @@ local move_to = function(par)
 end
 
 
+
+local lib = {
+        header = function(g, frq)
+          g:start()
+          g:set_param("absolute")
+          g:set_param("metric")
+
+          g:spindle_freq(frq)
+          g:spindle_on(true)
+        end,
+
+        footer = function(g, z_wlk)
+          g:walk_to{z = z_wlk}
+          g:walk_to{x = 0, y = 0}
+          g:walk_to{z = 0}
+          g:spindle_on(false)
+          
+          g:finish()
+        end,
+
+}
+
+
 return {
+  lib = lib,
+  
+  --[[]]
   header = function(self, str)
     local t = type(str)
     if t == "string" then
@@ -53,6 +79,7 @@ return {
     end
     footer = str
   end,
+  --[[]]
   
   start = function(self)
       buf = {}

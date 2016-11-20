@@ -16,10 +16,11 @@ PORT = nil
 Sender = require("conf.sender")
 Sender:start()
 
+local PWD = os.getenv("PWD") or "."
 
 Flags = {
-  Home_path = os.getenv("PWD"),
-  Plugins_path = os.getenv("PWD") .. "/conf/plugins",
+  Home_path = PWD,
+  Plugins_path = PWD .. "/conf/plugins",
   Plugins = {
     Groups = {
       Stuff = {},
