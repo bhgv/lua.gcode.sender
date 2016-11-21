@@ -245,8 +245,8 @@ return {
       if _stat_mode then
         status_mode = tonumber(_stat_mode)
         if status_mode ~= 15 then
-          Sender:newcmd("SINGLE")
-          Sender:newcmd("$10=15 (mode should be 15 for correct work)")
+          exec.sendmsg("sender", "SINGLE")
+          exec.sendmsg("sender", "$10=15 (mode should be 15 for correct work)")
           status_mode = 15
         end
         status_mask = status_mask_choises[status_mode]
