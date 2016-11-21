@@ -33,6 +33,10 @@ make install
 cd $DIR/luaDXF2
 ./bld.sh
 
+echo "  --> luaObjLoader"
+cd $DIR/luaObjLoader
+./bld.sh
+
 echo "  --> tekUI"
 cd $DIR/tekUI
 make all
