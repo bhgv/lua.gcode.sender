@@ -1,9 +1,11 @@
 return {
-	['Walk Z'] = '1',
-	['Frequency'] = '100',
-	['Size H'] = '50',
 	['Size Z'] = '50',
+	['Step in depth (Z)'] = '3',
+	['Scanline step (Y)'] = '2',
+	['Walk Z'] = '1',
+	['Inside - 0, Outside - 1, Contour - ...'] = '0',
+	['Size H'] = '50',
 	['Size W'] = '50',
-	['Step of depth (Z)'] = '1.5',
-	['<FILE><NAME>Obj file<MASK>%.[Oo][Bb][Jj]$'] = '',
+	['Frequency'] = '100',
+	['<FILE><NAME>Obj file<MASK>%.[Oo][Bb][Jj]$'] = './test-models/suzanne.obj',
 }
