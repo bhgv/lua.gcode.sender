@@ -20,7 +20,9 @@ local function parse_obj(pars)
   local frq = tonumber(pars.Frequency) or 40
   
   local sl_step = tonumber(pars['Scanline step (Y)']) or 1
-  local is_outside = tonumber(pars['Inside - 0, Outside - 1, Contour - ...'])
+  local is_outside = tonumber(
+    pars['<RADIO>Milling mode<CASE>Inside<VAL>0<CASE>Outside<VAL>1<CASE>Contour<VAL>2']
+  )
   
   local obj_f_name = pars['<FILE><NAME>Obj file<MASK>%.[Oo][Bb][Jj]$']
   
