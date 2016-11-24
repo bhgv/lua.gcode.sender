@@ -3,7 +3,9 @@
 local ui = require "tek.ui"
 
 
-local floor = math.floor
+local floor = math.floor --tointeger
+
+local int = function(a) return math.tointeger(floor(a)) end
 
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
@@ -66,13 +68,12 @@ local draw = function (self)
       
       local draw_single_ln = function(xb, yb, xe, ye, i ) --, scr_lns)
             if not (
-                xb and xb == xb and
-                xe and xe == xe and
-                yb and yb == yb and
-                ye and ye == ye 
-            ) then
-              return
-            end
+              int (xb) and 
+              int (yb) and
+              int (xe) and
+              int (ye) 
+              ) 
+            then return end
             
             local c = calcPen(self, d, p[i].p, p[i].z)
             

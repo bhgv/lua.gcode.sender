@@ -2,7 +2,9 @@
 ui = require "tek.ui"
 
 
-local floor = math.floor
+local floor = math.floor --tointeger 
+
+local int = function(a) return math.tointeger(floor(a)) end
 
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
@@ -18,12 +20,14 @@ return {
     local xstp = (bnd.xmax - bnd.xmin) / stp_cnt
     local ystp = (bnd.ymax - bnd.ymin) / stp_cnt
     
-    if not (
-      xstp and xstp == xstp and 
-      ystp and ystp == ystp 
-      and k and k == k
-      ) 
-    then return end
+      if not (
+        int (xstp) and 
+        int (ystp) and
+        int (dx) and
+        int (dy) and
+        int (k)
+        ) 
+      then return end
     
     local font = self.font or self.Application.Display:openFont(self.Font)
     local cw, ch

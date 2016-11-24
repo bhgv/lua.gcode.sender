@@ -34,7 +34,40 @@ end
 
 
 
+local old_state = {}
+
+local process = function(g, st, z, pos)
+          if 
+              old_state.z ~= z 
+              or old_state.st ~= st 
+--              or (st == "end_pt" and old_state.st == "work")
+          then
+            if old_state.st == "walk" then
+              g:walk_to(old_state.pos)
+            else
+              g:work_to(old_state.pos)
+--              st = "work"
+            end
+            if --[[st == "walk" and]] old_state.z <= z then
+              g:walk_to{z = z}
+            else
+              g:work_to{z = z}
+            end
+            old_state.z = z
+            old_state.st = st
+          end
+          if pos.x then
+            old_state.pos.x = pos.x
+          end
+          if pos.y then
+            old_state.pos.y = pos.y
+          end
+end
+
+
 local lib = {
+        process = process,
+        
         header = function(g, frq)
           g:start()
           g:set_param("absolute")
@@ -42,6 +75,8 @@ local lib = {
 
           g:spindle_freq(frq)
           g:spindle_on(true)
+          
+          old_state = {st="walk", z=0, pos={x = 0, y = 0}}
         end,
 
         footer = function(g, z_wlk)

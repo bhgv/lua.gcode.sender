@@ -45,6 +45,7 @@ local function parse_obj(pars)
   if not o then return end  
   
   g.lib.header(g, frq)
+--  g.lib.process(g, "walk", z_wlk, {x = 0, y = 0} )
   g:walk_to{z = z_wlk}
 
   local tdz = (o.max.z - o.min.z)*dz / z_end

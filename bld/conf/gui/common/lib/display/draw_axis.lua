@@ -2,7 +2,9 @@
 local ui = require "tek.ui"
 
 
-local floor = math.floor
+local floor = math.floor --tointeger 
+
+local int = function(a) return math.tointeger(floor(a)) end
 
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
@@ -19,6 +21,15 @@ return {
       local c = self.PenGrid --"bright"
       
       if xstp == 0 or ystp == 0 then return end
+      
+      if not (
+        int (xstp) and 
+        int (ystp) and
+        int (dx) and
+        int (dy) and
+        int (k)
+        ) 
+      then return end
       
       if _G.Flags.DisplayProection == "xy" then
         for i = 0, stp_cnt do

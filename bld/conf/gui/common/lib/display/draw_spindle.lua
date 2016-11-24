@@ -2,7 +2,9 @@
 local ui = require "tek.ui"
 
 
-local floor = math.floor
+local floor = math.floor --tointeger 
+
+local int = function(a) return math.tointeger(floor(a)) end
 
 local S60 = math.sin(math.pi*2/3)
 local C60 = math.cos(math.pi*2/3)
