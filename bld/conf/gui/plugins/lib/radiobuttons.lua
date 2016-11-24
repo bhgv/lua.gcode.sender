@@ -14,7 +14,7 @@ return function(tmpl, init_val)
         Legend = grp_nm or "",
         Columns = 2,
         int_type = tmpl,
-        control_param = "", 
+        control_param = init_val, 
   }
 
   

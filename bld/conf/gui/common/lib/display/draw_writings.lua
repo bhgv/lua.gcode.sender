@@ -18,6 +18,13 @@ return {
     local xstp = (bnd.xmax - bnd.xmin) / stp_cnt
     local ystp = (bnd.ymax - bnd.ymin) / stp_cnt
     
+    if not (
+      xstp and xstp == xstp and 
+      ystp and ystp == ystp 
+      and k and k == k
+      ) 
+    then return end
+    
     local font = self.font or self.Application.Display:openFont(self.Font)
     local cw, ch
         
@@ -30,6 +37,8 @@ return {
       for i = 0,stp_cnt do
         x = floor(dx + 15 + (i*xstp)*k)
         y = floor(dy - 15 - (i*ystp)*k)
+
+--print(y, dy, i, ystp, k)
 
         sx = string.format("%0.2f", i*xstp + bnd.xmin)
         sy = string.format("%0.2f", i*ystp + bnd.ymin)

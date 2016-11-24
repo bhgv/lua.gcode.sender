@@ -5,6 +5,7 @@
 local lib3d = require "conf.plugins.obj.lib_3d"
 local lib2d = require "conf.plugins.obj.lib_2d"
 local libDraw = require "conf.plugins.obj.lib_draw"
+local parseSTL = require "conf.plugins.obj.parse_stl"
 
 local g = require "conf.gen.gcode"
 
@@ -24,15 +25,24 @@ local function parse_obj(pars)
     pars['<RADIO>Milling mode<CASE>Inside<VAL>0<CASE>Outside<VAL>1<CASE>Contour<VAL>2']
   )
   
-  local obj_f_name = pars['<FILE><NAME>Obj file<MASK>%.[Oo][Bb][Jj]$']
+  local obj_f_name = pars['<FILE><NAME>.obj/.stl file<MASK>%.[OoSs][BbTt][JjLl]$']
+  
+  print(obj_f_name)
   
   local f = io.open(obj_f_name, "r")
   if not f then return end
   f:close()
   
-  local o = lib3d.obj.do_parse(obj_f_name)
-  collectgarbage()
-  if not o then return end
+  local o
+  if obj_f_name:match("%.[Oo][Bb][Jj]$") then
+    o = lib3d.obj.do_parse(obj_f_name)
+    collectgarbage()
+  elseif obj_f_name:match("%.[Ss][Tt][Ll]$") then
+    o = parseSTL(obj_f_name)
+  --else
+  --  return
+  end
+  if not o then return end  
   
   g.lib.header(g, frq)
   g:walk_to{z = z_wlk}
@@ -69,12 +79,12 @@ end
 
 
 return {
-  name = "3D .obj file slicer",
+  name = "3D .obj/.stl file slicer",
   type = "plugin", 
   subtype = "CAM",
   gui = "button",
   image = nil,
-  nosymbol = "Obj", 
+  nosymbol = "3D", 
   
   exec = function(self, pars)
     --for k,v in pairs(pars) do

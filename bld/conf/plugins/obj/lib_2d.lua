@@ -52,10 +52,12 @@ local function sort_lns(lns_in)
     end
     --print(min_i, #lns_in)
     ln = lns_in[min_i]
-    ln_p = ln[min_p]
+--    ln_p = ln[min_p]
     if min_p == 1 then
       ln[1], ln[2] = ln[2], ln[1]
     end
+    ln_p = ln[2]
+    
     table.remove(lns_in, min_i)
     table.insert(lns_out, ln)
 

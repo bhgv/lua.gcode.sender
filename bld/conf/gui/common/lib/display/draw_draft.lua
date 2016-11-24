@@ -33,8 +33,7 @@ local transformCoords = require "conf.utils.transform_coords"
 
 
 
-return {
-  draw = function (self)
+local draw = function (self)
     if ui.Frame.draw(self) then
       local x0, y0, x1, y1 = self:getRect()
       local xb, yb, xe, ye
@@ -65,31 +64,44 @@ return {
       
       local pb, pe
       
-      d:pushClipRect(x0, y0, x1, y1)
-      
-      if _G.Flags.DisplayProection == "xy" then
-        self:drawAxis(d, dx, dy, k)
-        
-        for i = 1, #self.Points do
-            pb, pe = transformCoords(p[i-1]), transformCoords(p[i])
+      local draw_single_ln = function(xb, yb, xe, ye, i ) --, scr_lns)
+            if not (
+                xb and xb == xb and
+                xe and xe == xe and
+                yb and yb == yb and
+                ye and ye == ye 
+            ) then
+              return
+            end
             
-            local xb = dx + 15 + (pb.x - bnd.xmin)*k 
-            local yb = dy - 15 - (pb.y - bnd.ymin)*k
-            local xe = dx + 15 + (pe.x - bnd.xmin)*k
-            local ye = dy - 15 - (pe.y - bnd.ymin)*k
-            local c = calcPen(self, d, p[i].p, p[i].z) -- or "green"
+            local c = calcPen(self, d, p[i].p, p[i].z)
             
-            ln = {
-                xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
+            xb, yb, xe, ye = floor(xb), floor(yb), floor(xe), floor(ye)
+            local ln = {
+                xb = xb, yb = yb, xe = xe, ye = ye, 
                 i = i, 
                 c = c,
                 ln_n = p[i].ln_n
             }
             table.insert(scr_lns, ln)
             
-            d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
+            d:drawLine(xb, yb, xe, ye, c)
+      end
+      
+      d:pushClipRect(x0, y0, x1, y1)
+      
+      if _G.Flags.DisplayProection == "xy" then
+        self:drawAxis(d, dx, dy, k)
+        
+        for i = 1, #p do --self.Points do
+            pb, pe = transformCoords(p[i-1]), transformCoords(p[i])
             
-            --d:freePen(c)
+            local xb = dx + 15 + (pb.x - bnd.xmin)*k 
+            local yb = dy - 15 - (pb.y - bnd.ymin)*k
+            local xe = dx + 15 + (pe.x - bnd.xmin)*k
+            local ye = dy - 15 - (pe.y - bnd.ymin)*k
+            
+            draw_single_ln(xb, yb, xe, ye, i)
         end
       elseif _G.Flags.DisplayProection == "xyz" then
         local bnd3d = {
@@ -117,7 +129,7 @@ return {
 
         self:drawAxis(d, dx, dy, k)
 
-        for i = 1, #self.Points do
+        for i = 1, #p do --self.Points do
             pb, pe = transformCoords(p[i-1]), transformCoords(p[i])
             
             local xb = dx + 15 + ((pb.x - bnd.xmin) + (pb.y - bnd.ymin))*S60*k
@@ -125,40 +137,34 @@ return {
             local xe = dx + 15 + ((pe.x - bnd.xmin) + (pe.y - bnd.ymin))*S60*k
             local ye = dy - 15 - (( (pe.x - bnd.xmin) - (pe.y - bnd.ymin))*C60 + pe.z)*k
             
-  --          local c = p[i].p or "green"
-            local c = calcPen(self, d, p[i].p, p[i].z) -- or "green"
-            
-            ln = {
-                xb = floor(xb), yb = floor(yb), xe = floor(xe), ye = floor(ye), 
-                i = i, 
-                c = c, 
-                ln_n = p[i].ln_n
-            }
-            table.insert(scr_lns, ln)
-            
-            d:drawLine(floor(xb), floor(yb), floor(xe), floor(ye), c)
-        
-            --d:freePen(c)
+            draw_single_ln(xb, yb, xe, ye, i)
         end
       end
       
       self:drawWritings(d, dx, dy, k)
       self:drawZeroCross(d, dx, dy, k)
       
-      self.scr_lns = scr_lns
-      
       local ln = self.sel_line
       if ln then
         ln = scr_lns[ln.i]
-        d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+        --if ln then
+          d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+        --end
         self.sel_line = ln
       end
 
+      self.scr_lns = scr_lns
+      
       d:popClipRect()
       
       return true
     end
-  end,
+  end
+  
+  
+  
+return {
+  draw = draw,
   
 }
 

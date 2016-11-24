@@ -171,6 +171,7 @@ local test_run_plugin = function(plug_path, sep_pars)
               end
             
             elseif conf.exec and msg:match("^<EXECUTE>") then
+              --print(msg)
               local pars = msg:match("^<EXECUTE>(.*)")
               --print("conf.subtype =", conf.subtype)
               if conf.subtype == "Filter" then
