@@ -125,6 +125,8 @@ local draw = function (self)
                 xsc - xbc + _G.Flags.screenShift.x, 
                 ysc + ybc + _G.Flags.screenShift.y
                 
+        --print(dx, dy, xbc, ybc, xsc, ysc, k)
+        
         self.dx = dx
         self.dy = dy
 

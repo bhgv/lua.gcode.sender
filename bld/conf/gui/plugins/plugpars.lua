@@ -1,6 +1,9 @@
 local ui = require "tek.ui"
 local exec = require "tek.lib.exec"
 
+local ascii85 = require "ascii85"
+
+
 --print(ui.ProgDir)
 
 local complexcontrol = require "conf.gui.plugins.lib.complexcontrol"
@@ -69,7 +72,9 @@ local function preparePluginParamsDlg(plug_group, task, name, par_str)
                           local i
                           --out = ""
                           for i = 1, #lst, 2 do
-                            out = out .. lst[i].Text .. "=" .. lst[i+1]:getText() .. "\n"
+                            out = out .. lst[i].Text .. "=" .. 
+                                              ascii85.encode(lst[i+1]:getText()) 
+                                              .. "\n"
                           end
                         end
                       end
@@ -84,7 +89,8 @@ local function preparePluginParamsDlg(plug_group, task, name, par_str)
                             local it = lst[i]
                             if it.int_type then
                               --print(it.int_type .. "=" .. it.control_param)
-                              out = out .. it.int_type .. "=" .. it.control_param .. "\n"
+                              local v = ascii85.encode(it.control_param)
+                              out = out .. it.int_type .. "=" .. v .. "\n"
                             end
                           end
                         end

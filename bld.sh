@@ -37,6 +37,10 @@ echo "  --> luaObjLoader"
 cd $DIR/luaObjLoader
 ./bld.sh
 
+echo "  --> ascii85"
+cd $DIR/ascii85
+./bld.sh
+
 echo "  --> tekUI"
 cd $DIR/tekUI
 make all

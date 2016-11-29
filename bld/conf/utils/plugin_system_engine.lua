@@ -15,6 +15,8 @@ local test_run_plugin = function(plug_path, sep_pars)
       func = function()
         local exec = require "tek.lib.exec"
         
+        local ascii85 = require "ascii85"
+        
         local tab2str = function(tab)
               local s = ""
               local k1, v1
@@ -195,7 +197,7 @@ local test_run_plugin = function(plug_path, sep_pars)
                 local partab = {}
                 local k,v
                 for k,v in pars:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
-                  partab[k] = v
+                  partab[k] = ascii85.decode(v)
                 end
                 local noerr, out = pcall(conf.exec, self, partab)
                 if not noerr then 
@@ -244,7 +246,7 @@ local test_run_plugin = function(plug_path, sep_pars)
                 local partab = {}
                 local k,v
                 for k,v in pars_s:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
-                  partab[k] = v
+                  partab[k] = ascii85.decode(v)
                 end
               local noerr, out = pcall(conf.exec, self, cmd, partab)
               if not noerr then 

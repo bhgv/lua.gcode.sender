@@ -23,6 +23,8 @@ return {
         
         local lib = require "conf.sender.lib"
         
+        local ascii85 = require "ascii85"
+        
         local GFilters = {}
         
         local state = "stop"
@@ -113,12 +115,10 @@ return {
                 req_inc_cmd = false
               end
               
-              if
-                (
+              if (
                   (#gthread >= icmd and state == "run") or 
                   (#sthread > 0 and state == "single")
-                )
-              then
+              ) then
                 --print(is_resp_handled, oks, oks_max)
                 if MK.out_access then --? is_resp_handled and oks < oks_max then
                   local num_str
@@ -144,7 +144,7 @@ return {
                   if #GFilters > 0 then
                     local i,flt
                     for i,flt in ipairs(GFilters) do
-                      cmd = flt:filter(cmd) or cmd
+                      cmd = flt:filter(cmd, flt.pars) or cmd
                       --print ("send", cmd)
                     end
                   end
@@ -235,7 +235,7 @@ return {
                 local partab = {}
                 local k,v
                 for k,v in pars_s:gmatch("%s*([^=]+)=%s*([^\n]*)\n") do
-                  partab[k] = v
+                  partab[k] = ascii85.decode(v)
                 end
                 
                 local i,flt
