@@ -70,10 +70,18 @@ static int _serial_baudrate_to_bits(uint32_t baudrate) {
         case 1152000: return B1152000;
         case 1500000: return B1500000;
         case 2000000: return B2000000;
+#ifdef B2500000
         case 2500000: return B2500000;
+#endif
+#ifdef B3000000
         case 3000000: return B3000000;
+#endif
+#ifdef B3500000
         case 3500000: return B3500000;
+#endif
+#ifdef B4000000
         case 4000000: return B4000000;
+#endif
         default: return -1;
     }
 }
@@ -107,10 +115,18 @@ static int _serial_bits_to_baudrate(uint32_t bits) {
         case B1152000: return 1152000;
         case B1500000: return 1500000;
         case B2000000: return 2000000;
+#ifdef B2500000
         case B2500000: return 2500000;
+#endif
+#ifdef B3000000
         case B3000000: return 3000000;
+#endif
+#ifdef B3500000
         case B3500000: return 3500000;
+#endif
+#ifdef B4000000
         case B4000000: return 4000000;
+#endif
         default: return -1;
     }
 }
@@ -150,7 +166,7 @@ int serial_open_advanced(serial_t *serial, const char *path, uint32_t baudrate, 
     /* c_oflag */
     termios_settings.c_oflag = 0;
 
-    /* c_lfag */
+    /* c_lflag */
     termios_settings.c_lflag = 0;
 
     /* c_cflag */
@@ -256,7 +272,7 @@ int serial_input_waiting(serial_t *serial, unsigned int *count) {
 
 int serial_output_waiting(serial_t *serial, unsigned int *count) {
     if (ioctl(serial->fd, TIOCOUTQ, count) < 0)
-        return _serial_error(serial, SERIAL_ERROR_IO, errno, "TIOCINQ query");
+        return _serial_error(serial, SERIAL_ERROR_IO, errno, "TIOCOUTQ query");
 
     return 0;
 }
@@ -432,6 +448,10 @@ int serial_set_parity(serial_t *serial, enum serial_parity parity) {
     if (tcgetattr(serial->fd, &termios_settings) < 0)
         return _serial_error(serial, SERIAL_ERROR_QUERY, errno, "Getting serial port attributes");
 
+    termios_settings.c_iflag &= ~(INPCK | ISTRIP);
+    if (parity != PARITY_NONE)
+        termios_settings.c_iflag |= (INPCK | ISTRIP);
+
     termios_settings.c_cflag &= ~(PARENB | PARODD);
     if (parity == PARITY_EVEN)
         termios_settings.c_cflag |= PARENB;
@@ -487,7 +507,7 @@ int serial_set_rtscts(serial_t *serial, bool enabled) {
 
     termios_settings.c_cflag &= ~CRTSCTS;
     if (enabled)
-        termios_settings.c_iflag |= CRTSCTS;
+        termios_settings.c_cflag |= CRTSCTS;
 
     if (tcsetattr(serial->fd, TCSANOW, &termios_settings) < 0)
         return _serial_error(serial, SERIAL_ERROR_CONFIGURE, errno, "Setting serial port attributes");
