@@ -23,7 +23,7 @@ return ui.Group:new
 --                local NumberedList = require "conf.gui.classes.numberedlist"
                 local status, path, select = app:requestFile
                 {
-                  Path = self.old_path or "/home/orangepi/el", 
+                  Path = self.old_path or os.getenv("HOME"), 
                   SelectMode = 
                 --		    "multi",
                         "single",
