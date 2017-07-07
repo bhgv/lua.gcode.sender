@@ -17,6 +17,15 @@ Used Lua plugins
 - https://github.com/memononen/nanosvg
 - https://bitbucket.org/Coin3D/dime (DXF reader library)
 
+Build dependencies
+-------
+* libreadline-dev
+* libX11-dev
+* libxft-dev
+* libxext-dev
+* libxxf86vm-dev
+
+
 How to build
 -------
 sources of lua-5.3.3 & all modules are included. just run bld script from head folder

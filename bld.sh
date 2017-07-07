@@ -52,7 +52,7 @@ cd $DIR/src
 
 echo "  --> fonts"
 mkdir ~/.fonts
-ln -s $DIR/bld/share/lua/5.3/tek/ui/font ~/.fonts
+ln -sf $DIR/bld/share/lua/5.3/tek/ui/font ~/.fonts
 
 cd $DIR/bld
 
