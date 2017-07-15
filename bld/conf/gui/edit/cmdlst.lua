@@ -72,6 +72,7 @@ return ui.Group:new
                     local n = lst_wgt.SelectedLine + 1
                     table.insert(GTXT, n, "")
                     lst_wgt:addItem({{ "", "" }}, n)
+		    _G.Flags.isEdited = true
                   end,
                 },
                 ui.Button:new
@@ -84,6 +85,7 @@ return ui.Group:new
                     local n = lst_wgt.SelectedLine
                     GTXT[n] = cmd
                     lst_wgt:changeItem({{ "", cmd }}, n)
+		    _G.Flags.isEdited = true
                     
                     if _G.Flags.AutoRedraw then
                       do_vparse()
@@ -99,6 +101,7 @@ return ui.Group:new
                     local n = lst_wgt.SelectedLine
                     table.remove(GTXT, n)
                     lst_wgt:remItem(n)
+		    _G.Flags.isEdited = true
                   end,
                 },
             }

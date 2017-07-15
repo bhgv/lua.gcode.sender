@@ -39,7 +39,9 @@ Flags = {
   AutoRedraw = true,
   DisplayMode = "drag",
   DisplayProection = "xy",
-  screenShift = {x=0, y=0,}
+  screenShift = {x=0, y=0,},
+
+  isEdited = false,
 }
 
 Plugins = {

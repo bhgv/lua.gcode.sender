@@ -276,7 +276,8 @@ return {
               end
               
             else
-              while msg do
+              while msg and msg ~= "FIN" do
+                --print(msg)
                 gthread[#gthread + 1] = msg
               --exec.sendport("main", "ui", "<CMD GAUGE SETUP 2>" .. #gthread)
                 msg = exec.waitmsg(20)

@@ -32,10 +32,12 @@ local scb_eol = function(l, k)
   if isZ then
     cmd_buf = cmd_buf .. string.format(" Z%.4f",  pt.z)
   end
-  
+
   Sender:newcmd(cmd_buf)
   ln_cur = ln_cur + 1
   
+  GTXT_parsed[ln_cur] = cmd_buf
+
   isX, isY, isZ = false, false, false
   cmd_buf = ""
 end
@@ -56,6 +58,7 @@ local scb_cmd = function(l, k, p1, p2)
 end
 
 local scb_fini = function(l, k)
+  Sender:newcmd("FIN")
 end
 
 function do_sparse(from, to)
@@ -66,26 +69,47 @@ function do_sparse(from, to)
     to = #GTXT
   end
   --print (from, to)
-  local txt = table.concat(GTXT, "\n", from, to) .. "\n"
+  
+  local txt
+  if _G.Flags.isEdited then
+    txt = table.concat(GTXT, "\n", from, to) .. "\n"
+  end
   
   _G.Flags.SendFrom = from or 1
   _G.Flags.SendTo = to
   
-  gparser.set_callback_dict {
-    cmd= scb_cmd,
-    eol= scb_eol,
-    init= scb_init,
-    fini= scb_fini,
-    pragma= nil,
-    aux_cmd= nil,
-    default= nil,
-    no_callback= nil,
-  }
-    
+  if _G.Flags.isEdited then
+    gparser.set_callback_dict {
+      cmd= scb_cmd,
+      eol= scb_eol,
+      init= scb_init,
+      fini= scb_fini,
+      pragma= nil,
+      aux_cmd= nil,
+      default= nil,
+      no_callback= nil,
+    }
+  end
+
   Sender:newcmd("NEW")
   
-  local o = gparser:do_parse(txt)
-  
+  local o
+
+  if _G.Flags.isEdited then
+    o = gparser:do_parse(txt)
+  else
+    local i
+    --scb_init(0, 0)
+    for i = _G.Flags.SendFrom, _G.Flags.SendTo do
+      Sender:newcmd(GTXT_parsed[i])
+--      print(GTXT_parsed[i])
+    end
+    Sender:newcmd("FIN")
+--scb_fini(0, 0)
+  end
+
+  _G.Flags.isEdited = false
+
   --local transformCoords = require "conf.utils.transform_coords"
 
   --local base_x, base_y, base_z = 0, 0, 0
