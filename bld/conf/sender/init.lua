@@ -1,8 +1,14 @@
 local ui = require "tek.ui"
 local exec = require "tek.lib.exec"
 
+--local Visual = ui.loadLibrary("visual", 4)
+--local Visual = require "tek.lib.visual" --ui.loadLibrary("visual", 4)
+
 --print(exec.getname())
 
+--local on_timer = function()
+--  status_time = 1
+--end
 
 
 return {
@@ -45,6 +51,12 @@ return {
         local sthread = {}
         
         local send_from = 1
+        
+        --local Visual = ui.loadLibrary("visual", 4)
+		local Visual = require "tek.lib.visual"
+        
+--        self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.update)
+		local status_time, stms = Visual.getTime()
         
         while cmd ~= "SENDER_STOP" do
           if MK then
@@ -93,7 +105,9 @@ return {
               --    int_state = "s"
               --  end
               elseif (not msg.msg) then
-                if int_state ~= "rs" and stat_on then
+                local st, stms = Visual.getTime() 
+                if int_state ~= "rs" and stat_on and (st - status_time) >= 1 then
+                  status_time = st
                   int_state = "s"
                 else
                   int_state = "m"
