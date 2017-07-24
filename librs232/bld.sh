@@ -1,5 +1,7 @@
 #!/bin/sh
 
+./autogen.sh
+
 ./configure \
   --enable-lua \
   --with-lua-inc=$PWD/../bld/include \

@@ -50,7 +50,7 @@ if test "x$enable_lua" = "xyes" ; then
     ac_save_CFLAGS="$CFLAGS"
     ac_save_LDFLAGS="$LDFLAGS"
 
-    LUA_CFLAGS=""
+    LUA_CFLAGS="-DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 "
     LUA_LFLAGS=""
 
     if test -n "$lua_inc"; then
@@ -145,7 +145,7 @@ if test "x$enable_lua" = "xyes" ; then
 *** Lua (>=5.0) headers and/or librairies couldn't be found in your system.
 *** Try to install liblua, liblualib and liblua-dev with your software package manager.
 *** librs232 will be built without Lua bindings library.])
-        enable_lua="no"
+#        enable_lua="no"
         not_found="$not_found lua"
     else
         AC_MSG_RESULT(yes)
