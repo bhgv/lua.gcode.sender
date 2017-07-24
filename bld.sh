@@ -50,6 +50,10 @@ echo "  --> main src"
 cd $DIR/src
 ./bs.sh
 
+echo "  --> main luars232"
+cd $DIR/librs232
+./bld.sh
+
 echo "  --> fonts"
 mkdir ~/.fonts
 ln -sf $DIR/bld/share/lua/5.3/tek/ui/font ~/.fonts

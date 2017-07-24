@@ -1,7 +1,13 @@
 
 local exec = require "tek.lib.exec"
 
-local rs232 = require('periphery').Serial
+--local rs232 = require('periphery').Serial
+local rs232 = require('rs232.luars232')
+--print ("rs232", rs232)
+--print ("luars232", luars232)
+rs232 = luars232
+--for k,v in pairs(rs232) do print(k,v) end
+
 local PORT = nil
 
 local lfs = require "lfs"
@@ -18,6 +24,10 @@ local status_mask_choises = {
               "Buf:([^,]+),RX:([^>]+)>",
 }
 local status_mask = status_mask_choises[3]
+
+
+local rs232_read_len = 255 -- read one byte
+local rs232_read_timeout = 100 -- in miliseconds
 
 
 local read_timeout_choises = {
@@ -68,6 +78,37 @@ end
 
 
 
+local _read_port = function(read_timeout)
+  local s = ""
+  local err, data_read, size --= PORT:read(rs232_read_len, rs232_read_timeout)
+  data_read = ""
+  
+  repeat
+--      s = s .. data_read
+      err, data_read, size = PORT:read(rs232_read_len, read_timeout or rs232_read_timeout)
+      
+      if err == rs232.RS232_ERR_TIMEOUT then
+        return nil
+      elseif err ~= rs232.RS232_ERR_NOERROR then
+        print("e!", rs232.error_tostring(err), s)
+        return s
+      else
+        s = s .. data_read
+      end
+--	  assert(err == rs232.RS232_ERR_NOERROR)
+  until(data_read == nil or size < rs232_read_len)
+
+--  print("rd>", s)
+  return s
+end
+
+local _write_port = function(s)
+--  print("wr>", s)
+  -- write with timeout
+  local err, len = PORT:write(s) --, rs232_read_timeout)
+  assert(err == rs232.RS232_ERR_NOERROR)
+end
+
 
 
 
@@ -83,11 +124,38 @@ return {
             bauds = bauds,
       }
     end,
-
-    open = function(self, port, speed)
-      local attr = lfs.attributes(port)
+    
+    open = function(self, port_name, speed)
+      local attr = lfs.attributes(port_name)
       if attr then
-        PORT = rs232(port, speed)
+
+		local out = io.stderr
+
+		-- open port
+		local e, p = rs232.open(port_name)
+		if e ~= rs232.RS232_ERR_NOERROR then
+			-- handle error
+			out:write(string.format("can't open serial port '%s', error: '%s'\n",
+					port_name, rs232.error_tostring(e)))
+			--return
+			p = nil
+		else
+		    --print (p)
+--			for k,v in pairs(p) do print(k,v) end
+			-- set port settings
+			assert(p:set_baud_rate(rs232.RS232_BAUD_115200) == rs232.RS232_ERR_NOERROR)
+			assert(p:set_data_bits(rs232.RS232_DATA_8) == rs232.RS232_ERR_NOERROR)
+			assert(p:set_parity(rs232.RS232_PARITY_NONE) == rs232.RS232_ERR_NOERROR)
+			assert(p:set_stop_bits(rs232.RS232_STOP_1) == rs232.RS232_ERR_NOERROR)
+			assert(p:set_flow_control(rs232.RS232_FLOW_OFF)  == rs232.RS232_ERR_NOERROR)
+
+			out:write(string.format("OK, port open with values '%s'\n", tostring(p)))
+		end
+
+
+        PORT = p --rs232(port, speed)
+        --print(PORT)
+        
         self.out_access = PORT ~= nil
         
         oks = 0
@@ -113,15 +181,18 @@ return {
     end,
 
     pause = function(self)
-      PORT:write("!")
+--      PORT:write("!")
+      _write_port("!")
     end,
 
     resume = function(self)
-      PORT:write("~")
+--      PORT:write("~")
+      _write_port("~")
     end,
 
     send = function(self, cmd)
-      PORT:write(cmd)
+--      PORT:write(cmd)
+      _write_port(cmd)
       
       self.out_access = false
       is_resp_handled = false
@@ -136,7 +207,8 @@ return {
       local msg = {}
       local ln_1, ln, _
       local ok, er, stat = false, false, false
-      buf = PORT:read(256, read_timeout) --200)
+--      buf = PORT:read(256, read_timeout) --200)
+      buf = _read_port(read_timeout)
       --if buf then print("> ", buf) end
       if msg_buffer and msg_buffer ~= "" then
         if buf and buf ~= "" then
@@ -145,13 +217,14 @@ return {
           buf = msg_buffer
         end
       end
-      if buf ~= "" then
+      if buf and buf ~= "" then
         out = ""
         repeat
           out = out .. buf
-          buf = PORT:read(256, 50)
+--          buf = PORT:read(256, 50)
+          buf = _read_port(50)
           --if buf then print("... ", buf) end
-        until(buf == "")
+        until((not buf) or buf == "")
         --Log:msg("---------------------\n" .. out .. "\n=======================")
         for ln in string.gmatch(out, "([^\u{a}\u{d}]+)") do 
           --print(ln)
