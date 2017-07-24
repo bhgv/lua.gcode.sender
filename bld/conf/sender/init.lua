@@ -57,6 +57,7 @@ return {
         
 --        self.Window:addInputHandler(ui.MSG_INTERVAL, self, self.update)
 		local status_time, stms = Visual.getTime()
+		status_time = status_time + (stms/1000000)
         
         while cmd ~= "SENDER_STOP" do
           if MK then
@@ -106,7 +107,8 @@ return {
               --  end
               elseif (not msg.msg) then
                 local st, stms = Visual.getTime() 
-                if int_state ~= "rs" and stat_on and (st - status_time) >= 1 then
+                st = st + (stms/1000000)
+                if int_state ~= "rs" and stat_on and (st - status_time) >= 0.3 then
                   status_time = st
                   int_state = "s"
                 else

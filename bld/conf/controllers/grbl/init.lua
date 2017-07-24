@@ -88,7 +88,7 @@ local _read_port = function(read_timeout)
       err, data_read, size = PORT:read(rs232_read_len, read_timeout or rs232_read_timeout)
       
       if err == rs232.RS232_ERR_TIMEOUT then
-        return nil
+        return s
       elseif err ~= rs232.RS232_ERR_NOERROR then
         print("e!", rs232.error_tostring(err), s)
         return s
