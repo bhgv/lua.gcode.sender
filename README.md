@@ -45,3 +45,19 @@ How to change lua scripts
 --------
 all lua scripts are in the **bld/conf** folder. examples & docs to lua & modules are in their own folders.
 
+
+Screenshots
+-------
+![](doku/pic/lua.gcode.sender_001.png)
+
+![](doku/pic/lua.gcode.sender_002.png)
+
+![](doku/pic/lua.gcode.sender_003.png)
+
+![](doku/pic/lua.gcode.sender_004.png)
+
+![](doku/pic/lua.gcode.sender_005.png)
+
+![](doku/pic/lua.gcode.sender_006.png)
+
+![](doku/pic/lua.gcode.sender_007.png)
