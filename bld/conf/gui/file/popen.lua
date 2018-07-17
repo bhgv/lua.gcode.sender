@@ -1,5 +1,6 @@
 local ui = require "tek.ui"
 local List = require "tek.class.list"
+local lfs = require "lfs"
 
 --print(ui.ProgDir)
 
@@ -67,7 +68,9 @@ local set_ports_bauds = function(mk_type)
   local i, v
   local out = {}
   for i,v in ipairs(lst.ports) do
-    out[#out + 1] = {{ "" .. v }}
+    if lfs.attributes(v) then
+      out[#out + 1] = {{ "" .. v }}
+    end
   end
   wjt_portslist:setList(List:new { Items = out })
   wjt_portslist:setValue("SelectedLine", 1)

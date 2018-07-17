@@ -24,8 +24,14 @@ local read_timeout = read_timeout_choises[3]
 local ports = {
     "/dev/ttyACM0",
     "/dev/ttyACM1",
+    "/dev/ttyACM2",
+    "/dev/ttyACM3",
+    "/dev/ttyACM4",
     "/dev/ttyUSB0",
     "/dev/ttyUSB1",
+    "/dev/ttyUSB2",
+    "/dev/ttyUSB3",
+    "/dev/ttyUSB4",
 }
 
 local bauds = {
@@ -72,7 +78,12 @@ end
 return {
     out_access = false,
     
-    StatPort_contents = require "conf.controllers.marlin.StatPort_contents",
+    StatPort_contents   = require "conf.controllers.marlin.StatPort_contents",
+
+    FileButtons_add     = require "conf.controllers.marlin.FileButtons_add",
+    ControlButtons_add  = require "conf.controllers.marlin.ControlButtons_add",
+    TerminalButtons_add = require "conf.controllers.marlin.TerminalButtons_add",
+
 
     info = function(self)
       return {

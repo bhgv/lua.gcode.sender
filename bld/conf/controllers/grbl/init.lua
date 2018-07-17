@@ -31,6 +31,9 @@ local read_timeout = read_timeout_choises[3]
 local ports = {
     "/dev/ttyUSB0",
     "/dev/ttyUSB1",
+    "/dev/ttyUSB2",
+    "/dev/ttyUSB3",
+    "/dev/ttyUSB4",
 }
 
 local bauds = {
