@@ -120,6 +120,9 @@ return {
       exec.sendmsg("sender","M211 S0") -- disable software endstops
       
       exec.sendmsg("sender","SINGLE")
+      exec.sendmsg("sender","M501") -- EPROM->settings
+      
+      exec.sendmsg("sender","SINGLE")
       exec.sendmsg("sender","G90 G21")
       return out
     end,

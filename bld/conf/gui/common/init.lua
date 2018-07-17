@@ -26,8 +26,14 @@ symBut = function(txt, foo, color, isnosym)
 end
 
 
-symButSm = function(txt, foo, color)
-  local style = "font:ui-icons:12; width:12; color:olive;" --olive;" --navy;"
+symButSm = function(txt, foo, color, isnosym)
+  local font = ":10" --"Vera:10"
+  --print (isnosym,txt)
+  if not isnosym then
+    font = "ui-icons:12"
+  end
+  
+  local style = "font:" .. font .. "; width:12; color:olive;" --olive;" --navy;"
   local par = {}
 --  if par.Style then
 --    style = style .. par.Style

@@ -84,6 +84,29 @@ end
 
 
 
+local ads_panel_cln = function(ads_pnl)
+  local old_cnt = ads_pnl:getChildren()
+  local i, chld
+  if old_cnt then
+    for i,chld in ipairs(old_cnt) do
+      ads_pnl:remMember(chld)
+    end
+  end
+end
+
+
+local ads_panel_add_contents = function(ads_pnl, ads)
+  if ads then
+    if type(ads)=="function" then
+      ads = ads()
+    elseif type(ads)~="table" then
+      ads = nil
+    end
+  end
+  if ads then
+    ads_pnl:addMember(ads)
+  end
+end
 
 
 return ui.Group:new
@@ -157,15 +180,19 @@ return ui.Group:new
             Sender:newcmd(baud_nm)
             StatPort:setValue("Text", "Connected to: " .. port_nm)
             
-            local old_cnt = StatPort:getChildren()
-            local i, chld
-            if old_cnt then
-              for i,chld in ipairs(old_cnt) do
-                StatPort:remMember(chld)
-              end
-            end
+            ads_panel_cln(StatPort)
+
+            ads_panel_cln(FilePanel_ads)
+            ads_panel_cln(ControlPanel_ads)
+            ads_panel_cln(TerminalPanel_ads)
+
             MK = MKs:get(mk_nm)
             StatPort:addMember(MK.StatPort_contents)
+            
+			ads_panel_add_contents(FilePanel_ads, MK.FileButtons_add)
+			ads_panel_add_contents(ControlPanel_ads, MK.ControlButtons_add)
+			ads_panel_add_contents(TerminalPanel_ads, MK.TerminalButtons_add)
+
             MKstate = "STOP"
           end
         ),
