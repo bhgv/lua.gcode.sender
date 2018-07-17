@@ -58,6 +58,14 @@ return ui.Group:new
           ui.Input:new
           {
             Id = "gedit",
+            onEnter = function(self)
+              ui.Input.onEnter(self)
+              local cmd = self:getText()
+              --self:setValue("Text", " ")
+              --print(cmd)
+              Sender:newcmd("SINGLE")
+              Sender:newcmd(cmd)
+            end
           },
           ui.Group:new
           {
