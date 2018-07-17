@@ -6,16 +6,6 @@ local exec = require "tek.lib.exec"
 ports = {}
 bauds = {}
 
-f = io.lines("conf/ports.txt")
-repeat
-    p = f(); if p then table.insert(ports, {{p}} ) end
-until(p == nil)
-
-f = io.lines("conf/bauds.txt")
-repeat
-    p = f(); if p then table.insert(bauds, {{p}} ) end
-until(p == nil)
-
 
 local Group = ui.Group
 local Slider = ui.Slider

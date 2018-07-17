@@ -60,6 +60,3 @@ plugin_sys:collect_plugins()
 
 
 GUI = require "conf.gui"
-
---Sender = require("conf.sender")
---Sender:start()
