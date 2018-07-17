@@ -9,11 +9,11 @@ local lfs = require "lfs"
 local status_mode = 3
 local status_mask_choises = {
       [3] =   
-              "%s*X:([+%-]?%d*%.%d*)%s+Y:([+%-]?%d*%.%d*)%s+Z:([+%-]?%d*%.%d*)%s+E:[+%-]?%d*%.%d*%s+" ..
+              "^%s*X:([+%-]?%d*%.%d*)%s+Y:([+%-]?%d*%.%d*)%s+Z:([+%-]?%d*%.%d*)%s+E:[+%-]?%d*%.%d*%s+" ..
               "Count%s+X:([+%-]?%d*)%s+Y:([+%-]?%d*)%s+Z:([+%-]?%d*)%s*",
 }
-local status_mask = status_mask_choises[3]
-
+local status_mask_pos = status_mask_choises[3]
+local status_mask_temp = "^ok%s+([CTB]):%s*(%d*%.?%d*)%s*/%s*(%d*%.?%d*)"
 
 local read_timeout_choises = {
       [3] =   200,
@@ -70,7 +70,7 @@ end
 
 
 
-
+local stat_pos_or_temp = true
 
 
 
@@ -133,10 +133,14 @@ return {
 
     pause = function(self)
       PORT:write("M410\n")
+--      PORT:write("M125\n") --???
+--      PORT:write("M25\n") --???
+--      PORT:write("M600\n") --???
     end,
 
     resume = function(self)
       PORT:write("M999 S1\n")
+--      PORT:write("M24\n") --???
     end,
 
     send = function(self, cmd)
@@ -180,20 +184,30 @@ return {
         end
       --print(#lst, lst[1])
         if lst[1] then
-          if lst[1]:match(status_mask --[["^<"]] ) then
+          if 
+            lst[1]:match(status_mask_pos) or
+            lst[1]:match(status_mask_temp) 
+          then
             --self:status_parse(out)
             stat = true
             ln_1 = lst[1]
-            
+
+            ok = true
+            oks = oks - 1
+--[[            
             if lst[2] and lst[2]:match("^ok") then
               ok = true
               oks = oks - 1
               msg_buffer = table.concat(lst, "\n", 3)
             else
-              msg_buffer = table.concat(lst, "\n", 2)
-            end
+]]
+--              msg_buffer = table.concat(lst, "\n", 2)
+--            end
             --table.remove(lst, 1)
-          elseif lst[1]:match("^%s*echo:Unknown command:" --[["^error"]]) then
+          elseif 
+              lst[1]:match("^%s*echo:Unknown command:")  or
+              lst[1]:match("^%s*Error:") 
+          then
             msg_buffer = table.concat(lst, "\n", 2)
             ln_1 = lst[1]
             oks = oks - 1
@@ -325,28 +339,42 @@ return {
     
       --print("oks=", oks, ", oks_max=", oks_max)
       
-      if oks < oks_max then
-        self:send("M114\n")
+      if stat_pos_or_temp then
+        if oks < oks_max then
+          self:send("M114\n")
+        end
+      else
+        self:send("M105\n")
       end
     end,
     
     status_parse = function(self, status)
       local s = status
       local fr, to, state, mx, my, mz, wx, wy, wz, Buf, RX
-      fr, to, wx, wy, wz, mx, my, mz = string.find(s, status_mask)
-            
-      --mk_flags.Buf = Buf
-      --mk_flags.RX = RX
-      
-      --if Buf and RX then print("Buf =", Buf, ", RX =", RX) end
-      
+      local tSrc, tCur, tDst
       local out
-      out = {
-        --state = state,
-        w = {x=wx, y=wy, z=wz,},
-        m = {x=mx, y=my, z=mz,},
-      }
-      return out
+      
+      if stat_pos_or_temp then
+        fr, to, wx, wy, wz, mx, my, mz = string.find(s, status_mask_pos)
+            
+        --mk_flags.Buf = Buf
+        --mk_flags.RX = RX
+        out = {
+          --state = state,
+          wX=wx, wY=wy, wZ=wz,
+          mX=mx, mY=my, mZ=mz,
+        }
+      else
+        fr, to, tSrc, tCur, tDst = string.find(s, status_mask_temp)
+        
+        out = {
+          tSrc=tSrc, tCur=tCur, tDst=tDst,
+        }
+      end
+      
+      stat_pos_or_temp = not stat_pos_or_temp
+      
+      return {stat=out}
     end,
 
 }

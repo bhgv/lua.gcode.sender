@@ -18,28 +18,38 @@ return function()
             "EPROM->",
             function(self)
               Sender:newcmd("SINGLE")
-              Sender:newcmd("M501") -- disable software endstops
+              Sender:newcmd("M501")
             end,
             nil,
             true
           ),
-        
           symButSm(
             "Default->",
             function(self)
+              Sender:newcmd("SINGLE")
+              Sender:newcmd("M502")
             end,
             nil,
             true
           ),
---[[        
-        symButSm(
-          "EPROM->Settings",
-          function(self)
-          end,
-          nil,
-          false
-        ),
-]]
+          symButSm(
+            "->EPROM",
+            function(self)
+              Sender:newcmd("SINGLE")
+              Sender:newcmd("M500")
+            end,
+            nil,
+            true
+          ),
+          symButSm(
+            "->Terminal",
+            function(self)
+              Sender:newcmd("SINGLE")
+              Sender:newcmd("M503")
+            end,
+            nil,
+            true
+          ),
         },
       },
     },

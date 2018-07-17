@@ -31,7 +31,16 @@ return {
   end,
 
   cnc_stat = function(self, stat)
-      if stat and
+    if stat and stat.stat then
+      local msg = "<STATUS>"
+      local k,v
+      for k,v in pairs(stat.stat) do
+        msg = msg .. "<" .. k .. ">" .. v
+      end
+      exec.sendport("*p", "ui", msg)
+    end
+--[[
+      if stat and stat.w and stat.m and
         stat.w.x and stat.w.y and stat.w.z and
         stat.m.x and stat.m.y and stat.m.z
       then
@@ -42,7 +51,15 @@ return {
                                       .. "<mY>" .. stat.m.y
                                       .. "<mZ>" .. stat.m.z
             )
+      elseif stat and stat.t and
+        stat.t.tSrc and stat.t.tCur and stat.t.tDst
+      then
+        exec.sendport("*p", "ui", "<STATUS><tSrc>" .. stat.t.tSrc
+                                      .. "<tCur>" .. stat.t.tCur
+                                      .. "<tDst>" .. stat.t.tDst
+            )
       end
+--]]
   end,
 --[[
   cnc_status_read = function(self, MK)

@@ -67,7 +67,7 @@ local StatPort_contents = ui.Group:new
                           --MKstate = "PAUSE"
                           cmd = cmd:match("^echo:(.*)")
                         elseif 
-                          cmd:match("^error:") 
+                          cmd:match("^Error:") 
                         then
                           --MKstate = "PAUSE"
                         elseif 
@@ -95,10 +95,15 @@ local StatPort_contents = ui.Group:new
     
     ui.Group:new
     {
-      Rows = 2, --3,
+      Rows = 3,
       Columns = 4,
       Children = 
       {
+          ui.Text:new{Class = "caption",Width=60, Text="Temp:"},
+          posInd("tSrc"), posInd("tCur"), posInd("tDst"), 
+--          ui.Text:new{Class = "caption",Width=60, Text="MPos:"},
+--          posInd("mX"), posInd("mY"), posInd("mZ"), 
+
           ui.Text:new{Class = "caption",Width=60, Text="WPos:"},
           posInd("wX"), posInd("wY"), posInd("wZ"), 
 --          ui.Text:new{Class = "caption",Width=60, Text="MPos:"},

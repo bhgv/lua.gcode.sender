@@ -321,8 +321,8 @@ return {
       local out
       out = {
         state = state,
-        w = {x=wx, y=wy, z=wz,},
-        m = {x=mx, y=my, z=mz,},
+        wX=wx, wY=wy, wZ=wz,
+        mX=mx, mY=my, mZ=mz,
       }
       return out
     end,
