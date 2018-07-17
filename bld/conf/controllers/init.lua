@@ -1,6 +1,7 @@
 
 local ctrlrs = {
     Grbl = require "conf.controllers.grbl",
+    Marlin = require "conf.controllers.marlin",
 }
 
 return {

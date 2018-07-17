@@ -154,7 +154,15 @@ return ui.Group:new
             Sender:newcmd(baud_nm)
             StatPort:setValue("Text", "Connected to: " .. port_nm)
             
+            local old_cnt = StatPort:getChildren()
+            local i, chld
+            if old_cnt then
+              for i,chld in ipairs(old_cnt) do
+                StatPort:remMember(chld)
+              end
+            end
             MK = MKs:get(mk_nm)
+            StatPort:addMember(MK.StatPort_contents)
             MKstate = "STOP"
           end
         ),

@@ -1,7 +1,6 @@
 
 local exec = require "tek.lib.exec"
 
-
 local rs232 = require('periphery').Serial
 local PORT = nil
 
@@ -9,26 +8,22 @@ local lfs = require "lfs"
 
 local status_mode = 3
 local status_mask_choises = {
-      [3] =   "<([^>,]*)," .. 
-              "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
-              "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),?" ..
-              "([^>]*)>",
-      [15] =  "<([^>,]*)," .. 
-              "MPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
-              "WPos:([+%-]?%d*%.%d*),([+%-]?%d*%.%d*),([+%-]?%d*%.%d*)," ..
-              "Buf:([^,]+),RX:([^>]+)>",
+      [3] =   
+              "%s*X:([+%-]?%d*%.%d*)%s+Y:([+%-]?%d*%.%d*)%s+Z:([+%-]?%d*%.%d*)%s+E:[+%-]?%d*%.%d*%s+" ..
+              "Count%s+X:([+%-]?%d*)%s+Y:([+%-]?%d*)%s+Z:([+%-]?%d*)%s*",
 }
 local status_mask = status_mask_choises[3]
 
 
 local read_timeout_choises = {
       [3] =   200,
-      [15] =  50,
 }
 local read_timeout = read_timeout_choises[3]
 
 
 local ports = {
+    "/dev/ttyACM0",
+    "/dev/ttyACM1",
     "/dev/ttyUSB0",
     "/dev/ttyUSB1",
 }
@@ -70,14 +65,18 @@ end
 
 
 
+
+
+
+
 return {
     out_access = false,
     
-    StatPort_contents = require "conf.controllers.grbl.StatPort_contents",
-    
+    StatPort_contents = require "conf.controllers.marlin.StatPort_contents",
+
     info = function(self)
       return {
-            name = "grbl",
+            name = "marlin",
             ports = ports,
             bauds = bauds,
       }
@@ -104,23 +103,30 @@ return {
 --      exec.sendmsg("sender","SINGLE")
 --      exec.sendmsg("sender","$C")
       exec.sendmsg("sender","SINGLE")
-      exec.sendmsg("sender","G21 G90")
+      exec.sendmsg("sender","M121") -- disable endstops
+
+      exec.sendmsg("sender","SINGLE")
+      exec.sendmsg("sender","M211 S0") -- disable software endstops
+      
+      exec.sendmsg("sender","SINGLE")
+      exec.sendmsg("sender","G90 G21")
       return out
     end,
 
     stop = function(self)
+      PORT:write("M112\n")
     end,
 
     pause = function(self)
-      PORT:write("!")
+      PORT:write("M410\n")
     end,
 
     resume = function(self)
-      PORT:write("~")
+      PORT:write("M999 S1\n")
     end,
 
     send = function(self, cmd)
-      PORT:write(cmd)
+      PORT:write(cmd:upper())
       
       self.out_access = false
       is_resp_handled = false
@@ -160,7 +166,7 @@ return {
         end
       --print(#lst, lst[1])
         if lst[1] then
-          if lst[1]:match("^<") then
+          if lst[1]:match(status_mask --[["^<"]] ) then
             --self:status_parse(out)
             stat = true
             ln_1 = lst[1]
@@ -173,7 +179,7 @@ return {
               msg_buffer = table.concat(lst, "\n", 2)
             end
             --table.remove(lst, 1)
-          elseif lst[1]:match("^error") then
+          elseif lst[1]:match("^%s*echo:Unknown command:" --[["^error"]]) then
             msg_buffer = table.concat(lst, "\n", 2)
             ln_1 = lst[1]
             oks = oks - 1
@@ -224,7 +230,7 @@ return {
     end,
 
     help = function(self)
-      self:send("$$\n")
+      self:send("M115\n")
       local out, _stat_mode
       local s = ""
       
@@ -239,6 +245,7 @@ return {
       --until(out.msg)
       s = out.raw
       
+--[[
       _stat_mode = s:match("%$10=(%d+)")
       
       if _stat_mode then
@@ -251,6 +258,7 @@ return {
         status_mask = status_mask_choises[status_mode]
         read_timeout = read_timeout_choises[status_mode]
       end
+]]
       
       return out
     end,
@@ -300,24 +308,27 @@ return {
     end,
     
     status_query = function(self)
+    
+      --print("oks=", oks, ", oks_max=", oks_max)
+      
       if oks < oks_max then
-        self:send("?\n")
+        self:send("M114\n")
       end
     end,
     
     status_parse = function(self, status)
       local s = status
-      local fr, to, state, mx, my, mz, wx, wy, wz, Buf, RX = 
-            string.find(s, status_mask)
-      
-      mk_flags.Buf = Buf
-      mk_flags.RX = RX
+      local fr, to, state, mx, my, mz, wx, wy, wz, Buf, RX
+      fr, to, wx, wy, wz, mx, my, mz = string.find(s, status_mask)
+            
+      --mk_flags.Buf = Buf
+      --mk_flags.RX = RX
       
       --if Buf and RX then print("Buf =", Buf, ", RX =", RX) end
       
       local out
       out = {
-        state = state,
+        --state = state,
         w = {x=wx, y=wy, z=wz,},
         m = {x=mx, y=my, z=mz,},
       }
