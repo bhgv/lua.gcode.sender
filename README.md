@@ -8,7 +8,7 @@ It has written using Lua & lua modules (lua, C, C++).
 Supported hardware
 ----------
 * [GRBL v0.9j](https://github.com/grbl/grbl)
-* [Marlin v2](https://github.com/MarlinFirmware/Marlin/tree/bugfix-2.0.x) (this [fork](https://github.com/etet100/marlin_cetus_3d))
+* [Marlin v1 & v2](https://github.com/MarlinFirmware/Marlin/tree/bugfix-2.0.x)
 
 Lua version
 ------
