@@ -9,8 +9,8 @@ local lfs = require "lfs"
 local status_mode = 3
 local status_mask_choises = {
       [3] =   
-              "^%s*X:([+%-]?%d*%.%d*)%s+Y:([+%-]?%d*%.%d*)%s+Z:([+%-]?%d*%.%d*)%s+E:[+%-]?%d*%.%d*%s+" ..
-              "Count%s+X:([+%-]?%d*)%s+Y:([+%-]?%d*)%s+Z:([+%-]?%d*)%s*",
+              "^%s*X:%s*([+%-]?%d*%.%d*)%s+Y:%s*([+%-]?%d*%.%d*)%s+Z:%s*([+%-]?%d*%.%d*)%s+E:%s*[+%-]?%d*%.%d*%s+" ..
+              "Count%s+X:%s*([+%-]?%d*)%s+Y:%s*([+%-]?%d*)%s+Z:%s*([+%-]?%d*)%s*",
 }
 local status_mask_pos = status_mask_choises[3]
 local status_mask_temp = "^ok%s+([CTB]):%s*(%d*%.?%d*)%s*/%s*(%d*%.?%d*)"
@@ -111,16 +111,15 @@ return {
       local out = self:help()
       exec.sendmsg("sender","NEW")
       exec.sendmsg("sender","CALCULATE")
---      exec.sendmsg("sender","SINGLE")
---      exec.sendmsg("sender","$C")
-      exec.sendmsg("sender","SINGLE")
-      exec.sendmsg("sender","M121") -- disable endstops
 
-      exec.sendmsg("sender","SINGLE")
-      exec.sendmsg("sender","M211 S0") -- disable software endstops
+--      exec.sendmsg("sender","SINGLE")
+--      exec.sendmsg("sender","M121") -- disable endstops
+
+--      exec.sendmsg("sender","SINGLE")
+--      exec.sendmsg("sender","M211 S0") -- disable software endstops
       
-      exec.sendmsg("sender","SINGLE")
-      exec.sendmsg("sender","M501") -- EPROM->settings
+--      exec.sendmsg("sender","SINGLE")
+--      exec.sendmsg("sender","M501") -- EPROM->settings
       
       exec.sendmsg("sender","SINGLE")
       exec.sendmsg("sender","G90 G21")
@@ -128,18 +127,18 @@ return {
     end,
 
     stop = function(self)
-      PORT:write("M112\n")
+--      PORT:write("M112\n")
     end,
 
     pause = function(self)
-      PORT:write("M410\n")
+--      PORT:write("M410\n")
 --      PORT:write("M125\n") --???
 --      PORT:write("M25\n") --???
 --      PORT:write("M600\n") --???
     end,
 
     resume = function(self)
-      PORT:write("M999 S1\n")
+--      PORT:write("M999 S1\n")
 --      PORT:write("M24\n") --???
     end,
 
@@ -191,6 +190,7 @@ return {
             --self:status_parse(out)
             stat = true
             ln_1 = lst[1]
+            print(ln_1)
 
             ok = true
             oks = oks - 1
@@ -292,7 +292,7 @@ return {
     end,
 
     go_xyz = function(self, dir)
-      local cmd = "G91G0"
+      local cmd = "G0"
       local x = dir.x
       local y = dir.y
       local z = dir.z
@@ -309,7 +309,11 @@ return {
 
       if x or y or z then
           Sender:newcmd("SINGLE")
+          Sender:newcmd("G91")
+          Sender:newcmd("SINGLE")
           Sender:newcmd(cmd)
+          Sender:newcmd("SINGLE")
+          Sender:newcmd("G90")
       end
     end,
     

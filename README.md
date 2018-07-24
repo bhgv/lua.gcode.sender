@@ -2,8 +2,13 @@
 
 Intro
 -----
-This is an attempt to build highly configurable and changeable universal g-code sender without hard to portable elements for home-made CNC and (in the future) laser & 3d printer. 
-it has written using Lua & lua modules.
+This is a highly configurable and changeable universal g-code sender for home-made CNC, laser & 3d printer. It doesn't contain any hard to port elements.
+It has written using Lua & lua modules (lua, C, C++).
+
+Supported hardware
+----------
+* [GRBL v0.9j](https://github.com/grbl/grbl)
+* [Marlin v2](https://github.com/MarlinFirmware/Marlin/tree/bugfix-2.0.x) (this [fork](https://github.com/etet100/marlin_cetus_3d))
 
 Lua version
 ------
@@ -17,7 +22,7 @@ Used Lua plugins
 - https://github.com/memononen/nanosvg
 - https://bitbucket.org/Coin3D/dime (DXF reader library)
 
-Build dependencies
+Dependencies to build
 -------
 * libreadline-dev
 * libX11-dev
@@ -28,11 +33,11 @@ Build dependencies
 
 How to build
 -------
-sources of lua-5.3.3 & all modules are included. just run bld script from head folder
+Sources of lua-5.3.3 & all modules are included. Just run `bld.sh` script from the top of the project tree:
 ```sh
 $ ./bld.sh 
 ```
-current it tested on linux-arm (lubuntu, raspberry pi like board) and linux-x86 (xubuntu, ibm thinkpad x31)
+Currently it is tested on linux-arm (Armbian, lUbuntu, Orange Pi PC - raspberry pi like) and linux-x86 (Ubuntu, xUbuntu)
 
 How to execute
 -------
