@@ -14,7 +14,14 @@ function do_sparse(from, to)
 
   Sender:newcmd("NEW")
   for i = from, to do
-    Sender:newcmd(GTXT_parsed[i])
+    Sender:newcmd("SOURCE")
+    Sender:newcmd(tostring(i))
+    local line = GTXT_parsed[i]
+    if line == "" then
+      Sender:newcmd("")
+    else
+      for command in line:gmatch("[^\n]+") do Sender:newcmd(command) end
+    end
   end
   Sender:newcmd("FIN")
   Sender:newcmd("SENDFROM")

@@ -224,23 +224,20 @@ local transformOk = symButSm("\u{e0cc}",
       x = inp:match("[xX]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
       y = inp:match("[yY]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
       z = inp:match("[zZ]%s*=%s*([%+%-]?%s*%d*%.?%d*)")
-      tr_sc.x, tr_sc.y, tr_sc.z = tonumber(x), tonumber(y), tonumber(z)
+      tr_sc.x, tr_sc.y, tr_sc.z = tonumber(x) or tr_sc.x, tonumber(y) or tr_sc.y, tonumber(z) or tr_sc.z
       --print("Scale", x, y, z)
       
+    elseif op == "mirrorX" then
+      transf.Mirror.h = inp:lower():match("h%s*=%s*yes") ~= nil
+    elseif op == "mirrorY" then
+      transf.Mirror.v = inp:lower():match("v%s*=%s*yes") ~= nil
     elseif op == "rotate" then
       a = inp:match("[Aa][nN][gG][lL]?[eE]?%s*=%s*([%+%-]?%s*%d*%.?%d*)")
-      transf.Rotate = math.rad(a)
+      if tonumber(a) then transf.Rotate = math.rad(tonumber(a)) end
       --print("Rotate", a)
     end
     
-    local bnd = Display.Bnd
-    local bnd0 = Display.Bnd0
-    local pt
-    pt = transformCoords {x = bnd0.xmin, y = bnd0.ymin, z = bnd0.zmin }
-    bnd.xmin, bnd.ymin, bnd.zmin = pt.x, pt.y, pt.z
-    
-    pt = transformCoords {x = bnd0.xmax, y = bnd0.ymax, z = bnd0.zmax }
-    bnd.xmax, bnd.ymax, bnd.zmax = pt.x, pt.y, pt.z
+    Display.Bnd = require("conf.utils.transform_bounds")(Display.Bnd0)
 
     Display.Changed = true
     

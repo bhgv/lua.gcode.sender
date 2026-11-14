@@ -84,7 +84,7 @@ assert(files.write('tests/build/editor.gcode',GTXT))
 assert(assert(files.read('tests/build/editor.gcode'))[1]=='G1 X7')
 os.remove('tests/build/editor.gcode')
 do_sparse(1,1)
-assert(sent[1]=='NEW' and sent[2]:match('X7%.0000'))
+assert(sent[1]=='NEW' and sent[4]:match('X7%.0000'))
 -- Exercise the existing search/replace toolbar, including deletion by replacement.
 package.loaded['tek.ui'].Spacer=class
 Flags.Transformations.Mirror={h=false,v=false}
@@ -137,4 +137,10 @@ assert(#sent==count and MKstate=='STOP')
 input.Text='G1 X43'
 run_panel.Children[2]:onClick()
 assert(GTXT[1]=='G1 X43' and MKstate=='RUN' and sent[#sent]=='RESUME')
+buttons['Approximate arcs (G1)'].Selected=false
+buttons['Approximate arcs (G1)']:onSelect()
+assert(Flags.ApproximateArcs==false)
+buttons['Approximate arcs (G1)'].Selected=true
+buttons['Approximate arcs (G1)']:onSelect()
+assert(Flags.ApproximateArcs==true)
 print('editor from scratch tests passed')

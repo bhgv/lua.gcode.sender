@@ -52,6 +52,12 @@ return {
         local sthread = gparser.new_store()
         
         local send_from = 1
+        local source_line
+        local source_map = gparser.new_store()
+        local function currentLine()
+          local n = tonumber(source_map[icmd])
+          return n and n > 0 and n or (send_from + icmd - 1)
+        end
         
         --local Visual = ui.loadLibrary("visual", 4)
 		local Visual = require "tek.lib.visual"
@@ -92,7 +98,7 @@ return {
               if msg.err then
                 exec.sendport("*p", "ui", "<MESSAGE>" 
                               .. msg.msg:match("([^\u{a}\u{d}]+)") 
-                              .. " (ln: " .. (send_from + icmd - 1) .. ")"
+                              .. " (ln: " .. currentLine() .. ")"
                               )
                 state = "stop"
                 req_inc_cmd = false
@@ -156,10 +162,10 @@ return {
                     
                     exec.sendport("*p", "ui", "<CMD GAUGE POS>" .. icmd
                     )
-                    num_str = '(' .. (send_from + icmd - 1) .. ') '
+                    num_str = '(' .. currentLine() .. ') '
                   end
                   
-                  --lib:display_tx( '(' .. (send_from + icmd - 1) .. ') ' .. cmd )
+                  --lib:display_tx( '(' .. currentLine() .. ') ' .. cmd )
                   
                   if #GFilters > 0 then
                     local i,flt
@@ -212,6 +218,8 @@ return {
               end
             elseif msg == "NEW" then
               gthread:clear()
+              source_map:clear()
+              source_line = nil
               icmd = 1
               state = "stop"
               req_inc_cmd = false
@@ -302,7 +310,12 @@ return {
             else
               while msg and msg ~= "FIN" do
                 --print(msg)
-                gthread[#gthread + 1] = msg
+                if msg == "SOURCE" then
+                  source_line = tonumber(exec.waitmsg(200))
+                else
+                  gthread[#gthread + 1] = msg
+                  source_map[#source_map + 1] = tostring(source_line or 0)
+                end
               --exec.sendport("main", "ui", "<CMD GAUGE SETUP 2>" .. #gthread)
                 msg = exec.waitmsg(20)
               end

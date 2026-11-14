@@ -14,6 +14,10 @@ return function (ipt)
   local tr_sc = transf.Scale
   x, y, z = x*tr_sc.x, y*tr_sc.y, z*tr_sc.z
 
+  local mirror = transf.Mirror or {}
+  if mirror.h then x = -x end
+  if mirror.v then y = -y end
+
   --rotate
   local ang = transf.Rotate
   if ang ~= 0 then

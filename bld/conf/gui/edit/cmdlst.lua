@@ -33,6 +33,16 @@ return ui.Group:new
 --                    self:getById("send from"):setValue("Text", tostring(n))
                   end,
                 },
+                ui.CheckMark:new
+                {
+                  Text = "Approximate arcs (G1)",
+                  Selected = _G.Flags.ApproximateArcs ~= false,
+                  onSelect = function(self)
+                    ui.CheckMark.onSelect(self)
+                    _G.Flags.ApproximateArcs = self.Selected
+                    do_vparse(_G.Flags.AutoRedraw ~= false)
+                  end,
+                },
                 ui.Button:new
                 {
                   Style = "font:\b; color:olive;",

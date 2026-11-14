@@ -1,5 +1,5 @@
 package.path = './bld/?.lua;./bld/?/init.lua;' .. package.path
-local sent, events = {}, {}
+local sent, events, notices = {}, {}, {}
 local read_error
 local controller = {out_access=true}
 function controller:open() return true end
@@ -14,7 +14,7 @@ package.loaded['tek.ui'] = {}
 package.loaded['tek.lib.exec'] = {
   run = function(task) co=coroutine.create(task.func); return co end,
   waitmsg = function() return coroutine.yield() end,
-  sendport = function() end,
+  sendport = function(_,_,text) notices[#notices+1]=text end,
 }
 package.loaded['tek.lib.visual'] = {getTime=function() return 0,0 end}
 package.loaded['conf.controllers'] = {get=function() return controller end}
@@ -72,6 +72,15 @@ step('RESUME'); ticks(10)
 assert(#sent == 1) -- An error must discard the job, not retry a failed block.
 step('SINGLE'); step('$X'); ticks(10)
 assert(sent[2] == '$X\n')
+
+sent={}
+step('NEW'); step('SOURCE'); step('7'); step('G1 X1'); step('G1 X2'); step('FIN'); step('RESUME')
+while #sent == 0 do step() end
+read_error=true
+ticks(10)
+local located=false
+for _,notice in ipairs(notices) do if notice:match('error:20 %(ln: 7%)') then located=true end end
+assert(located)
 
 -- Requests before opening a controller must also be harmless.
 local previous=co

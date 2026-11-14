@@ -143,3 +143,25 @@ print, so pressing Enter first is not required. Invalid source may still be
 saved for later editing, but parsing must succeed before any print commands are
 queued. Parser errors include the first syntax-error line and column; the
 editor selects the corresponding source row for correction.
+
+Arc output
+-------
+Editor has an **Approximate arcs (G1)** checkbox, enabled by default. With it
+checked, G2/G3 blocks become separate G1 segments; with it unchecked, native
+arc commands are sent. GRBL itself supports G2/G3. Preview uses sampled arcs
+in either mode, including full circles, signed R radii and helical Z motion.
+The original program remains unchanged in the source store. Expanded sender
+commands retain their source row, including controller error reports.
+
+The current implementation supports G17 XY arcs with incremental I/J centers
+or R. G18/G19 arcs and G90.1 centers are rejected. G93 inverse-time feed cannot
+be approximated and is rejected in G1 mode. Native circular output requires
+equal nonzero absolute XY scales; approximation can represent nonuniform scale.
+Rotation and reflection transform centers and endpoints; reflection reverses
+native G2/G3 direction. Drawing bounds transform all eight bounding-box corners.
+
+`Flags.ArcTolerance` defaults to 0.01 in the program's coordinate units. It limits
+chord error before four-decimal command rounding, accounts for XY scaling, and
+is also used for preview sampling. Segment count is limited to 100000 per arc;
+relative command rounding is accumulated to keep the final endpoint consistent.
+Run `tests/arcs.lua` through `tests/run.sh` for geometry and output regressions.
