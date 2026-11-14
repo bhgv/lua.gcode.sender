@@ -41,6 +41,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 
 class Errors {
 public:
+	int firstLine, firstCol;
 	int count;			// number of errors detected
 
 	Errors();

@@ -709,10 +709,12 @@ Parser::~Parser() {
 }
 
 Errors::Errors() {
+	firstLine = firstCol = 0;
 	count = 0;
 }
 
 void Errors::SynErr(int line, int col, int n) {
+	if(count == 0) { firstLine = line; firstCol = col; }
 	wchar_t* s;
 	switch (n) {
 			case 0: s = coco_string_create(L"EOF expected"); break;
@@ -781,6 +783,7 @@ void Errors::SynErr(int line, int col, int n) {
 }
 
 void Errors::Error(int line, int col, const wchar_t *s) {
+	if(count == 0) { firstLine = line; firstCol = col; }
 	fwprintf(stderr, L"-- line %d col %d: %ls\n", line, col, s);
 	count++;
 }

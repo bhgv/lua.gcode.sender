@@ -114,4 +114,27 @@ assert(GTXT_parsed==valid_parsed)
 input.Text='G1 X12'
 click('Update')
 assert(status.Text:match('Checked') and Display.Points[1].x==12)
+Flags.EditorReady=true
+App.addCoroutine=function(_,fn) fn() end
+GFNAME='tests/build/draft.gcode'
+input.Text='G1 X42'
+local file_panel=require 'conf.gui.common.panel_file'
+file_panel.Children[3].Application=App
+file_panel.Children[3]:onClick()
+assert(GTXT[1]=='G1 X42' and assert(files.read(GFNAME))[1]=='G1 X42')
+os.remove(GFNAME)
+input.Text='G1 X'
+local ok, err=require('conf.gui.edit.actions').flush()
+assert(not ok and err:match('line %d+, column %d+'))
+assert(status.Text:match('line %d+, column %d+'))
+local count=#sent
+package.loaded['tek.lib.exec']={}
+local run_panel=require 'conf.gui.common.panel_run'
+run_panel.Children[2].Application=App
+MKstate='STOP'
+run_panel.Children[2]:onClick()
+assert(#sent==count and MKstate=='STOP')
+input.Text='G1 X43'
+run_panel.Children[2]:onClick()
+assert(GTXT[1]=='G1 X43' and MKstate=='RUN' and sent[#sent]=='RESUME')
 print('editor from scratch tests passed')

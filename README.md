@@ -137,3 +137,9 @@ An empty replacement removes the match. Empty, single-point and single-axis
 previews have finite drawing scales in both XY and XYZ projections.
 `tests/editor.lua` exercises the actual editor button callbacks with the native
 parser; `tests/render.lua` checks the drawing code with a mock drawable.
+
+The editor also commits unconfirmed input before Save and before starting a new
+print, so pressing Enter first is not required. Invalid source may still be
+saved for later editing, but parsing must succeed before any print commands are
+queued. Parser errors include the first syntax-error line and column; the
+editor selects the corresponding source row for correction.

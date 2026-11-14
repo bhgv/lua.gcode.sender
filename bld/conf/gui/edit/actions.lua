@@ -13,6 +13,7 @@ local function changed(old_count, n)
   _G.Flags.isEdited = true
   updateEditorRange(old_count)
   local ok, err = do_vparse(_G.Flags.AutoRedraw ~= false)
+  if not ok then n = math.min(#GTXT, tonumber(tostring(err):match("line (%d+)")) or n) end
   selectLine(n)
   if ok then
     App:getById("status main"):setValue("Text", "Checked " .. #GTXT .. " lines")
@@ -21,6 +22,16 @@ local function changed(old_count, n)
 end
 
 return {
+  flush = function()
+    if not _G.Flags.EditorReady then return true end
+    local input = App:getById("gedit")
+    local n = App:getById("editor cmd list").SelectedLine
+    local text = input:getText()
+    if text ~= (GTXT[n or 0] or "") then
+      return require("conf.gui.edit.actions").commit(text, false)
+    end
+    return true
+  end,
   commit = function(text, advance)
     local list = App:getById("editor cmd list")
     local old_count = #GTXT

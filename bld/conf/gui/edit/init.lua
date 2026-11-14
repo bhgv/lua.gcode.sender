@@ -26,6 +26,7 @@ gLstWdgtM = ui.Lister:new
             
             setup = function(self, app, win)
               ui.Lister.setup(self, app, win)
+              _G.Flags.EditorReady = true
               initialiseEditor()
               --print(app, win)
               app:addInputHandler(ui.MSG_USER, self, self.msgUser)

@@ -18,6 +18,7 @@ return ui.Group:new
       "\u{e093}",
       function(self)
         if MKstate == "STOP" then
+          require("conf.gui.edit.actions").flush()
           local from = _G.Flags.SendFrom 
           local to = _G.Flags.SendTo 
           local prepared, err = pcall(do_sparse, from, to)

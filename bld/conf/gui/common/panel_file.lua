@@ -68,6 +68,7 @@ return ui.Group:new
       function(self)
         local app = self.Application
         app:addCoroutine(function()
+          require("conf.gui.edit.actions").flush()
           local filename = GFNAME
           if not filename then
             local status, path, selection = app:requestFile {

@@ -109,7 +109,7 @@ int _int_delete_parser(lua_State *L) {
 int _int_do_parse(lua_State *L, const char *gcode, int len) {
     if(!parse_mutex.try_lock()) return luaL_error(L, "parser is already running");
     gL = L;
-    int errors, error_ref;
+    int errors, error_ref, error_line, error_col;
     {
         res_b.clear();
         result_lines.clear();
@@ -122,6 +122,8 @@ int _int_do_parse(lua_State *L, const char *gcode, int len) {
         gparser = new Parser(scanner);
         gparser->Parse();
         errors = gparser->errors->count;
+        error_line = gparser->errors->firstLine;
+        error_col = gparser->errors->firstCol;
         delete gparser;
         delete scanner;
         gparser = NULL;
@@ -133,11 +135,14 @@ int _int_do_parse(lua_State *L, const char *gcode, int len) {
         store->lines.swap(result_lines);
     }
     parse_mutex.unlock();
+    if(errors) {
+        if(error_ref != LUA_NOREF) luaL_unref(L, LUA_REGISTRYINDEX, error_ref);
+        return luaL_error(L, "G-code parse errors: %d (line %d, column %d)", errors, error_line, error_col);
+    }
     if(error_ref != LUA_NOREF) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, error_ref);
         luaL_unref(L, LUA_REGISTRYINDEX, error_ref);
         return lua_error(L);
     }
-    if(errors) return luaL_error(L, "G-code parse errors: %d", errors);
     return 1;
 }
