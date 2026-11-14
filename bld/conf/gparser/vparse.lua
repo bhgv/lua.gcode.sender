@@ -138,7 +138,7 @@ local vcb_fini = function(l, k)
   --Display:draw()
 end
 
-function do_vparse()
+function do_vparse(preview)
   local previous = GTXT_parsed
   local points, bnd, bnd0, changed = Display.Points, Display.Bnd, Display.Bnd0, Display.Changed
   GTXT_parsed = gparser.new_store()
@@ -172,7 +172,12 @@ function do_vparse()
   while #GTXT_parsed < #GTXT do
     GTXT_parsed[#GTXT_parsed + 1] = ""
   end
-  _G.Flags.Rel_gcode2display = rel_gcode_display
+  if preview == false then
+    Display.Points, Display.Bnd, Display.Bnd0, Display.Changed = points, bnd, bnd0, changed
+  else
+    _G.Flags.Rel_gcode2display = rel_gcode_display
+    Display.sel_line = nil
+  end
   return true
   --for i = 1,#o do
   --  print(o[i])

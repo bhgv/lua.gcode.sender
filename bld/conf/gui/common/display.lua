@@ -417,7 +417,8 @@ end
 
 function Display:sel_item(i)
   local ln = nil
-  local d = self.Window.Drawable  
+  local d = self.Window and self.Window.Drawable
+  if not d then return end
   local ln_n = nil
   
   d:pushClipRect(self:getRect())
@@ -427,9 +428,11 @@ function Display:sel_item(i)
     d:drawLine(oln.xb, oln.yb, oln.xe, oln.ye, oln.c)
   end
   if i then
-    ln = self.scr_lns[i]
-    d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
-    ln_n = ln.ln_n
+    ln = self.scr_lns and self.scr_lns[i]
+    if ln then
+      d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
+      ln_n = ln.ln_n
+    end
   end
   self.sel_line = ln
   

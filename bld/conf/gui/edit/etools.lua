@@ -3,32 +3,23 @@ local ui = require "tek.ui"
 
 --print(ui.ProgDir)
 
+local actions = require "conf.gui.edit.actions"
+
 local function do_seek(mask, from)
-  local gt = GTXT
-  local i,ln
-  if from == 0 then from = 1 end
-  for i = from,#gt do
-    ln = gt[i]
-    --print(i, ln)
-    if ln:match(mask) then
-      return i
-    end
+  for i = math.max(1, from or 1), #GTXT do
+    local ok, found = pcall(string.find, GTXT[i], mask)
+    if not ok then return nil, found end
+    if found then return i end
   end
-  return from
+  return nil, "No match"
 end
 
 local function do_replace(mask, repl, from)
-  local gt = GTXT
-  local i,ln
-  if from == 0 then from = 1 end
-  for i = from,#gt do
-    ln = gt[i]
-    --print(i, ln)
-    if ln:match(mask) then
-      return i, ln:gsub(mask, repl)
-    end
-  end
-  return from, gt[from]
+  local n, err = do_seek(mask, from)
+  if not n then return nil, err end
+  local ok, text = pcall(string.gsub, GTXT[n], mask, repl)
+  if not ok then return nil, text end
+  return n, text
 end
 
 
@@ -57,8 +48,11 @@ local seekToB = symBut("\u{e0e2}",
     local msk = seekTo:getText()
     if msk and msk ~= "" then
       local from = lst_wgt.SelectedLine or 1
-      local n = do_seek(msk, from)
-      
+      local n, err = do_seek(msk, from)
+      if not n then
+        App:getById("status main"):setValue("Text", tostring(err))
+        return
+      end
       lst_wgt:setValue("CursorLine", n)
       lst_wgt:setValue("SelectedLine", n)
     end
@@ -71,26 +65,13 @@ local replaceWithB = symBut("\u{e0e4}",
     local repl = replaceWith:getText()
     if msk and msk ~= "" then
       local from = lst_wgt.SelectedLine or 1
-      if repl and repl ~= "" then
-        local n, ln = do_replace(msk, repl, from)
-        
-        if not ln then return end
-        GTXT[n] = ln
-        _G.Flags.isEdited = true
-        lst_wgt:changeItem({{ "", ln }}, n)
-        
-        if _G.Flags.AutoRedraw then
-          do_vparse()
-        end
-        
-        lst_wgt:setValue("CursorLine", n)
-        lst_wgt:setValue("SelectedLine", n)
-      else
-        local n = do_seek(msk, from)
-        
-        lst_wgt:setValue("CursorLine", n)
-        lst_wgt:setValue("SelectedLine", n)
+      local n, ln = do_replace(msk, repl or "", from)
+      if not n then
+        App:getById("status main"):setValue("Text", tostring(ln))
+        return
       end
+      lst_wgt:setValue("SelectedLine", n)
+      actions.commit(ln, false)
     end
   end
 )

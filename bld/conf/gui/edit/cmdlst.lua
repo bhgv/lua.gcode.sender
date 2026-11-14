@@ -1,5 +1,6 @@
 local ui = require "tek.ui"
 local List = require "tek.class.list"
+local actions = require "conf.gui.edit.actions"
 
 
 return ui.Group:new
@@ -26,6 +27,7 @@ return ui.Group:new
                   onSelect = function(self)
                     ui.CheckMark.onSelect(self)
                     _G.Flags.AutoRedraw = self.Selected
+                    if self.Selected then do_vparse() end
 --                    local lst_wgt = self:getById("editor cmd list")
 --                    local n = lst_wgt.SelectedLine
 --                    self:getById("send from"):setValue("Text", tostring(n))
@@ -58,13 +60,10 @@ return ui.Group:new
           ui.Input:new
           {
             Id = "gedit",
+            Tooltip = "Enter: save line and insert next. Update: save line. Send sel: send to controller.",
             onEnter = function(self)
               ui.Input.onEnter(self)
-              local cmd = self:getText()
-              --self:setValue("Text", " ")
-              --print(cmd)
-              Sender:newcmd("SINGLE")
-              Sender:newcmd(cmd)
+              actions.commit(self:getText(), true)
             end
           },
           ui.Group:new
@@ -76,13 +75,7 @@ return ui.Group:new
                   Text = "New",
                   onClick = function(self)
                     ui.Button.onClick(self)
-                    local lst_wgt = self:getById("editor cmd list")
-                    local n = math.min(#GTXT + 1, (lst_wgt.SelectedLine or 0) + 1)
-                    GTXT:insert(n, "")
-                    lst_wgt:addItem({{ "", "" }}, n)
-                    updateEditorRange(#GTXT - 1)
-                    if _G.Flags.AutoRedraw then do_vparse() end
-		    _G.Flags.isEdited = true
+                    actions.insert()
                   end,
                 },
                 ui.Button:new
@@ -90,17 +83,7 @@ return ui.Group:new
                   Text = "Update",
                   onClick = function(self)
                     ui.Button.onClick(self)
-                    local cmd = self:getById("gedit"):getText()
-                    local lst_wgt = self:getById("editor cmd list")
-                    local n = lst_wgt.SelectedLine
-                    if not n or n < 1 or n > #GTXT then return end
-                    GTXT[n] = cmd
-                    lst_wgt:changeItem({{ "", cmd }}, n)
-		    _G.Flags.isEdited = true
-                    
-                    if _G.Flags.AutoRedraw then
-                      do_vparse()
-                    end
+                    actions.commit(self:getById("gedit"):getText(), false)
                   end,
                 },
                 ui.Button:new
@@ -108,14 +91,7 @@ return ui.Group:new
                   Text = "Delete",
                   onClick = function(self)
                     ui.Button.onClick(self)
-                    local lst_wgt = self:getById("editor cmd list")
-                    local n = lst_wgt.SelectedLine
-                    if not n or n < 1 or n > #GTXT then return end
-                    GTXT:remove(n)
-                    lst_wgt:remItem(n)
-                    updateEditorRange(#GTXT + 1)
-                    if _G.Flags.AutoRedraw then do_vparse() end
-		    _G.Flags.isEdited = true
+                    actions.remove()
                   end,
                 },
             }
@@ -145,6 +121,7 @@ return ui.Group:new
                     ui.Button.onClick(self)
                     local lst_wgt = self:getById("editor cmd list")
                     local n = lst_wgt.SelectedLine
+                    if not n or n < 1 or n > #GTXT then return end
                     _G.Flags.SendFrom = n
                     self:getById("send from"):setValue("Text", tostring(n))
                   end,
@@ -157,6 +134,7 @@ return ui.Group:new
                     ui.Button.onClick(self)
                     local lst_wgt = self:getById("editor cmd list")
                     local n = lst_wgt.SelectedLine
+                    if not n or n < 1 or n > #GTXT then return end
                     _G.Flags.SendTo = n --+1
                     self:getById("send to"):setValue("Text", tostring(n))
                   end,

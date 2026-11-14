@@ -35,6 +35,13 @@ local transformCoords = require "conf.utils.transform_coords"
 
 
 
+local function fitScale(w, h, dx, dy)
+  local kw = dx ~= 0 and w / math.abs(dx) or math.huge
+  local kh = dy ~= 0 and h / math.abs(dy) or math.huge
+  local k = math.min(kw, kh)
+  return k == math.huge and 1 or k
+end
+
 local draw = function (self)
     if ui.Frame.draw(self) then
       local x0, y0, x1, y1 = self:getRect()
@@ -45,10 +52,7 @@ local draw = function (self)
       local xsc, ysc = (x0+x1)/2, (y0+y1)/2
       local d = self.Window.Drawable
       local p = self.Points
-      local kw = w / (bnd.xmax - bnd.xmin)
-      local kh = h / (bnd.ymax - bnd.ymin)
-      local k = kw
-      if kh < kw then k = kh end
+      local k = fitScale(w, h, bnd.xmax - bnd.xmin, bnd.ymax - bnd.ymin)
       k = k * _G.Flags.DispScale / 100
       
       self.k = k
@@ -113,10 +117,7 @@ local draw = function (self)
         }
         self.bnd3d = bnd3d
         
-        kw = w / (bnd3d.xmax - bnd3d.xmin)
-        kh = h / (bnd3d.ymax - bnd3d.ymin)
-        k = kw
-        if kh < kw then k = kh end
+        k = fitScale(w, h, bnd3d.xmax - bnd3d.xmin, bnd3d.ymax - bnd3d.ymin)
         k = k * _G.Flags.DispScale / 100
         self.k3d = k
         
@@ -150,9 +151,9 @@ local draw = function (self)
       local ln = self.sel_line
       if ln then
         ln = scr_lns[ln.i]
-        --if ln then
+        if ln then
           d:drawLine(ln.xb, ln.yb, ln.xe, ln.ye, "red")
-        --end
+        end
         self.sel_line = ln
       end
 

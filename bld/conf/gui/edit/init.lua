@@ -18,12 +18,15 @@ gLstWdgtM = ui.Lister:new
                 App:getById("gedit"):setValue("Text", line[1][2])
 								--self.Window:setRecord(line[1])
                 --self.sel_line_no
-                Display:sel_item(_G.Flags.Rel_gcode2display[lineno])
+                if _G.Flags.AutoRedraw ~= false then
+                  Display:sel_item((_G.Flags.Rel_gcode2display or {})[lineno])
+                end
 							end
 						end,
             
             setup = function(self, app, win)
               ui.Lister.setup(self, app, win)
+              initialiseEditor()
               --print(app, win)
               app:addInputHandler(ui.MSG_USER, self, self.msgUser)
             end,
@@ -42,7 +45,7 @@ gLstWdgtM = ui.Lister:new
                 self:setValue("SelectedLine", i)
                 self:setValue("CursorLine", i)
                 
-                Display:sel_item(_G.Flags.Rel_gcode2display[i])
+                Display:sel_item((_G.Flags.Rel_gcode2display or {})[i])
 --[[
               else
                 cmd = ud:match("<EDITOR SEL LN>(%d+)")
@@ -72,6 +75,9 @@ initialiseEditor = function()
   
   App:getById("send to"):setValue("Text", tostring(#GTXT))
   App:getById("send from"):setValue("Text", "1")
+  gLstWdgtM:setValue("SelectedLine", 0)
+  gLstWdgtM:setValue("CursorLine", 0)
+  App:getById("gedit"):setValue("Text", "")
 end
 
 updateEditorRange = function(old_count)

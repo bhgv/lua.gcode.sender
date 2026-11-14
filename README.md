@@ -117,3 +117,23 @@ Preview parsing commits new results only on success. Invalid print ranges and
 parse failures leave the sender queue untouched. Controller errors discard the
 current job; Resume cannot retry a failed block. ALARM stops the job while still
 allowing a deliberate single unlock command such as `$X`.
+
+Writing a program from scratch
+-------
+Open Editor and use New program in the file toolbar to clear the source. Type a
+line in the input below the command list and press Enter: it saves that line,
+inserts the next blank line and keeps keyboard focus in the input. Update saves
+without inserting a line and also creates the first row of an empty program.
+New inserts a blank row after the selection; Delete selects the next available
+row or returns to an empty program. Every edit uses the native source store and
+the same parser as loaded files. Syntax errors appear in the status bar; valid
+edits refresh the drawing when AutoUpdate drawing is enabled. With automatic
+redraw disabled, validation still runs and Update drawing refreshes the preview.
+Enter does not transmit commands; Send sel is the explicit controller action.
+Save and the existing print controls work with programs entered in this way.
+
+Search patterns and replacement strings are checked before modifying source.
+An empty replacement removes the match. Empty, single-point and single-axis
+previews have finite drawing scales in both XY and XYZ projections.
+`tests/editor.lua` exercises the actual editor button callbacks with the native
+parser; `tests/render.lua` checks the drawing code with a mock drawable.
