@@ -9,6 +9,7 @@ function do_sparse(from, to)
 
   local parsed, err = do_vparse()
   assert(parsed, err)
+  assert(_G.Flags.Controller ~= "marlin" or from == 1, "Marlin printing must start at row 1 to preserve extrusion/setup state")
   if from > 1 then assert(_G.Flags.RangeErrors[from] == "", _G.Flags.RangeErrors[from]) end
   _G.Flags.SendFrom = from
   _G.Flags.SendTo = to

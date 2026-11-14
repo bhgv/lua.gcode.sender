@@ -53,8 +53,8 @@ return function(start, finish, words, clockwise, tolerance)
   local points = {}
   for _,t in ipairs(fractions) do
     local theta = a + angle*t
-    points[#points+1] = {x=cx+radius*math.cos(theta), y=cy+radius*math.sin(theta), z=start.z+(finish.z-start.z)*t}
+    points[#points+1] = {x=cx+radius*math.cos(theta), y=cy+radius*math.sin(theta), z=start.z+(finish.z-start.z)*t,fraction=t}
   end
-  points[#points] = {x=finish.x,y=finish.y,z=finish.z}
+  points[#points] = {x=finish.x,y=finish.y,z=finish.z,fraction=1}
   return points
 end

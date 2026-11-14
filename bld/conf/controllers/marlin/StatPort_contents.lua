@@ -13,7 +13,7 @@ local posInd = function(typ)
       end,
       cleanup = function(self)
           ui.Text.cleanup(self)
-          --self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+          self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
       end,
       msgUser = function(self, msg)
           local ud = msg[-1]
@@ -53,7 +53,7 @@ local StatPort_contents = ui.Group:new
       end,
       cleanup = function(self)
           ui.Text.cleanup(self)
-          --self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
+          self.Application:remInputHandler(ui.MSG_USER, self, self.msgUser)
       end,
       msgUser = function(self, msg)
                       local ud = msg[-1]
@@ -95,7 +95,7 @@ local StatPort_contents = ui.Group:new
     
     ui.Group:new
     {
-      Rows = 3,
+      Rows = 5,
       Columns = 4,
       Children = 
       {
@@ -104,6 +104,10 @@ local StatPort_contents = ui.Group:new
 --          ui.Text:new{Class = "caption",Width=60, Text="MPos:"},
 --          posInd("mX"), posInd("mY"), posInd("mZ"), 
 
+          ui.Text:new{Class = "caption",Width=60, Text="Bed:"},
+          posInd("BCur"), posInd("BDst"), ui.Text:new{Text=""},
+          ui.Text:new{Class = "caption",Width=60, Text="Extruder:"},
+          posInd("ePos"), ui.Text:new{Text=""}, ui.Text:new{Text=""},
           ui.Text:new{Class = "caption",Width=60, Text="WPos:"},
           posInd("wX"), posInd("wY"), posInd("wZ"), 
 --          ui.Text:new{Class = "caption",Width=60, Text="MPos:"},

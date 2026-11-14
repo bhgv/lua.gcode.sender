@@ -67,8 +67,7 @@ return function()
                 ui.Input.onEnter(self)
                 local num = tonumber(self:getText())
                 --self:setValue("Text", " ")
-                print(num)
-                if num then
+                if num and num >= 0 and num < math.huge then
                   Sender:newcmd("SINGLE")
                   Sender:newcmd("M104 S" .. num)
                 end
@@ -83,8 +82,7 @@ return function()
                 ui.Input.onEnter(self)
                 local num = tonumber(self:getText())
                 --self:setValue("Text", " ")
-                print(num)
-                if num then
+                if num and num >= 0 and num < math.huge then
                   Sender:newcmd("SINGLE")
                   Sender:newcmd("M140 S" .. num)
                 end

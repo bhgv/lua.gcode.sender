@@ -11,7 +11,7 @@ return ui.Group:new
       "\u{e078}",
       function(self)
           Sender:newcmd('SINGLE')
-          Sender:newcmd('$H')
+          Sender:newcmd(MK and MK.home_command or '$H')
       end
     ),
     symBut(

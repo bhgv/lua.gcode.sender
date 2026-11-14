@@ -145,7 +145,7 @@ local window = ui.Window:new
                       if cmd then
                         --print("cmd=" .. cmd)
                         if 
-                          cmd:match("^error:") or cmd:match("^ALARM:") or cmd:match("^Grbl")
+                          cmd:match("^error:") or cmd:match("^ALARM:") or cmd:match("^Grbl") or cmd:match("^Error:") or cmd:match("^echo:Unknown command:")
                         then
                           MKstate = "STOP"
                         elseif 

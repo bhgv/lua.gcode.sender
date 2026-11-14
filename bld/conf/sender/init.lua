@@ -95,6 +95,17 @@ return {
               end
               ]=]
               
+              if msg.action == "pause" then
+                state = "pause"
+                exec.sendport("*p","ui","<MESSAGE>Pause")
+              elseif msg.action == "resume" and state == "pause" then
+                state = "run"
+                exec.sendport("*p","ui","<MESSAGE>Run")
+              elseif msg.action == "cancel" then
+                state, req_inc_cmd = "stop",false
+                gthread:clear(); sthread:clear()
+                exec.sendport("*p","ui","<MESSAGE>Stop")
+              end
               if msg.err then
                 exec.sendport("*p", "ui", "<MESSAGE>" 
                               .. msg.msg:match("([^\u{a}\u{d}]+)") 
@@ -208,8 +219,13 @@ return {
                 if MK then
                   if MK:open(prt, 0 + bod) then
                     local out = MK:init()
+                    if out.err or out.ok == false then
+                      exec.sendport("*p","ui","<MESSAGE>Error: controller initialization failed")
+                      MK = nil
+                    else
                     lib:split(out.msg, "[^\u{a}\u{d}]+", lib.display_rx_msg)
                     exec.sendport("*p", "ui", "<MESSAGE>Connected to " .. prt .. ", " .. bod)
+                    end
                   else
                     MK = nil
                     exec.sendport("*p", "ui", "<MESSAGE>Can't connect to " .. prt)
@@ -242,6 +258,11 @@ return {
                 state = "run"
                 exec.sendport("*p", "ui", "<MESSAGE>Run")
               end
+            elseif msg == "EMERGENCY" then
+              if MK and MK.emergency then MK:emergency() end
+              state, req_inc_cmd = "stop",false
+              gthread:clear(); sthread:clear()
+              exec.sendport("*p","ui","<MESSAGE>Stop")
             elseif msg == "STOP" then
               if MK then MK:stop() end
               sthread:clear()

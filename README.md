@@ -201,3 +201,40 @@ G53, G10, G28/G30, G43.1 and G55-G59 are rejected by offline preparation because
 the current preview has no controller machine/work-offset context. These commands
 remain available explicitly through the terminal. This avoids treating machine
 positions or stored offsets as ordinary transformed motion coordinates.
+
+Marlin host driver
+-------
+Select Marlin in the controller list before loading/preparing Marlin files.
+The driver uses unnumbered send/ok streaming, M115 initialization and idle-only
+M114/M105 polling. It recognizes fragmented replies, advanced `ok` fields,
+heating/busy reports, firmware restart, errors and host pause/resume/cancel
+requests. Coordinates come from M114 logical XYZ/E; Count values are step counts
+and are not shown as machine coordinates. Temperature reports expose hotend,
+bed and numbered tools; the panel shows the primary hotend and bed.
+
+Pause suspends new host commands: already accepted moves can finish. Stop sends
+M108 then M410 (break a wait, then quickstop); support and prompt handling depend
+on firmware configuration, and quickstop may require re-homing. A separate
+Emergency stop (M112) shuts down Marlin and blocks further sending until reset.
+This is host streaming, not SD-card print control. Heater targets are not
+implicitly disabled by ordinary Pause/Stop; use M104/M140 S0 or M112 as needed.
+
+M82/M83 and G92 E0 are tracked for extrusion, including G1 arc approximation.
+G28/G29, firmware retract G10/G11, M117/M118 messages and M18/M84 axis flags pass through unchanged. Homing is
+not drawn as a fabricated move, so preview assumes the programmed starting frame;
+controller-specific homing/mesh offsets are not simulated. Known modal setup
+words are split into individual serial lines for Marlin. Other multi-command
+blocks are rejected. Marlin ranges must start at row 1 to retain extrusion/setup
+state. Resend requests stop and block the stream with a reconnect error; this
+version does not implement numbered/checksummed transport replay.
+
+Tests include the real Marlin driver against a fragmented-serial mock, actual
+sender/driver integration, temperature and position reports, heating wait,
+errors, stop/emergency, sliced-style source and absolute/relative extrusion.
+Real Marlin 1.x/2.x hardware validation is still required.
+
+Marlin M-command XYZ/E parameters (for example M201 acceleration limits and M92
+steps-per-unit) are kept as parameters, not interpreted or transformed as moves.
+A `busy: paused for user` wait can be continued with M108 through Resume. Complex
+LCD host prompts and firmware-specific feature availability still depend on the
+printer configuration.

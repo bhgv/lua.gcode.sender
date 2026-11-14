@@ -65,6 +65,7 @@ local set_ports_bauds = function(mk_type)
   
   local mk = MKs:get(mk_type)
   local lst = mk:info()
+  if not MK then _G.Flags.Controller = lst.name end
   local i, v
   local out = {}
   for i,v in ipairs(lst.ports) do
@@ -187,6 +188,7 @@ return ui.Group:new
             ads_panel_cln(TerminalPanel_ads)
 
             MK = MKs:get(mk_nm)
+            _G.Flags.Controller = MK:info().name
             StatPort:addMember(MK.StatPort_contents)
             
 			ads_panel_add_contents(FilePanel_ads, MK.FileButtons_add)

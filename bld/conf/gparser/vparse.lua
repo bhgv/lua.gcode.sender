@@ -12,6 +12,7 @@ local cmd_buf
 local motion
 local absolute, coords, units
 local offset, special
+local extrusion, extrusion_word, extrusion_absolute, service
 local arc_words, explicit_motion, plane, feed_mode
 local state_before, feed, shifted, block_feed
 local modal_states, range_errors
@@ -31,6 +32,7 @@ end
 local vcb_init = function(l, k)
   absolute, coords, units = true, {}, 1
   offset, special = {x=0,y=0,z=0}, nil
+  extrusion, extrusion_word, extrusion_absolute, service = 0,nil,true,nil
   arc_words, explicit_motion, plane, feed_mode = {}, false, 17, 94
   motion = 0
   feed, shifted, block_feed = nil, false, nil
@@ -54,7 +56,29 @@ local vcb_eol = function(l, k)
     modal_states[#modal_states+1] = state_before
     range_errors[#range_errors+1] = shifted and "G92 state precedes selected range; start before G92" or ""
   end
+  if service then
+    assert(not explicit_motion and not special, "Marlin service and motion commands must use separate blocks")
+    while ln_cur < l-1 do ln_cur=ln_cur+1; GTXT_parsed[ln_cur]="" end
+    for _,axis in ipairs{'x','y','z'} do
+      if coords[axis] then cmd_buf=cmd_buf .. axis:upper() .. coords[axis] .. " " end
+    end
+    if extrusion_word then cmd_buf=cmd_buf .. "E" .. extrusion_word .. " " end
+    ln_cur=ln_cur+1
+    GTXT_parsed[ln_cur]=cmd_buf
+    coords,arc_words,explicit_motion,special,service = {},{},false,nil,nil
+    extrusion_word,block_feed=nil,nil
+    isX,isY,isZ=false,false,false
+    cmd_buf=""
+    state_before=modalState()
+    return
+  end
   if block_feed then feed=feed_mode==94 and block_feed*units or block_feed end
+  local previous_e = extrusion
+  if extrusion_word then
+    if special == 92 or extrusion_absolute then extrusion=extrusion_word*units
+    else extrusion=extrusion+extrusion_word*units end
+  end
+  if extrusion_word then cmd_buf=cmd_buf .. string.format("E%.5f ",extrusion_word) end
   local previous = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z}
   if special == 92 or special == 92.1 then
     assert(not explicit_motion, "G92 cannot share a block with a motion command")
@@ -76,7 +100,7 @@ local vcb_eol = function(l, k)
     coords,arc_words,explicit_motion,special = {},{},false,nil
     isX,isY,isZ=false,false,false
     cmd_buf=""
-    block_feed=nil
+    block_feed,extrusion_word=nil,nil
     state_before=modalState()
     return
   end
@@ -174,11 +198,20 @@ local vcb_eol = function(l, k)
     assert(feed_mode == 94, "Arc approximation requires G94 feed mode")
     local segments = gparser.new_store()
     local last = outputPoint(previous)
+    local sent_e = previous_e
     for i, point in ipairs(points) do
       local target = outputPoint(point)
       local x, y, z = target.x, target.y, target.z
       if not absolute then x,y,z = x-last.x,y-last.y,z-last.z end
-      segments[i] = (i == 1 and prefix or "") .. string.format("G1 X%.4f Y%.4f Z%.4f", x/units,y/units,z/units)
+      local segment_prefix = prefix:gsub("E[+%-]?[%d%.]+%s*", "")
+      segments[i] = (i == 1 and segment_prefix or "") .. string.format("G1 X%.4f Y%.4f Z%.4f", x/units,y/units,z/units)
+      if extrusion_word then
+        local fraction = point.fraction or i/#points
+        local target_e = previous_e+(extrusion-previous_e)*fraction
+        local amount = extrusion_absolute and target_e or (target_e-sent_e)
+        sent_e = sent_e + tonumber(string.format("%.5f",amount/units))*units
+        segments[i] = segments[i] .. string.format(" E%.5f",amount/units)
+      end
       if not absolute then
         last = {x=last.x+tonumber(string.format("%.4f",x/units))*units,
           y=last.y+tonumber(string.format("%.4f",y/units))*units,
@@ -198,7 +231,7 @@ local vcb_eol = function(l, k)
   isX, isY, isZ = false, false, false
   coords, arc_words, explicit_motion = {}, {}, false
   cmd_buf = ""
-  block_feed=nil
+  block_feed,extrusion_word=nil,nil
   state_before=modalState()
 end
 
@@ -207,7 +240,15 @@ end
 
 local vcb_cmd = function(l, k, p1, p2)
   p2 = tonumber(p2)
-  if p1 == "G" and (p2 == 92 or p2 == 92.1) then
+  if _G.Flags.Controller == "marlin" and p1 == "E" then
+    extrusion_word = p2
+  elseif _G.Flags.Controller == "marlin" and p1 == "M" and (p2==82 or p2==83) then
+    extrusion_absolute=p2==82
+    cmd_buf=cmd_buf .. p1 .. p2 .. " "
+  elseif _G.Flags.Controller == "marlin" and p1 == "M" then
+    service=p2
+    cmd_buf=cmd_buf .. p1 .. p2 .. " "
+  elseif p1 == "G" and (p2 == 92 or p2 == 92.1) then
     special = p2
     cmd_buf = cmd_buf .. p1 .. p2 .. " "
   elseif p1 == "G" and (p2 == 10 or p2 == 28 or p2 == 30 or p2 == 43.1 or (p2 >= 55 and p2 <= 59)) then
@@ -234,6 +275,7 @@ local vcb_cmd = function(l, k, p1, p2)
     arc_words[p1:lower()] = p2
   elseif p1 == "G" and (p2 == 90 or p2 == 91) then
     absolute = p2 == 90
+    if _G.Flags.Controller == "marlin" then extrusion_absolute=absolute end
     cmd_buf = cmd_buf .. p1 .. p2 .. " "
   elseif p1 == "X" then
     coords.x = p2
@@ -270,7 +312,23 @@ function do_vparse(preview)
   local previous = GTXT_parsed
   local points, bnd, bnd0, changed = Display.Points, Display.Bnd, Display.Bnd0, Display.Changed
   GTXT_parsed = gparser.new_store()
-  local txt = GTXT:concat("\n")
+  local source = GTXT
+  local passthrough = gparser.new_store()
+  if _G.Flags.Controller == "marlin" then
+    source = GTXT:clone()
+    for i=1,#source do
+      local number = source[i]:upper():match("^%s*[MG](%d+)")
+      local letter = source[i]:upper():match("^%s*([MG])")
+      if (letter=="M" and (number=="117" or number=="118" or number=="84" or number=="18")) or
+        (letter=="G" and (number=="28" or number=="29" or number=="10" or number=="11")) then
+        passthrough[i]=source[i]
+        source[i]=""
+      else
+        passthrough[i]=""
+      end
+    end
+  end
+  local txt = source:concat("\n")
   if #GTXT > 0 then txt = txt .. "\n" end
   
   gparser.set_callback_dict {
@@ -288,6 +346,14 @@ function do_vparse(preview)
   
   --local o = 
   local ok, err = pcall(gparser.do_parse, gparser, txt)
+  if ok and _G.Flags.Controller == "marlin" then
+    ok, err = pcall(function()
+      local prepare = require "conf.controllers.marlin.prepare"
+      for i=1,#GTXT do
+        if passthrough[i] == "" then GTXT_parsed[i]=prepare(GTXT_parsed[i] or "") end
+      end
+    end)
+  end
   if not ok then
     GTXT_parsed = previous
     Display.Points, Display.Bnd, Display.Bnd0, Display.Changed = points, bnd, bnd0, changed
@@ -299,6 +365,9 @@ function do_vparse(preview)
 
   while #GTXT_parsed < #GTXT do
     GTXT_parsed[#GTXT_parsed + 1] = ""
+  end
+  for i=1,#passthrough do
+    if passthrough[i] ~= "" then GTXT_parsed[i]=passthrough[i] end
   end
   while #modal_states < #GTXT do
     modal_states[#modal_states+1] = state_before
