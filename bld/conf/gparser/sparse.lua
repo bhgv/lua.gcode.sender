@@ -9,10 +9,16 @@ function do_sparse(from, to)
 
   local parsed, err = do_vparse()
   assert(parsed, err)
+  if from > 1 then assert(_G.Flags.RangeErrors[from] == "", _G.Flags.RangeErrors[from]) end
   _G.Flags.SendFrom = from
   _G.Flags.SendTo = to
 
   Sender:newcmd("NEW")
+  if from > 1 then
+    Sender:newcmd("SOURCE")
+    Sender:newcmd(tostring(from))
+    Sender:newcmd(_G.Flags.ModalStates[from])
+  end
   for i = from, to do
     Sender:newcmd("SOURCE")
     Sender:newcmd(tostring(i))

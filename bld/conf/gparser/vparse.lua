@@ -11,7 +11,18 @@ local isX, isY, isZ
 local cmd_buf
 local motion
 local absolute, coords, units
+local offset, special
 local arc_words, explicit_motion, plane, feed_mode
+local state_before, feed, shifted, block_feed
+local modal_states, range_errors
+local function modalState()
+  return string.format("G%d G%d G%d G%d G%d",units==1 and 21 or 20,absolute and 90 or 91,plane,feed_mode,
+    (motion==2 or motion==3) and (_G.Flags.ApproximateArcs and 1 or motion) or motion) ..
+    (feed and string.format(" F%.6f",feed_mode==94 and feed/units or feed) or "")
+end
+local function outputPoint(point)
+  return transformCoords{x=point.x-offset.x,y=point.y-offset.y,z=point.z-offset.z}
+end
 local arcPoints = require "conf.gparser.arc"
 
 local t_cb = function(l, k, p1, p2)
@@ -19,8 +30,12 @@ local t_cb = function(l, k, p1, p2)
 end
 local vcb_init = function(l, k)
   absolute, coords, units = true, {}, 1
+  offset, special = {x=0,y=0,z=0}, nil
   arc_words, explicit_motion, plane, feed_mode = {}, false, 17, 94
   motion = 0
+  feed, shifted, block_feed = nil, false, nil
+  modal_states, range_errors = gparser.new_store(), gparser.new_store()
+  state_before = modalState()
   GTXT_parsed:clear()
   tmp_vpts = { [0]={x=0, y=0, z=0} }
   tmp_vpt = {x=0, y=0, z=0, chng=false}
@@ -35,9 +50,38 @@ local vcb_init = function(l, k)
   cmd_buf = ""
 end
 local vcb_eol = function(l, k)
+  while #modal_states < l do
+    modal_states[#modal_states+1] = state_before
+    range_errors[#range_errors+1] = shifted and "G92 state precedes selected range; start before G92" or ""
+  end
+  if block_feed then feed=feed_mode==94 and block_feed*units or block_feed end
   local previous = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z}
+  if special == 92 or special == 92.1 then
+    assert(not explicit_motion, "G92 cannot share a block with a motion command")
+    if special == 92.1 then
+      shifted = false
+      offset = {x=0,y=0,z=0}
+    else
+      shifted = next(coords) ~= nil or shifted
+      for axis,value in pairs(coords) do offset[axis]=previous[axis]-value*units end
+    end
+    while ln_cur < l-1 do ln_cur=ln_cur+1; GTXT_parsed[ln_cur]="" end
+    ln_cur=ln_cur+1
+    if special == 92 and next(coords) then
+      local target=outputPoint(previous)
+      GTXT_parsed[ln_cur]=cmd_buf .. string.format("X%.4f Y%.4f Z%.4f",target.x/units,target.y/units,target.z/units)
+    else
+      GTXT_parsed[ln_cur]=cmd_buf
+    end
+    coords,arc_words,explicit_motion,special = {},{},false,nil
+    isX,isY,isZ=false,false,false
+    cmd_buf=""
+    block_feed=nil
+    state_before=modalState()
+    return
+  end
   for axis, value in pairs(coords) do
-    tmp_vpt[axis] = absolute and value*units or (tmp_vpt[axis] + value*units)
+    tmp_vpt[axis] = absolute and (value*units+offset[axis]) or (tmp_vpt[axis] + value*units)
     tmp_vpt.chng = true
   end
   tmp_vpt.iswork = motion ~= 0
@@ -109,9 +153,9 @@ local vcb_eol = function(l, k)
   end
   
   if isX or isY or isZ then
-    pt = transformCoords{x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z}
+    pt = outputPoint(tmp_vpt)
     if not absolute then
-      local origin = transformCoords(previous)
+      local origin = outputPoint(previous)
       pt.x, pt.y, pt.z = pt.x - origin.x, pt.y - origin.y, pt.z - origin.z
     end
   end
@@ -129,9 +173,9 @@ local vcb_eol = function(l, k)
   if is_arc and #points > 0 and _G.Flags.ApproximateArcs then
     assert(feed_mode == 94, "Arc approximation requires G94 feed mode")
     local segments = gparser.new_store()
-    local last = transformCoords(previous)
+    local last = outputPoint(previous)
     for i, point in ipairs(points) do
-      local target = transformCoords(point)
+      local target = outputPoint(point)
       local x, y, z = target.x, target.y, target.z
       if not absolute then x,y,z = x-last.x,y-last.y,z-last.z end
       segments[i] = (i == 1 and prefix or "") .. string.format("G1 X%.4f Y%.4f Z%.4f", x/units,y/units,z/units)
@@ -154,6 +198,8 @@ local vcb_eol = function(l, k)
   isX, isY, isZ = false, false, false
   coords, arc_words, explicit_motion = {}, {}, false
   cmd_buf = ""
+  block_feed=nil
+  state_before=modalState()
 end
 
 
@@ -161,7 +207,17 @@ end
 
 local vcb_cmd = function(l, k, p1, p2)
   p2 = tonumber(p2)
-  if p1 == "G" and (p2 == 0 or p2 == 1 or p2 == 2 or p2 == 3) then
+  if p1 == "G" and (p2 == 92 or p2 == 92.1) then
+    special = p2
+    cmd_buf = cmd_buf .. p1 .. p2 .. " "
+  elseif p1 == "G" and (p2 == 10 or p2 == 28 or p2 == 30 or p2 == 43.1 or (p2 >= 55 and p2 <= 59)) then
+    error("G" .. p2 .. " requires controller coordinate context unavailable to offline preview")
+  elseif p1 == "F" then
+    block_feed = p2
+    cmd_buf = cmd_buf .. p1 .. p2 .. " "
+  elseif p1 == "G" and p2 == 53 then
+    error("G53 requires machine/work-coordinate context unavailable to offline preview")
+  elseif p1 == "G" and (p2 == 0 or p2 == 1 or p2 == 2 or p2 == 3) then
     motion, explicit_motion = p2, true
   elseif p1 == "G" and (p2 == 20 or p2 == 21) then
     units = p2 == 20 and 25.4 or 1
@@ -244,6 +300,11 @@ function do_vparse(preview)
   while #GTXT_parsed < #GTXT do
     GTXT_parsed[#GTXT_parsed + 1] = ""
   end
+  while #modal_states < #GTXT do
+    modal_states[#modal_states+1] = state_before
+    range_errors[#range_errors+1] = shifted and "G92 state precedes selected range; start before G92" or ""
+  end
+  _G.Flags.ModalStates, _G.Flags.RangeErrors = modal_states, range_errors
   if preview == false then
     Display.Points, Display.Bnd, Display.Bnd0, Display.Changed = points, bnd, bnd0, changed
   else

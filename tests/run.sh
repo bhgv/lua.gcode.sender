@@ -17,5 +17,6 @@ export LUA_CPATH='./tests/build/?.so'
 ./lua-5.3.3/src/lua tests/editor.lua
 ./lua-5.3.3/src/lua tests/render.lua
 ./lua-5.3.3/src/lua tests/arcs.lua
+./lua-5.3.3/src/lua tests/coordinates.lua
 ./tests/build/states
 find bld/conf -name '*.lua' -exec ./lua-5.3.3/src/luac -p '{}' \;

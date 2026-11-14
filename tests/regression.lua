@@ -50,7 +50,7 @@ local messages = parser.new_store()
 Sender = {newcmd = function(self, cmd) messages[#messages + 1] = cmd end}
 GTXT[3] = 'G1 X15 Y25'
 do_sparse(4, 4)
-assert(messages[1] == 'NEW' and messages[2] == 'SOURCE' and messages[3] == '4' and messages[4]:match('Y25%.0000') and messages[5] == 'FIN')
+assert(messages[1] == 'NEW' and messages[2] == 'SOURCE' and messages[3] == '4' and messages[7]:match('Y25%.0000') and messages[8] == 'FIN')
 assert(Flags.Rel_gcode2display[4])
 GTXT:clear()
 do_vparse()

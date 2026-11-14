@@ -57,7 +57,7 @@ local sent={}
 Sender={newcmd=function(_,s) sent[#sent+1]=s end}
 do_sparse(2,2)
 assert(sent[2]=='SOURCE' and sent[3]=='2')
-assert(sent[4]:match('G1') and not sent[4]:match('\n'))
+assert(sent[7]:match('G1') and not sent[7]:match('\n'))
 assert(#sent>10 and sent[#sent]=='CALCULATE')
 local previous=GTXT_parsed
 GTXT:load('G0 X1 Y0\nG3 X0 Y1 R0.1')

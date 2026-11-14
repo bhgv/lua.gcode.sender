@@ -182,3 +182,22 @@ Preview positions and transformation offsets now use millimetres internally.
 G20/G21 changes are respected throughout a program, including G91 increments,
 arc centers, helical interpolation and output coordinates. Prepared commands
 retain the source unit modes and values; preview sampling tolerance is in mm.
+
+G92 and selected ranges
+-------
+G92 updates the preview coordinate offset without adding a motion segment;
+G92.1 clears it. Prepared coordinates and arc points respect that offset through
+G90/G91, G20/G21 and model transformations. Non-XYZ words in a G92-only block are
+retained without adding XYZ resets.
+
+For a range starting after row 1, the sender receives a separate preamble with
+units, distance mode, plane, feed mode, motion mode and the last numeric feed.
+Feed is converted into the active units. Prior motion blocks are not replayed:
+the operator must position the machine at the chosen range's start. Spindle and
+coolant actions are not reconstructed. Ranges starting inside an active G92
+shift are rejected; include the G92 block or start after G92.1.
+
+G53, G10, G28/G30, G43.1 and G55-G59 are rejected by offline preparation because
+the current preview has no controller machine/work-offset context. These commands
+remain available explicitly through the terminal. This avoids treating machine
+positions or stored offsets as ordinary transformed motion coordinates.
