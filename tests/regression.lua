@@ -73,6 +73,18 @@ assert(not GTXT_parsed[1]:match('100') and not GTXT_parsed[1]:match('200'))
 Flags.Transformations.Move = {x=0, y=0, z=0}
 Flags.Transformations.Rotate = 0
 
+local previous_parsed, previous_points = GTXT_parsed, Display.Points
+local previous_map = Flags.Rel_gcode2display
+Flags.Transformations.Scale.x = nil
+local parsed, parse_error = do_vparse()
+assert(not parsed and parse_error)
+assert(GTXT_parsed == previous_parsed and Display.Points == previous_points)
+assert(Flags.Rel_gcode2display == previous_map)
+local queued = #messages
+assert(not pcall(do_sparse, 1, #GTXT) and #messages == queued)
+Flags.Transformations.Scale.x = 1
+assert(do_vparse())
+
 local NumberedList = require 'conf.gui.classes.numberedlist'
 store:load('G90\nM5')
 local list = NumberedList:new {Store=store, Items={{}, {}}}
@@ -135,7 +147,9 @@ assert(grbl:read().stat)
 grbl:send('G1 X2\n')
 assert(receive('[MSG:hello]\r\n').msg and not grbl.out_access)
 assert(receive('error:20\n').err and grbl.out_access)
-assert(receive('ALARM:1\r\n').err and not grbl.out_access)
+assert(receive('ALARM:1\r\n').err and grbl.out_access)
+grbl:send('$X\n')
+assert(not grbl.out_access and receive('ok\n').ok and grbl.out_access)
 assert(receive("Grbl 1.1h ['$' for help]\r\n").err)
 assert(grbl.version == '1.1h')
 new = grbl:status_parse('<Idle|MPos:10,20,30>')
@@ -150,6 +164,14 @@ receive('ok\n')
 assert(not grbl.out_access)
 receive("Grbl 1.1h ['$' for help]\n")
 assert(grbl.out_access)
+
+assert(grbl:status_parse('<Idle|OtherMPos:9,9,9>').mX == nil)
+local before = #messages
+assert(not pcall(do_sparse, 0, 2))
+assert(not pcall(do_sparse, 2, 1))
+assert(not pcall(do_sparse, 1, math.huge))
+assert(not pcall(do_sparse, 1.5, 2))
+assert(#messages == before)
 
 local status_message
 package.loaded['tek.lib.exec'].sendport = function(_, _, text) status_message = text end

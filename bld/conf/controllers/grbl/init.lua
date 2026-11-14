@@ -31,7 +31,7 @@ local resetting = false
 local wco
 
 local function vector(s, name)
-  local values = s:match(name .. ":([^|>]+)")
+  local values = s:match("[,|]" .. name .. ":([^|>]+)")
   if not values then return end
   local x, y, z = values:match("^([^,]+),([^,]+),([^,]+)")
   x, y, z = tonumber(x), tonumber(y), tonumber(z)
@@ -123,7 +123,7 @@ return {
       elseif ln:match("^ALARM:") then
         msg.err = true
         oks = 0
-        self.out_access = false
+        self.out_access = not resetting -- Permit an explicit $X after the sender stops.
       elseif ln:match("^Grbl") then
         resetting = false
         self.version = ln:match("^Grbl%s+([^%s]+)")

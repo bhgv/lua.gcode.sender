@@ -96,6 +96,8 @@ return {
                               )
                 state = "stop"
                 req_inc_cmd = false
+                gthread:clear()
+                icmd = 1
                 sthread:clear()
                 --stat_on = true
                 --icmd = icmd + 1
@@ -226,9 +228,9 @@ return {
             elseif msg == "FILL" then
               stat_on = false
             elseif msg == "RESUME" then
-              if MK then MK:resume() end
               stat_on = true
-              if MK and (state == "stop" or state == "pause") then
+              if MK and #gthread > 0 and (state == "stop" or state == "pause") then
+                MK:resume()
                 state = "run"
                 exec.sendport("*p", "ui", "<MESSAGE>Run")
               end

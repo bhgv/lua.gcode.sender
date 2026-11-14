@@ -1,5 +1,6 @@
 package.path = './bld/?.lua;./bld/?/init.lua;' .. package.path
 local sent, events = {}, {}
+local read_error
 local controller = {out_access=true}
 function controller:open() return true end
 function controller:init() return {msg='connected'} end
@@ -23,6 +24,10 @@ package.loaded['conf.sender.lib'] = {
   split=function() end, display_tx=function() end,
   cnc_read_parse=function()
     controller.out_access=true
+    if read_error then
+      read_error = false
+      return {err=true, msg='error:20'}
+    end
     return {ok=true}
   end,
 }
@@ -57,6 +62,17 @@ step('RESUME'); ticks(30)
 assert(table.concat(sent, '') == 'G1 X1\nG1 X2\nG1 X3\n')
 step('STOP'); ticks(3)
 assert(events[#events] == 'stop')
+sent={}
+step('NEW'); step('G1 X10'); step('G1 X20'); step('FIN'); step('RESUME')
+while #sent == 0 do step() end
+read_error=true
+ticks(10)
+assert(#sent == 1)
+step('RESUME'); ticks(10)
+assert(#sent == 1) -- An error must discard the job, not retry a failed block.
+step('SINGLE'); step('$X'); ticks(10)
+assert(sent[2] == '$X\n')
+
 -- Requests before opening a controller must also be harmless.
 local previous=co
 sender:start(); step(); step('PAUSE'); step('RESUME'); step('STOP')

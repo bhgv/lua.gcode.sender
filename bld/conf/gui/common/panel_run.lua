@@ -18,10 +18,13 @@ return ui.Group:new
       "\u{e093}",
       function(self)
         if MKstate == "STOP" then
-          Sender:newcmd("FILL")
           local from = _G.Flags.SendFrom 
           local to = _G.Flags.SendTo 
-          do_sparse(from, to)
+          local prepared, err = pcall(do_sparse, from, to)
+          if not prepared then
+            self.Application:getById("status main"):setValue("Text", tostring(err))
+            return
+          end
           Sender:newcmd("RESUME")
           MKstate = "RUN"
 --          exec.sendport(exec.getname(), "ui", "<MESSAGE>Run")

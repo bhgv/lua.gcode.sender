@@ -1,5 +1,6 @@
 
-ui = require "tek.ui"
+local ui = require "tek.ui"
+local files = require "conf.gparser.file"
 
 
 return ui.Group:new
@@ -10,7 +11,13 @@ return ui.Group:new
     symBut(
       "\u{E052}",
       function(self)
-        print("new!", self)
+        GTXT:clear()
+        GTXT_parsed:clear()
+        GFNAME = nil
+        initialiseEditor()
+        do_vparse()
+        _G.Flags.isEdited = false
+        self.Application:getById("status main"):setValue("Text", "New program")
       end
     ),
 
@@ -34,18 +41,22 @@ return ui.Group:new
                 if status == "selected" then
                   self.old_path = path
                   
-                  GFNAME = path .. "/" .. select[1]
-                  app:getById("status main"):setValue("Text", "Opening " .. GFNAME)
-                  --print(status, path, table.concat(select, ", "))
-                  local f = io.open(GFNAME, "r")
-                  if f ~= nil then
-                    local txt = f:read("*a")
-                    f:close()
-                    GTXT:load(txt)
+                  local filename = path .. "/" .. select[1]
+                  local store, err = files.read(filename)
+                  if store then
+                    GTXT = store
+                    GFNAME = filename
                     initialiseEditor()
-                    do_vparse()
+                    local parsed, parse_err = do_vparse()
+                    _G.Flags.isEdited = false
+                    if not parsed then
+                      app:getById("status main"):setValue("Text", tostring(parse_err))
+                      return
+                    end
+                    app:getById("status main"):setValue("Text", GFNAME)
+                  else
+                    app:getById("status main"):setValue("Text", "Open failed: " .. tostring(err))
                   end
-                  app:getById("status main"):setValue("Text", GFNAME)
                 end
             end 
         )
@@ -55,7 +66,29 @@ return ui.Group:new
     symBut(
       "\u{E03d}",
       function(self)
-    --		self:setValue("Image", self.Pressed and RadioImage2 or RadioImage1)
+        local app = self.Application
+        app:addCoroutine(function()
+          local filename = GFNAME
+          if not filename then
+            local status, path, selection = app:requestFile {
+              Path = self.old_path or os.getenv("HOME"),
+              SelectMode = "single",
+              SelectText = "Save",
+              Title = "Save G-code",
+              Location = "program.gcode",
+            }
+            if status ~= "selected" or not selection[1] then return end
+            filename = path .. "/" .. selection[1]
+          end
+          local saved, err = files.write(filename, GTXT)
+          if saved then
+            GFNAME = filename
+            _G.Flags.isEdited = false
+            app:getById("status main"):setValue("Text", "Saved " .. filename)
+          else
+            app:getById("status main"):setValue("Text", "Save failed: " .. tostring(err))
+          end
+        end)
       end
     ),
   }

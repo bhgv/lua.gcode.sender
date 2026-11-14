@@ -106,3 +106,14 @@ resume continues after the acknowledged block. GRBL Stop sends Ctrl-X and waits
 for the startup banner before allowing another line. This aborts controller
 motion and resets its parser state; it is distinct from feed hold (Pause).
 `tests/sender.lua` exercises the actual sender task with a mocked controller.
+
+File panel New clears both native stores and resets the filename. Open keeps
+blank source lines; Save writes edited source rows from the native store (LF
+line endings and a final newline), and requests a filename for a new program.
+File errors are shown in the status bar. Tests cover loading, saving, failed
+writes and the actual file-panel callbacks.
+
+Preview parsing commits new results only on success. Invalid print ranges and
+parse failures leave the sender queue untouched. Controller errors discard the
+current job; Resume cannot retry a failed block. ALARM stops the job while still
+allowing a deliberate single unlock command such as `$X`.

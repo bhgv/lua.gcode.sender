@@ -139,6 +139,9 @@ local vcb_fini = function(l, k)
 end
 
 function do_vparse()
+  local previous = GTXT_parsed
+  local points, bnd, bnd0, changed = Display.Points, Display.Bnd, Display.Bnd0, Display.Changed
+  GTXT_parsed = gparser.new_store()
   local txt = GTXT:concat("\n")
   if #GTXT > 0 then txt = txt .. "\n" end
   
@@ -156,12 +159,21 @@ function do_vparse()
   rel_gcode_display = {}
   
   --local o = 
-  gparser:do_parse(txt)
+  local ok, err = pcall(gparser.do_parse, gparser, txt)
+  if not ok then
+    GTXT_parsed = previous
+    Display.Points, Display.Bnd, Display.Bnd0, Display.Changed = points, bnd, bnd0, changed
+    if App then
+      App:getById("status main"):setValue("Text", "Parse failed: " .. tostring(err))
+    end
+    return nil, err
+  end
 
   while #GTXT_parsed < #GTXT do
     GTXT_parsed[#GTXT_parsed + 1] = ""
   end
   _G.Flags.Rel_gcode2display = rel_gcode_display
+  return true
   --for i = 1,#o do
   --  print(o[i])
   --end

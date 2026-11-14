@@ -145,9 +145,9 @@ local window = ui.Window:new
                       if cmd then
                         --print("cmd=" .. cmd)
                         if 
-                          cmd:match("^error:") 
+                          cmd:match("^error:") or cmd:match("^ALARM:") or cmd:match("^Grbl")
                         then
-                          MKstate = "PAUSE"
+                          MKstate = "STOP"
                         elseif 
                           cmd:match("^Pause")
                         then
