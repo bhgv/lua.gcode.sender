@@ -16,7 +16,7 @@ int
 _int_delete_parser(lua_State *L);
 
 int //PyObject* //const wchar_t* 
-_int_do_parse(char* gcode, int len);
+_int_do_parse(lua_State *L, const char* gcode, int len);
 
 int //PyObject *
 _int_set_cb_dict(lua_State *L);
@@ -24,10 +24,6 @@ _int_set_cb_dict(lua_State *L);
 }
 
 extern int out_type;
-
-//extern wchar_t* result;
-extern wchar** result;
-extern int res_len;
 
 extern lua_State *gL;
 

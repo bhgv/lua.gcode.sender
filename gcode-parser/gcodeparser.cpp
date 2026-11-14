@@ -14,24 +14,18 @@ extern "C" {
 //#include "GCodemodule.h"
 
 #include "GCode_foos.h"
+#include "GCode_store.h"
 
 extern "C" {
 
 static int
 do_parse(lua_State *L)
 {
-//    wchar_t *gcode;
-    char *gcode; 
-    int out;
-    int len;
+    size_t len;
+    const char *gcode = luaL_checklstring(L, lua_gettop(L), &len);
+    luaL_argcheck(L, len <= 0x7ffffffe, lua_gettop(L), "G-code is too large");
+    int out = _int_do_parse(L, gcode, (int)len);
 
-  gL = L;
-
-  gcode = (char*)lua_tostring(L, -1);
-  len = strlen(gcode);
-  
-  out = _int_do_parse(gcode, (int) len);
-    
   return out; 
 }
 
@@ -78,6 +72,7 @@ static const struct luaL_Reg gcodeMethods[] = {
     {"set_out_type_by_line", set_o_by_ln},
     {"set_out_type_by_cmd", set_o_by_cmd},
     {"do_parse", do_parse},
+    {"new_store", store_new},
     {"set_callback_dict", set_callback_dict},
     {"__gc", delete_parser},
      
@@ -89,7 +84,7 @@ static const struct luaL_Reg gcodeMethods[] = {
 LUALIB_API int luaopen_gcodeparser(lua_State *L)
 {
 
-printf("luaopen_gcodeparser\n");
+register_store(L);
 
     /* Create gcodeparser metatable */
     luaL_newmetatable(L, "gcodeparser");
@@ -112,7 +107,7 @@ printf("luaopen_gcodeparser\n");
     /* Set it as the metatable for the periphery.Serial metatable */
     lua_setmetatable(L, -2);
 
-    create_parser(L);
+    // Parser state is created only while parsing, not when a sender task loads the module.
 
 //    lua_pushstring(L, LUA_PERIPHERY_SERIAL_VERSION);
 //    lua_setfield(L, -2, "version");

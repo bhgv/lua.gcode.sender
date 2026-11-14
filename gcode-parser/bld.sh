@@ -1,10 +1,11 @@
 #!/bin/sh
+set -eu
 
 
 export DBG="-g"
 #export DBG=""
 
-export C_FLAGS="-c -fPIC \
+export C_FLAGS="-std=c++11 -c -fPIC \
 -I../bld/include -O2 \
 "
 export LD_FLAGS="-fPIC -shared \

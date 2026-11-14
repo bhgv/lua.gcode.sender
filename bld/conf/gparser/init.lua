@@ -3,8 +3,8 @@
 
 gparser = require "gcodeparser"
 
-GTXT = {}
-GTXT_parsed = {}
+GTXT = gparser.new_store()
+GTXT_parsed = gparser.new_store()
 
 require "conf.gparser.vparse"
 require "conf.gparser.sparse"

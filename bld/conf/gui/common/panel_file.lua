@@ -40,14 +40,8 @@ return ui.Group:new
                   local f = io.open(GFNAME, "r")
                   if f ~= nil then
                     local txt = f:read("*a")
-                    GSTXT = txt
                     f:close()
-                    local l 
-                    GTXT = {}
-                    local lst = {}
-                    for l in txt:gmatch("[^\u{a}\u{d}]+") do
-                      table.insert(GTXT, l)
-                    end
+                    GTXT:load(txt)
                     initialiseEditor()
                     do_vparse()
                   end

@@ -3,3 +3,7 @@
 *.a
 *.Po
 *.Plo
+
+/tests/build/
+/lua-5.3.3/src/lua
+/lua-5.3.3/src/luac

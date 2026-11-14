@@ -185,7 +185,7 @@ PRODUCTIONS
         Number<num, sign>
         .
         
-  Number<pwchar &num, int sign> =            
+  Number<pwchar &num, int sign> = (. num = NULL; .)
           number                             (. if(sign == 1)
                                                     num =  coco_string_create(t->val); 
                                                 else

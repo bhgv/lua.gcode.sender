@@ -74,7 +74,9 @@ local replaceWithB = symBut("\u{e0e4}",
       if repl and repl ~= "" then
         local n, ln = do_replace(msk, repl, from)
         
+        if not ln then return end
         GTXT[n] = ln
+        _G.Flags.isEdited = true
         lst_wgt:changeItem({{ "", ln }}, n)
         
         if _G.Flags.AutoRedraw then

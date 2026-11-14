@@ -31,10 +31,11 @@ return {
   end,
 
   cnc_stat = function(self, stat)
-    if stat and stat.stat then
+    if stat then
+      local values = stat.stat or stat
       local msg = "<STATUS>"
       local k,v
-      for k,v in pairs(stat.stat) do
+      for k,v in pairs(values) do
         msg = msg .. "<" .. k .. ">" .. v
       end
       exec.sendport("*p", "ui", msg)

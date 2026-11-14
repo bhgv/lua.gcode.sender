@@ -471,6 +471,7 @@ void Parser::CmdMoveLetter(pwchar &cmd) {
 }
 
 void Parser::Number(pwchar &num, int sign) {
+	num = NULL;
 		if (la->kind == _number) {
 			Get();
 			if(sign == 1)

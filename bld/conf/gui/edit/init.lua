@@ -61,21 +61,32 @@ gLstWdgtM = ui.Lister:new
 initialiseEditor = function()
   local NumberedList = require "conf.gui.classes.numberedlist"
 
-  local i,ln
   local lst = {}
-  
-  for i,ln in ipairs(GTXT) do
-    table.insert(lst, {{ "", ln }})
+  for i = 1, #GTXT do
+    lst[i] = {}
   end
-  
-  gLstWdgtM:setList(NumberedList:new { Items = lst })
-  
+  gLstWdgtM:setList(NumberedList:new { Items = lst, Store = GTXT })
+
   _G.Flags.SendFrom = 1
   _G.Flags.SendTo = #GTXT --+ 1
   
   App:getById("send to"):setValue("Text", tostring(#GTXT))
   App:getById("send from"):setValue("Text", "1")
 end
+
+updateEditorRange = function(old_count)
+  local count = #GTXT
+  local flags = _G.Flags
+  flags.SendFrom = math.max(1, math.min(flags.SendFrom or 1, count))
+  if flags.SendTo == old_count then
+    flags.SendTo = count
+  else
+    flags.SendTo = math.min(flags.SendTo or count, count)
+  end
+  App:getById("send from"):setValue("Text", tostring(flags.SendFrom))
+  App:getById("send to"):setValue("Text", tostring(flags.SendTo))
+end
+
 
 
 

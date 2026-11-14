@@ -189,13 +189,7 @@ local window = ui.Window:new
                       local g
                       if ud:match("^<GCODE>") then
                         g = ud:match("^<GCODE>(.*)")
-                        local t = {}
-                        local ln
-                        --print(nxt_lvl)
-                        for ln in g:gmatch("([^\n]+)\n") do
-                          table.insert(t, ln)
-                        end
-                        GTXT = t
+                        GTXT:load(g)
                         initialiseEditor()
                         do_vparse()
                       end

@@ -77,9 +77,11 @@ return ui.Group:new
                   onClick = function(self)
                     ui.Button.onClick(self)
                     local lst_wgt = self:getById("editor cmd list")
-                    local n = lst_wgt.SelectedLine + 1
-                    table.insert(GTXT, n, "")
+                    local n = math.min(#GTXT + 1, (lst_wgt.SelectedLine or 0) + 1)
+                    GTXT:insert(n, "")
                     lst_wgt:addItem({{ "", "" }}, n)
+                    updateEditorRange(#GTXT - 1)
+                    if _G.Flags.AutoRedraw then do_vparse() end
 		    _G.Flags.isEdited = true
                   end,
                 },
@@ -91,6 +93,7 @@ return ui.Group:new
                     local cmd = self:getById("gedit"):getText()
                     local lst_wgt = self:getById("editor cmd list")
                     local n = lst_wgt.SelectedLine
+                    if not n or n < 1 or n > #GTXT then return end
                     GTXT[n] = cmd
                     lst_wgt:changeItem({{ "", cmd }}, n)
 		    _G.Flags.isEdited = true
@@ -107,8 +110,11 @@ return ui.Group:new
                     ui.Button.onClick(self)
                     local lst_wgt = self:getById("editor cmd list")
                     local n = lst_wgt.SelectedLine
-                    table.remove(GTXT, n)
+                    if not n or n < 1 or n > #GTXT then return end
+                    GTXT:remove(n)
                     lst_wgt:remItem(n)
+                    updateEditorRange(#GTXT + 1)
+                    if _G.Flags.AutoRedraw then do_vparse() end
 		    _G.Flags.isEdited = true
                   end,
                 },

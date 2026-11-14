@@ -14,6 +14,7 @@ local t_cb = function(l, k, p1, p2)
 --  print(k, p1, p2)
 end
 local vcb_init = function(l, k)
+  GTXT_parsed:clear()
   tmp_vpts = { [0]={x=0, y=0, z=0} }
   tmp_vpt = {x=0, y=0, z=0, chng=false}
   tmp_vi = 1
@@ -118,7 +119,8 @@ local vcb_fini = function(l, k)
 end
 
 function do_vparse()
-  local txt = table.concat(GTXT, "\n")
+  local txt = GTXT:concat("\n")
+  if #GTXT > 0 then txt = txt .. "\n" end
   
   gparser.set_callback_dict {
     cmd= vcb_cmd,
@@ -136,6 +138,9 @@ function do_vparse()
   --local o = 
   gparser:do_parse(txt)
 
+  while #GTXT_parsed < #GTXT do
+    GTXT_parsed[#GTXT_parsed + 1] = ""
+  end
   _G.Flags.Rel_gcode2display = rel_gcode_display
   --for i = 1,#o do
   --  print(o[i])

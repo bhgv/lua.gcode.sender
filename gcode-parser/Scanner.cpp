@@ -27,6 +27,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 -----------------------------------------------------------------------*/
 
 
+#include <stdint.h>
 #include <memory.h>
 #include <string.h>
 #include "Scanner.h"
@@ -263,6 +264,7 @@ Buffer::Buffer(Buffer *b) {
 }
 
 Buffer::Buffer(const unsigned char* buf, int len) {
+	isUserStream = false;
 	this->buf = new unsigned char[len];
 	memcpy(this->buf, buf, len*sizeof(unsigned char));
 	bufStart = 0;
@@ -620,6 +622,9 @@ void Scanner::CreateHeapBlock() {
 
 Token* Scanner::CreateToken() {
 	Token *t;
+	// Token values can leave heapTop only wchar-aligned on 64-bit hosts.
+	uintptr_t top = (uintptr_t)heapTop;
+	heapTop = (void*)((top + alignof(Token) - 1) & ~(uintptr_t)(alignof(Token) - 1));
 	if (((char*) heapTop + (int) sizeof(Token)) >= (char*) heapEnd) {
 		CreateHeapBlock();
 	}

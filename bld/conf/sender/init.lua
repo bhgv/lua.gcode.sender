@@ -44,11 +44,12 @@ return {
         --print(exec.getname())
         
         local icmd = 1
-        local gthread = {}
+        local gparser = require "gcodeparser"
+        local gthread = gparser.new_store()
         local cmd = ""
         local msg = nil
         
-        local sthread = {}
+        local sthread = gparser.new_store()
         
         local send_from = 1
         
@@ -138,7 +139,8 @@ return {
                   local num_str
                   if state == "single" then
                     --cmd = sthread[#sthread]
-                    cmd = table.remove(sthread, #sthread)
+                    cmd = sthread[#sthread]
+                    sthread:remove(#sthread)
                     if #sthread == 0 then
                       state = "stop"
                     end
@@ -205,7 +207,7 @@ return {
                 end
               end
             elseif msg == "NEW" then
-              gthread = {}
+              gthread:clear()
               icmd = 1
               state = "stop"
               req_inc_cmd = false
