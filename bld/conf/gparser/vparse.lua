@@ -9,11 +9,13 @@ local rel_gcode_display
 local ln_cur
 local isX, isY, isZ
 local cmd_buf
+local motion
 
 local t_cb = function(l, k, p1, p2)
 --  print(k, p1, p2)
 end
 local vcb_init = function(l, k)
+  motion = 0
   GTXT_parsed:clear()
   tmp_vpts = { [0]={x=0, y=0, z=0} }
   tmp_vpt = {x=0, y=0, z=0, chng=false}
@@ -36,7 +38,7 @@ local vcb_eol = function(l, k)
     rel_gcode_display[l] = #tmp_vpts
     
     --print(tmp_vpt.x, tmp_vpt.y)
-    tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false, iswork = false}
+    tmp_vpt = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z, chng=false, iswork = motion == 1, p = motion == 1 and 0xff or nil}
   end
 --end
 --local scb_eol = function(l, k)
@@ -74,10 +76,9 @@ local vcb_cmd = function(l, k, p1, p2)
   p2 = tonumber(p2)
   if p1 == "G" and (p2 == 0 or p2 == 1) then 
     --vcb_eol(k)
-    if p2 == 1 then
-      tmp_vpt.p = 0xff
-      tmp_vpt.iswork = true
-    end
+    motion = p2
+    tmp_vpt.iswork = motion == 1
+    tmp_vpt.p = motion == 1 and 0xff or nil
     cmd_buf = cmd_buf .. p1 .. (p2 or "") .. " "
   elseif p1 == "X" then
     local x = p2

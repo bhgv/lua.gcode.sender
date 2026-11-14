@@ -50,6 +50,12 @@ GTXT:clear()
 do_vparse()
 assert(#GTXT_parsed == 0 and #Display.Points == 0)
 
+GTXT:load('G1 X1 Z-1\nX2 Z-2\nG0 X3 Z5\nX4 Z6')
+do_vparse()
+assert(Display.Points[2].iswork and Display.Points[2].p == 0xff)
+assert(not Display.Points[3].iswork and not Display.Points[4].iswork)
+assert(Display.Bnd.zmin == -2 and Display.Bnd.zmax == -1)
+
 local NumberedList = require 'conf.gui.classes.numberedlist'
 store:load('G90\nM5')
 local list = NumberedList:new {Store=store, Items={{}, {}}}
