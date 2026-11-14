@@ -27,6 +27,7 @@ local msg_buffer = ""
 -- Use send/response flow control for both protocol generations. Buffer
 -- telemetry has different meanings in 0.9 and 1.1 and can arrive late.
 local oks = 0
+local resetting = false
 local wco
 
 local function vector(s, name)
@@ -57,6 +58,7 @@ return {
         self.out_access = PORT ~= nil
         
         oks = 0
+        resetting = false
         msg_buffer = ""
         wco = nil
         
@@ -78,6 +80,12 @@ return {
     end,
 
     stop = function(self)
+      PORT:write(string.char(24))
+      oks = 0
+      wco = nil
+      msg_buffer = ""
+      resetting = true
+      self.out_access = false
     end,
 
     pause = function(self)
@@ -111,12 +119,13 @@ return {
         oks = math.max(0, oks - 1)
         msg.ok = ln == "ok"
         msg.err = not msg.ok
-        self.out_access = oks == 0
+        self.out_access = not resetting and oks == 0
       elseif ln:match("^ALARM:") then
         msg.err = true
         oks = 0
         self.out_access = false
       elseif ln:match("^Grbl") then
+        resetting = false
         self.version = ln:match("^Grbl%s+([^%s]+)")
         wco = nil
         oks = 0

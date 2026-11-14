@@ -96,3 +96,13 @@ without readline, builds the parser separately, tests native storage,
 callbacks, editor text access, selected-range preparation, independent Lua
 states and GRBL serial responses, and checks the Lua configuration syntax.
 Serial I/O is mocked; these checks do not replace a test on a real controller.
+
+Relative linear moves (G91) retain incremental coordinates when transformed:
+translation cancels from each increment, while rotation/scaling apply to the
+increment vector. The preview accumulates these increments, and applies G90/G91
+and G0/G1 to the whole block regardless of word order. Empty drawings have zero
+bounds. Single-command queues use FIFO order. Paused jobs reject single moves;
+resume continues after the acknowledged block. GRBL Stop sends Ctrl-X and waits
+for the startup banner before allowing another line. This aborts controller
+motion and resets its parser state; it is distinct from feed hold (Pause).
+`tests/sender.lua` exercises the actual sender task with a mocked controller.

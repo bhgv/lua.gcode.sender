@@ -95,6 +95,8 @@ return {
                               .. " (ln: " .. (send_from + icmd - 1) .. ")"
                               )
                 state = "stop"
+                req_inc_cmd = false
+                sthread:clear()
                 --stat_on = true
                 --icmd = icmd + 1
               end
@@ -139,8 +141,8 @@ return {
                   local num_str
                   if state == "single" then
                     --cmd = sthread[#sthread]
-                    cmd = sthread[#sthread]
-                    sthread:remove(#sthread)
+                    cmd = sthread[1]
+                    sthread:remove(1)
                     if #sthread == 0 then
                       state = "stop"
                     end
@@ -174,7 +176,7 @@ return {
                   MK:send(cmd .. '\n')
                   --Log:msg(icmd .. ", " .. tostring(is_resp_handled) .. ", m cmd: " .. cmd)
                   
-                  req_inc_cmd = true
+                  req_inc_cmd = state == "run"
                 end
                 
                 int_state = "r"
@@ -193,7 +195,7 @@ return {
               local mk = exec.waitmsg(2000)
               local prt = exec.waitmsg(2000)
               local bod = exec.waitmsg(2000)
-              if mk ~= "" and prt ~= "" and bod ~= "" then
+              if mk and mk ~= "" and prt and prt ~= "" and tonumber(bod) then
                 MK = MKs:get(mk)
                 if MK then
                   if MK:open(prt, 0 + bod) then
@@ -216,26 +218,30 @@ return {
               exec.sendport("*p", "ui", "<CMD GAUGE SETUP>" .. #gthread)
               --state = "run"
             elseif msg == "PAUSE" then
-              MK:pause()
-              state = "stop"
+              if MK and state == "run" then
+                MK:pause()
+                state = "pause"
+              end
               exec.sendport("*p", "ui", "<MESSAGE>Pause")
             elseif msg == "FILL" then
               stat_on = false
             elseif msg == "RESUME" then
-              MK:resume()
+              if MK then MK:resume() end
               stat_on = true
-              if state == "stop" then
+              if MK and (state == "stop" or state == "pause") then
                 state = "run"
                 exec.sendport("*p", "ui", "<MESSAGE>Run")
               end
             elseif msg == "STOP" then
+              if MK then MK:stop() end
+              sthread:clear()
               icmd = 1
               req_inc_cmd = false
               state = "stop"
               exec.sendport("*p", "ui", "<MESSAGE>Stop")
             elseif msg == "SINGLE" then
               msg = exec.waitmsg(200)
-              if state == "stop" then
+              if msg and (state == "stop" or state == "single") then
                 sthread[#sthread + 1] = msg
                 state = "single"
               end

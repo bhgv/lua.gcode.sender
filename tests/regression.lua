@@ -49,12 +49,29 @@ assert(Flags.Rel_gcode2display[4])
 GTXT:clear()
 do_vparse()
 assert(#GTXT_parsed == 0 and #Display.Points == 0)
+assert(Display.Bnd.xmin == 0 and Display.Bnd.zmax == 0)
 
 GTXT:load('G1 X1 Z-1\nX2 Z-2\nG0 X3 Z5\nX4 Z6')
 do_vparse()
 assert(Display.Points[2].iswork and Display.Points[2].p == 0xff)
 assert(not Display.Points[3].iswork and not Display.Points[4].iswork)
 assert(Display.Bnd.zmin == -2 and Display.Bnd.zmax == -1)
+
+GTXT:load('G90 G1 X10 Y20\nG91 X2\nY3\nX-1 G91\nG90 X5')
+do_vparse()
+assert(Display.Points[2].x == 12 and Display.Points[2].y == 20)
+assert(Display.Points[3].x == 12 and Display.Points[3].y == 23)
+assert(Display.Points[4].x == 11 and Display.Points[5].x == 5)
+assert(GTXT_parsed[2]:match('X2%.0000') and GTXT_parsed[2]:match('Y0%.0000'))
+Flags.Transformations.Move = {x=100, y=200, z=300}
+Flags.Transformations.Rotate = math.pi / 2
+GTXT:load('G91 G1 X2\nY3')
+do_vparse()
+assert(GTXT_parsed[1]:match('Y2%.0000'))
+assert(GTXT_parsed[2]:match('X%-3%.0000'))
+assert(not GTXT_parsed[1]:match('100') and not GTXT_parsed[1]:match('200'))
+Flags.Transformations.Move = {x=0, y=0, z=0}
+Flags.Transformations.Rotate = 0
 
 local NumberedList = require 'conf.gui.classes.numberedlist'
 store:load('G90\nM5')
@@ -127,6 +144,13 @@ chunks[1] = '$10=1\r\nok\r\n'
 local help = grbl:help()
 assert(help.raw:match('%$10=1') and grbl.out_access)
 for _, command in ipairs(writes) do assert(not command:match('%$10=')) end
+grbl:stop()
+assert(writes[#writes] == string.char(24) and not grbl.out_access)
+receive('ok\n')
+assert(not grbl.out_access)
+receive("Grbl 1.1h ['$' for help]\n")
+assert(grbl.out_access)
+
 local status_message
 package.loaded['tek.lib.exec'].sendport = function(_, _, text) status_message = text end
 require('conf.sender.lib'):cnc_stat(grbl:status_parse('<Idle|MPos:1,2,3|WCO:0,0,0>'))

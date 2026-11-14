@@ -10,11 +10,13 @@ local ln_cur
 local isX, isY, isZ
 local cmd_buf
 local motion
+local absolute, coords
 
 local t_cb = function(l, k, p1, p2)
 --  print(k, p1, p2)
 end
 local vcb_init = function(l, k)
+  absolute, coords = true, {}
   motion = 0
   GTXT_parsed:clear()
   tmp_vpts = { [0]={x=0, y=0, z=0} }
@@ -30,6 +32,23 @@ local vcb_init = function(l, k)
   cmd_buf = ""
 end
 local vcb_eol = function(l, k)
+  local previous = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z}
+  for axis, value in pairs(coords) do
+    tmp_vpt[axis] = absolute and value or (tmp_vpt[axis] + value)
+    tmp_vpt.chng = true
+  end
+  tmp_vpt.iswork = motion == 1
+  tmp_vpt.p = motion == 1 and 0xff or nil
+  if tmp_vpt.chng then
+    tmp_vbnd.xmin = math.min(tmp_vbnd.xmin, tmp_vpt.x)
+    tmp_vbnd.xmax = math.max(tmp_vbnd.xmax, tmp_vpt.x)
+    tmp_vbnd.ymin = math.min(tmp_vbnd.ymin, tmp_vpt.y)
+    tmp_vbnd.ymax = math.max(tmp_vbnd.ymax, tmp_vpt.y)
+    if tmp_vpt.iswork then
+      tmp_vbnd.zmin = math.min(tmp_vbnd.zmin, tmp_vpt.z)
+      tmp_vbnd.zmax = math.max(tmp_vbnd.zmax, tmp_vpt.z)
+    end
+  end
   if tmp_vpt.chng then
     tmp_vpt.ln_n = l
     tmp_vpts[tmp_vi] = tmp_vpt
@@ -51,6 +70,10 @@ local vcb_eol = function(l, k)
   
   if isX or isY or isZ then
     pt = transformCoords{x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z}
+    if not absolute then
+      local origin = transformCoords(previous)
+      pt.x, pt.y, pt.z = pt.x - origin.x, pt.y - origin.y, pt.z - origin.z
+    end
   end
 
   if isX or isY then
@@ -66,6 +89,7 @@ local vcb_eol = function(l, k)
   GTXT_parsed[ln_cur] = cmd_buf
 
   isX, isY, isZ = false, false, false
+  coords = {}
   cmd_buf = ""
 end
 
@@ -80,28 +104,17 @@ local vcb_cmd = function(l, k, p1, p2)
     tmp_vpt.iswork = motion == 1
     tmp_vpt.p = motion == 1 and 0xff or nil
     cmd_buf = cmd_buf .. p1 .. (p2 or "") .. " "
+  elseif p1 == "G" and (p2 == 90 or p2 == 91) then
+    absolute = p2 == 90
+    cmd_buf = cmd_buf .. p1 .. p2 .. " "
   elseif p1 == "X" then
-    local x = p2
-    tmp_vpt.x = x
-    if x < tmp_vbnd.xmin then tmp_vbnd.xmin = x end
-    if x > tmp_vbnd.xmax then tmp_vbnd.xmax = x end
-    tmp_vpt.chng = true
+    coords.x = p2
     isX = true
   elseif p1 == "Y" then
-    local y = p2
-    tmp_vpt.y = y
-    if y < tmp_vbnd.ymin then tmp_vbnd.ymin = y end
-    if y > tmp_vbnd.ymax then tmp_vbnd.ymax = y end
-    tmp_vpt.chng = true
+    coords.y = p2
     isY = true
   elseif p1 == "Z" then
-    local z = p2
-    tmp_vpt.z = z
-    if tmp_vpt.iswork then
-      if z < tmp_vbnd.zmin then tmp_vbnd.zmin = z end
-      if z > tmp_vbnd.zmax then tmp_vbnd.zmax = z end
-    end
-    tmp_vpt.chng = true
+    coords.z = p2
     isZ = true
   else
     cmd_buf = cmd_buf .. p1 .. (p2 or "") .. " " --.. " (" .. l .. ") " 
@@ -109,6 +122,12 @@ local vcb_cmd = function(l, k, p1, p2)
 end
 local vcb_fini = function(l, k)
   local nm, v
+  for _, axis in ipairs{'x', 'y', 'z'} do
+    if tmp_vbnd[axis .. 'min'] == math.maxinteger then
+      tmp_vbnd[axis .. 'min'] = 0
+      tmp_vbnd[axis .. 'max'] = 0
+    end
+  end
   Display.Points = tmp_vpts
   Display.Bnd = tmp_vbnd
   Display.Bnd0 = {}

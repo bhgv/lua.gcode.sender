@@ -12,5 +12,6 @@ gcc -I bld/include tests/states.c lua-5.3.3/src/liblua.a \
   -Wl,-E -ldl -lm -o tests/build/states
 export LUA_CPATH='./tests/build/?.so'
 ./lua-5.3.3/src/lua tests/regression.lua
+./lua-5.3.3/src/lua tests/sender.lua
 ./tests/build/states
 find bld/conf -name '*.lua' -exec ./lua-5.3.3/src/luac -p '{}' \;
