@@ -11,6 +11,7 @@ return ui.Group:new
     symBut(
       "\u{E052}",
       function(self)
+        require("conf.gui.edit.actions").reset_history()
         GTXT:clear()
         GTXT_parsed:clear()
         GFNAME = nil
@@ -45,6 +46,7 @@ return ui.Group:new
                   local store, err = files.read(filename)
                   if store then
                     GTXT = store
+                    require("conf.gui.edit.actions").reset_history()
                     GFNAME = filename
                     initialiseEditor()
                     local parsed, parse_err = do_vparse()

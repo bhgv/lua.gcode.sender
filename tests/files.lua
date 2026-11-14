@@ -21,6 +21,17 @@ if full then
   assert(not files.write('/dev/full', store))
 end
 
+-- Failure to create the sibling temporary must preserve an existing target.
+local longname='tests/build/' .. string.rep('x',250)
+local original=assert(io.open(longname,'wb'))
+assert(original:write('original program'))
+original:close()
+assert(not files.write(longname,store))
+original=assert(io.open(longname,'rb'))
+assert(original:read('*a')=='original program')
+original:close()
+os.remove(longname)
+
 local ui = {Group={new=function(self, args) return args end}}
 package.loaded['tek.ui'] = ui
 symBut = function(icon, callback) return callback end

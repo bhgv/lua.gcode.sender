@@ -160,8 +160,25 @@ equal nonzero absolute XY scales; approximation can represent nonuniform scale.
 Rotation and reflection transform centers and endpoints; reflection reverses
 native G2/G3 direction. Drawing bounds transform all eight bounding-box corners.
 
-`Flags.ArcTolerance` defaults to 0.01 in the program's coordinate units. It limits
+`Flags.ArcTolerance` defaults to 0.01 millimetres. It limits
 chord error before four-decimal command rounding, accounts for XY scaling, and
 is also used for preview sampling. Segment count is limited to 100000 per arc;
 relative command rounding is accumulated to keep the final endpoint consistent.
 Run `tests/arcs.lua` through `tests/run.sh` for geometry and output regressions.
+
+Editor history and file replacement
+-------
+Undo/Redo keep up to 20 edit snapshots in native stores, including source text,
+selection and print range. A new edit clears redo, and New/Open clear the history.
+Native `clone()` and `copy_from(store)` copy source without Lua arrays.
+
+Save writes a unique temporary file in the destination directory, flushes and
+syncs it, preserves existing regular-file permission bits and atomically renames
+it over the destination after success. Failed writes remove the temporary file
+and preserve the previous destination. Devices, directories and symlink targets
+are rejected. This save implementation uses POSIX file APIs.
+
+Preview positions and transformation offsets now use millimetres internally.
+G20/G21 changes are respected throughout a program, including G91 increments,
+arc centers, helical interpolation and output coordinates. Prepared commands
+retain the source unit modes and values; preview sampling tolerance is in mm.

@@ -104,6 +104,16 @@ return ui.Group:new
                     actions.remove()
                   end,
                 },
+                ui.Button:new
+                {
+                  Text = "Undo",
+                  onClick = function(self) ui.Button.onClick(self); actions.undo() end,
+                },
+                ui.Button:new
+                {
+                  Text = "Redo",
+                  onClick = function(self) ui.Button.onClick(self); actions.redo() end,
+                },
             }
           },
       

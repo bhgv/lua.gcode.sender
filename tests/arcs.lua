@@ -76,4 +76,17 @@ assert(b.xmin<0 and b.xmax>1 and b.ymax>2)
 Flags.Transformations.Mirror.h=true
 b=bounds{xmin=0,xmax=2,ymin=0,ymax=1,zmin=0,zmax=0}
 assert(b.xmin<=b.xmax and b.ymin<=b.ymax)
+Flags.Transformations.Mirror.h=false
+Flags.Transformations.Rotate=0
+Flags.Transformations.Move={x=0,y=0,z=0}
+parse('G20 G0 X1 Y0\nG3 X0 Y1 I-1 J0\nG21 G1 X25.4 Y0')
+near(Display.Points[#Display.Points].x,25.4)
+near(Display.Bnd.ymax,25.4)
+assert(GTXT_parsed[3]:match('X25%.4000'))
+Flags.ApproximateArcs=false
+parse('G20 G0 X1 Y0\nG3 X0 Y1 I-1 J0')
+assert(GTXT_parsed[2]:match('I%-1%.0000') and GTXT_parsed[2]:match('Y1%.0000'))
+parse('G21 G0 X25.4\nG20 G91 G1 X1')
+near(Display.Points[2].x,50.8)
+assert(GTXT_parsed[2]:match('X1%.0000'))
 print('arc geometry, transforms and approximation tests passed')

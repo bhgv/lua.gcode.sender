@@ -13,6 +13,12 @@ assert(not pcall(function() store[0] = 'bad' end))
 assert(not pcall(function() store:remove(10) end))
 local other = parser.new_store()
 other[1] = 'independent'
+local cloned=store:clone()
+store:clear()
+assert(#cloned==4)
+store:copy_from(cloned)
+store[1]="independent clone"
+assert(cloned[1]=="G90")
 store:clear()
 assert(#store == 0 and other[1] == 'independent')
 

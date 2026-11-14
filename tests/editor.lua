@@ -16,6 +16,7 @@ Display={}
 require 'conf.gparser'
 local NumberedList=require 'conf.gui.classes.numberedlist'
 local list=widget{SelectedLine=0, ListObject=NumberedList:new{Store=GTXT}}
+function list:setList(value) self.ListObject=value end
 function list:addItem(entry,n) return self.ListObject:addItem(entry,n) end
 function list:changeItem(entry,n) return self.ListObject:changeItem(entry,n) end
 function list:remItem(n) return self.ListObject:remItem(n) end
@@ -143,4 +144,24 @@ assert(Flags.ApproximateArcs==false)
 buttons['Approximate arcs (G1)'].Selected=true
 buttons['Approximate arcs (G1)']:onSelect()
 assert(Flags.ApproximateArcs==true)
+local before=GTXT:concat('|')
+list.SelectedLine=1
+input.Text='G1 X99'
+click('Update')
+click('Undo')
+assert(GTXT:concat('|')==before and input.Text==GTXT[1])
+click('Redo')
+assert(GTXT[1]=='G1 X99')
+click('Delete')
+local deleted=GTXT:concat('|')
+click('Undo')
+assert(GTXT[1]=='G1 X99')
+click('Redo')
+assert(GTXT:concat('|')==deleted)
+click('Undo')
+input.Text='G1 X98'; click('Update')
+click('Redo')
+assert(GTXT[1]=='G1 X98')
+require('conf.gui.edit.actions').reset_history()
+assert(not require('conf.gui.edit.actions').undo())
 print('editor from scratch tests passed')

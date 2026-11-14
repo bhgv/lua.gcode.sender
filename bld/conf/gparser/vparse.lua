@@ -10,7 +10,7 @@ local ln_cur
 local isX, isY, isZ
 local cmd_buf
 local motion
-local absolute, coords
+local absolute, coords, units
 local arc_words, explicit_motion, plane, feed_mode
 local arcPoints = require "conf.gparser.arc"
 
@@ -18,7 +18,7 @@ local t_cb = function(l, k, p1, p2)
 --  print(k, p1, p2)
 end
 local vcb_init = function(l, k)
-  absolute, coords = true, {}
+  absolute, coords, units = true, {}, 1
   arc_words, explicit_motion, plane, feed_mode = {}, false, 17, 94
   motion = 0
   GTXT_parsed:clear()
@@ -37,7 +37,7 @@ end
 local vcb_eol = function(l, k)
   local previous = {x=tmp_vpt.x, y=tmp_vpt.y, z=tmp_vpt.z}
   for axis, value in pairs(coords) do
-    tmp_vpt[axis] = absolute and value or (tmp_vpt[axis] + value)
+    tmp_vpt[axis] = absolute and value*units or (tmp_vpt[axis] + value*units)
     tmp_vpt.chng = true
   end
   tmp_vpt.iswork = motion ~= 0
@@ -53,7 +53,9 @@ local vcb_eol = function(l, k)
     local magnitude = math.max(math.abs(scale.x),math.abs(scale.y),1e-20)
     tmp_vbnd.zmin = math.min(tmp_vbnd.zmin, previous.z)
     tmp_vbnd.zmax = math.max(tmp_vbnd.zmax, previous.z)
-    points = arcPoints(previous, tmp_vpt, arc_words, motion == 2,
+    local geometry = {}
+    for word,value in pairs(arc_words) do geometry[word]=value*units end
+    points = arcPoints(previous, tmp_vpt, geometry, motion == 2,
       (_G.Flags.ArcTolerance or 0.01)/magnitude)
     tmp_vpt.chng = true
   elseif tmp_vpt.chng then
@@ -92,8 +94,8 @@ local vcb_eol = function(l, k)
       cmd_buf = cmd_buf .. string.format("R%.4f ", arc_words.r*math.abs(_G.Flags.Transformations.Scale.x))
     else
       local origin = transformCoords{x=0,y=0,z=0}
-      local offset = transformCoords{x=arc_words.i or 0,y=arc_words.j or 0,z=0}
-      cmd_buf = cmd_buf .. string.format("I%.4f J%.4f ", offset.x-origin.x, offset.y-origin.y)
+      local offset = transformCoords{x=(arc_words.i or 0)*units,y=(arc_words.j or 0)*units,z=0}
+      cmd_buf = cmd_buf .. string.format("I%.4f J%.4f ", (offset.x-origin.x)/units, (offset.y-origin.y)/units)
     end
   end
   tmp_vpt = {x=tmp_vpt.x,y=tmp_vpt.y,z=tmp_vpt.z,chng=false}
@@ -115,10 +117,10 @@ local vcb_eol = function(l, k)
   end
 
   if isX or isY then
-    cmd_buf = cmd_buf .. string.format("X%.4f", pt.x) .. string.format(" Y%.4f",  pt.y) --.. "Z" .. z
+    cmd_buf = cmd_buf .. string.format("X%.4f", pt.x/units) .. string.format(" Y%.4f",  pt.y/units) --.. "Z" .. z
   end
   if isZ then
-    cmd_buf = cmd_buf .. string.format(" Z%.4f",  pt.z)
+    cmd_buf = cmd_buf .. string.format(" Z%.4f",  pt.z/units)
   end
   
 --  Sender:newcmd(cmd_buf)
@@ -132,11 +134,11 @@ local vcb_eol = function(l, k)
       local target = transformCoords(point)
       local x, y, z = target.x, target.y, target.z
       if not absolute then x,y,z = x-last.x,y-last.y,z-last.z end
-      segments[i] = (i == 1 and prefix or "") .. string.format("G1 X%.4f Y%.4f Z%.4f", x,y,z)
+      segments[i] = (i == 1 and prefix or "") .. string.format("G1 X%.4f Y%.4f Z%.4f", x/units,y/units,z/units)
       if not absolute then
-        last = {x=last.x+tonumber(string.format("%.4f",x)),
-          y=last.y+tonumber(string.format("%.4f",y)),
-          z=last.z+tonumber(string.format("%.4f",z))}
+        last = {x=last.x+tonumber(string.format("%.4f",x/units))*units,
+          y=last.y+tonumber(string.format("%.4f",y/units))*units,
+          z=last.z+tonumber(string.format("%.4f",z/units))*units}
       else
         last = target
       end
@@ -161,6 +163,9 @@ local vcb_cmd = function(l, k, p1, p2)
   p2 = tonumber(p2)
   if p1 == "G" and (p2 == 0 or p2 == 1 or p2 == 2 or p2 == 3) then
     motion, explicit_motion = p2, true
+  elseif p1 == "G" and (p2 == 20 or p2 == 21) then
+    units = p2 == 20 and 25.4 or 1
+    cmd_buf = cmd_buf .. p1 .. p2 .. " "
   elseif p1 == "G" and (p2 == 17 or p2 == 18 or p2 == 19) then
     plane = p2
     cmd_buf = cmd_buf .. p1 .. p2 .. " "

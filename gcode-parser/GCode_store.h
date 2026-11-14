@@ -4,6 +4,9 @@
 #include <new>
 #include <string>
 #include <vector>
+#include <errno.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 struct GCodeStore {
     std::vector<std::string> lines;
@@ -18,6 +21,55 @@ static int store_new(lua_State *L) {
     new(p) GCodeStore;
     luaL_setmetatable(L, "gcodeparser.store");
     return 1;
+}
+
+static int store_clone(lua_State *L) {
+    GCodeStore *source = check_store(L);
+    store_new(L);
+    ((GCodeStore*)lua_touserdata(L, -1))->lines = source->lines;
+    return 1;
+}
+
+static int store_copy(lua_State *L) {
+    GCodeStore *target = check_store(L);
+    GCodeStore *source = (GCodeStore*)luaL_checkudata(L, 2, "gcodeparser.store");
+    target->lines = source->lines;
+    return 0;
+}
+
+static int store_save(lua_State *L) {
+    GCodeStore *store = check_store(L);
+    const char *filename = luaL_checkstring(L, 2);
+    struct stat info;
+    bool exists = lstat(filename, &info) == 0;
+    if(exists && !S_ISREG(info.st_mode)) {
+        errno = EINVAL;
+        return luaL_fileresult(L, 0, filename);
+    }
+    std::string pattern = std::string(filename) + ".XXXXXX";
+    std::vector<char> temporary(pattern.begin(), pattern.end());
+    temporary.push_back(0);
+    int fd = mkstemp(temporary.data());
+    if(fd < 0) return luaL_fileresult(L, 0, filename);
+    FILE *f = fdopen(fd, "wb");
+    if(!f) {
+        int error = errno;
+        close(fd); unlink(temporary.data()); errno = error;
+        return luaL_fileresult(L, 0, filename);
+    }
+    bool ok = true;
+    for(size_t i = 0; i < store->lines.size() && ok; i++) {
+        const std::string &line = store->lines[i];
+        ok = fwrite(line.data(), 1, line.size(), f) == line.size() && fputc('\n', f) != EOF;
+    }
+    if(ok) ok = fflush(f) == 0;
+    if(ok && exists) ok = fchmod(fd, info.st_mode & 0777) == 0;
+    if(ok) ok = fsync(fd) == 0;
+    int error = errno;
+    if(fclose(f) != 0) { ok = false; error = errno; }
+    if(ok && rename(temporary.data(), filename) != 0) { ok = false; error = errno; }
+    if(!ok) { unlink(temporary.data()); errno = error; }
+    return luaL_fileresult(L, ok, filename);
 }
 
 static int store_gc(lua_State *L) {
@@ -117,7 +169,8 @@ static void register_store(lua_State *L) {
         {"__index", store_index}, {"__newindex", store_set},
         {"insert", store_insert}, {"remove", store_remove},
         {"clear", store_clear}, {"load", store_load},
-        {"concat", store_concat}, {NULL, NULL}
+        {"concat", store_concat}, {"clone", store_clone},
+        {"copy_from", store_copy}, {"save_file", store_save}, {NULL, NULL}
     };
     luaL_newmetatable(L, "gcodeparser.store");
     luaL_setfuncs(L, methods, 0);

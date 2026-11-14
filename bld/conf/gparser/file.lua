@@ -14,15 +14,6 @@ return {
   end,
 
   write = function(filename, store)
-    local f, err = io.open(filename, "wb")
-    if not f then return nil, err end
-    for i = 1, #store do
-      local written, write_err = f:write(store[i], "\n")
-      if not written then
-        f:close()
-        return nil, write_err
-      end
-    end
-    return f:close()
+    return store:save_file(filename)
   end,
 }
